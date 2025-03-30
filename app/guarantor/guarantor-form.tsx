@@ -37,10 +37,74 @@ export default function GuarantorForm() {
   const [idType, setIdType] = useState("passport");
   const [dragActive, setDragActive] = useState("");
 
-  const idInputRef = useRef(null);
-  const addressProofInputRef = useRef(null);
-  const incomeProofInputRef = useRef(null);
-  const additionalDocsInputRef = useRef(null);
+  const idInputRef = useRef<HTMLInputElement>(null);
+  const addressProofInputRef = useRef<HTMLInputElement>(null);
+  const incomeProofInputRef = useRef<HTMLInputElement>(null);
+  const additionalDocsInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    propertyAddress: "",
+    rentAmount: "",
+    tenancyStartDate: "",
+    employmentType: "",
+    idType: "",
+    idNumber: "",
+    idExpiryDate: "",
+    incomeProof: "",
+    additionalDocs: [],
+    title: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    dateOfBirth: "",
+    nationalInsuranceNumber: "",
+    contactNumber: "",
+    emailAddress: "",
+    employerName: "",
+    employerAddress: "",
+    employerPhone: "",
+    employerEmail: "",
+    businessName: "",
+    businessNature: "",
+    businessYears: "",
+    annualIncome: "",
+    annualIncomeSelf: "",
+    businessAddress: "",
+    accountantName: "",
+    accountantContact: "",
+    utrNumber: "",
+    freelanceType: "",
+    freelanceYears: "",
+    freelanceMonthlyIncome: "",
+    freelancePortfolioWebsite: "",
+    freelanceMajorClients: "",
+    freelanceUtrNumber: "",
+    companyName: "",
+    companyNumber: "",
+    position: "",
+    ownershipPercentage: "",
+    directorIncome: "",
+    companyFounded: "",
+    companyAddress: "",
+    businessNameSole: "",
+    businessNatureSole: "",
+    businessYearsSole: "",
+    annualIncomeSole: "",
+    businessAddressSole: "",
+    businessRegistration: "",
+    utrNumberSole: "",
+    guarantorName: "",
+    guarantorSignature: "",
+    guarantorDate: "",
+    tenantName: "",
+    declaration: false,
+    employmentStartDate: "",
+    monthlyIncome: "",
+    portfolioWebsite: "",
+    majorClients: "",
+    jobTitle: "",
+    businessRegistrationNumber: "",
+  });
 
   const goToNextStep = () => {
     if (currentStep < totalSteps) {
@@ -94,6 +158,14 @@ export default function GuarantorForm() {
     if (file) {
       handleFile(file, docType);
     }
+  };
+
+  const handleFormChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+    console.log(`Field ${field} updated:`, value);
   };
 
   // Handle drag events
@@ -165,7 +237,7 @@ export default function GuarantorForm() {
   };
 
   // Remove a document
-  const removeDocument = (docType: string, index = null) => {
+  const removeDocument = (docType: string, index: number | null) => {
     if (docType === "id") {
       setDocuments((prev) => ({ ...prev, id: null }));
     } else if (docType === "addressProof") {
@@ -212,6 +284,13 @@ export default function GuarantorForm() {
       default:
         return "Any Additional Supporting Documents";
     }
+  };
+
+  const handleSubmit = () => {
+
+    console.log("Form submission started");
+    console.log("Form Data:", formData);
+    console.log("Documents:", documents);
   };
 
   return (
@@ -315,6 +394,8 @@ export default function GuarantorForm() {
                     id="tenant-fullname"
                     placeholder="Enter full name"
                     className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                    value={formData.fullName}
+                    onChange={(e) => handleFormChange("fullName", e.target.value)}
                   />
                 </div>
 
@@ -330,6 +411,8 @@ export default function GuarantorForm() {
                       id="property-address"
                       placeholder="Address"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.propertyAddress}
+                      onChange={(e) => handleFormChange("propertyAddress", e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -343,6 +426,8 @@ export default function GuarantorForm() {
                       id="rent-amount"
                       placeholder="Enter amount"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.rentAmount}
+                      onChange={(e) => handleFormChange("rentAmount", e.target.value)}
                     />
                   </div>
                 </div>
@@ -352,7 +437,10 @@ export default function GuarantorForm() {
                     Tenancy start date
                   </Label>
                   <div className="grid grid-cols-3 gap-4">
-                    <Select>
+                    <Select
+                      value={formData.tenancyStartDate}
+                      onValueChange={(value) => handleFormChange("tenancyStartDate", value)}
+                    >
                       <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
                         <SelectValue placeholder="Day" />
                       </SelectTrigger>
@@ -365,7 +453,10 @@ export default function GuarantorForm() {
                       </SelectContent>
                     </Select>
 
-                    <Select>
+                    <Select
+                      value={formData.tenancyStartDate}
+                      onValueChange={(value) => handleFormChange("tenancyStartDate", value)}
+                    >
                       <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
                         <SelectValue placeholder="Month" />
                       </SelectTrigger>
@@ -381,7 +472,10 @@ export default function GuarantorForm() {
                       </SelectContent>
                     </Select>
 
-                    <Select>
+                    <Select
+                      value={formData.tenancyStartDate}
+                      onValueChange={(value) => handleFormChange("tenancyStartDate", value)}
+                    >
                       <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
@@ -406,18 +500,26 @@ export default function GuarantorForm() {
                     <Input
                       placeholder="Title"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.title}
+                      onChange={(e) => handleFormChange("title", e.target.value)}
                     />
                     <Input
                       placeholder="First name"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.firstName}
+                      onChange={(e) => handleFormChange("firstName", e.target.value)}
                     />
                     <Input
                       placeholder="Middle name"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.middleName}
+                      onChange={(e) => handleFormChange("middleName", e.target.value)}
                     />
                     <Input
                       placeholder="Last name"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.lastName}
+                      onChange={(e) => handleFormChange("lastName", e.target.value)}
                     />
                   </div>
                 </div>
@@ -427,7 +529,10 @@ export default function GuarantorForm() {
                     Date of birth
                   </Label>
                   <div className="grid grid-cols-3 gap-4">
-                    <Select>
+                    <Select
+                      value={formData.dateOfBirth}
+                      onValueChange={(value) => handleFormChange("dateOfBirth", value)}
+                    >
                       <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
                         <SelectValue placeholder="Day" />
                       </SelectTrigger>
@@ -440,7 +545,10 @@ export default function GuarantorForm() {
                       </SelectContent>
                     </Select>
 
-                    <Select>
+                    <Select
+                      value={formData.dateOfBirth}
+                      onValueChange={(value) => handleFormChange("dateOfBirth", value)}
+                    >
                       <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
                         <SelectValue placeholder="Month" />
                       </SelectTrigger>
@@ -456,7 +564,10 @@ export default function GuarantorForm() {
                       </SelectContent>
                     </Select>
 
-                    <Select>
+                    <Select
+                      value={formData.dateOfBirth}
+                      onValueChange={(value) => handleFormChange("dateOfBirth", value)}
+                    >
                       <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
@@ -481,6 +592,8 @@ export default function GuarantorForm() {
                   <Input
                     id="national-insurance"
                     className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                    value={formData.nationalInsuranceNumber}
+                    onChange={(e) => handleFormChange("nationalInsuranceNumber", e.target.value)}
                   />
                 </div>
 
@@ -495,6 +608,8 @@ export default function GuarantorForm() {
                     <Input
                       id="contact-number"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.contactNumber}
+                      onChange={(e) => handleFormChange("contactNumber", e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -508,6 +623,8 @@ export default function GuarantorForm() {
                       id="email-address"
                       type="email"
                       className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                      value={formData.emailAddress}
+                      onChange={(e) => handleFormChange("emailAddress", e.target.value)}
                     />
                   </div>
                 </div>
@@ -521,8 +638,8 @@ export default function GuarantorForm() {
                     Employment Status
                   </Label>
                   <RadioGroup
-                    value={employmentType}
-                    onValueChange={setEmploymentType}
+                    value={formData.employmentType}
+                    onValueChange={(value) => handleFormChange("employmentType", value)}
                     className="grid grid-cols-1 md:grid-cols-3 gap-4"
                   >
                     {[
@@ -581,6 +698,8 @@ export default function GuarantorForm() {
                           <Input
                             id="employer-name"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.employerName}
+                            onChange={(e) => handleFormChange("employerName", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -593,6 +712,8 @@ export default function GuarantorForm() {
                           <Input
                             id="job-title"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.jobTitle}
+                            onChange={(e) => handleFormChange("jobTitle", e.target.value)}
                           />
                         </div>
                       </div>
@@ -609,6 +730,8 @@ export default function GuarantorForm() {
                             id="employment-start-date"
                             type="date"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.employmentStartDate}
+                            onChange={(e) => handleFormChange("employmentStartDate", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -622,6 +745,8 @@ export default function GuarantorForm() {
                             id="annual-income"
                             placeholder="£"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.annualIncome}
+                            onChange={(e) => handleFormChange("annualIncome", e.target.value)}
                           />
                         </div>
                       </div>
@@ -636,6 +761,8 @@ export default function GuarantorForm() {
                         <Input
                           id="employer-address"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.employerAddress}
+                          onChange={(e) => handleFormChange("employerAddress", e.target.value)}
                         />
                       </div>
 
@@ -650,6 +777,8 @@ export default function GuarantorForm() {
                           <Input
                             id="employer-phone"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.employerPhone}
+                            onChange={(e) => handleFormChange("employerPhone", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -663,6 +792,8 @@ export default function GuarantorForm() {
                             id="employer-email"
                             type="email"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.employerEmail}
+                            onChange={(e) => handleFormChange("employerEmail", e.target.value)}
                           />
                         </div>
                       </div>
@@ -692,6 +823,8 @@ export default function GuarantorForm() {
                           <Input
                             id="business-name"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessName}
+                            onChange={(e) => handleFormChange("businessName", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -704,6 +837,8 @@ export default function GuarantorForm() {
                           <Input
                             id="business-nature"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessNature}
+                            onChange={(e) => handleFormChange("businessNature", e.target.value)}
                           />
                         </div>
                       </div>
@@ -720,6 +855,8 @@ export default function GuarantorForm() {
                             id="business-years"
                             type="number"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessYears}
+                            onChange={(e) => handleFormChange("businessYears", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -733,6 +870,8 @@ export default function GuarantorForm() {
                             id="annual-income-self"
                             placeholder="£"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.annualIncomeSelf}
+                            onChange={(e) => handleFormChange("annualIncomeSelf", e.target.value)}
                           />
                         </div>
                       </div>
@@ -747,6 +886,8 @@ export default function GuarantorForm() {
                         <Input
                           id="business-address"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.businessAddress}
+                          onChange={(e) => handleFormChange("businessAddress", e.target.value)}
                         />
                       </div>
 
@@ -761,6 +902,8 @@ export default function GuarantorForm() {
                           <Input
                             id="accountant-name"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.accountantName}
+                            onChange={(e) => handleFormChange("accountantName", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -773,6 +916,8 @@ export default function GuarantorForm() {
                           <Input
                             id="accountant-contact"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.accountantContact}
+                            onChange={(e) => handleFormChange("accountantContact", e.target.value)}
                           />
                         </div>
                       </div>
@@ -787,6 +932,8 @@ export default function GuarantorForm() {
                         <Input
                           id="utr-number"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.utrNumber}
+                          onChange={(e) => handleFormChange("utrNumber", e.target.value)}
                         />
                       </div>
                     </motion.div>
@@ -815,6 +962,8 @@ export default function GuarantorForm() {
                           <Input
                             id="freelance-type"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.freelanceType}
+                            onChange={(e) => handleFormChange("freelanceType", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -828,6 +977,8 @@ export default function GuarantorForm() {
                             id="freelance-years"
                             type="number"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.freelanceYears}
+                            onChange={(e) => handleFormChange("freelanceYears", e.target.value)}
                           />
                         </div>
                       </div>
@@ -844,6 +995,8 @@ export default function GuarantorForm() {
                             id="monthly-income"
                             placeholder="£"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.monthlyIncome}
+                            onChange={(e) => handleFormChange("monthlyIncome", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -857,6 +1010,8 @@ export default function GuarantorForm() {
                             id="portfolio-website"
                             placeholder="https://"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.portfolioWebsite}
+                            onChange={(e) => handleFormChange("portfolioWebsite", e.target.value)}
                           />
                         </div>
                       </div>
@@ -871,6 +1026,8 @@ export default function GuarantorForm() {
                         <Input
                           id="major-clients"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.majorClients}
+                          onChange={(e) => handleFormChange("majorClients", e.target.value)}
                         />
                       </div>
 
@@ -884,6 +1041,8 @@ export default function GuarantorForm() {
                         <Input
                           id="utr-number-freelance"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.freelanceUtrNumber}
+                          onChange={(e) => handleFormChange("freelanceUtrNumber", e.target.value)}
                         />
                       </div>
                     </motion.div>
@@ -912,6 +1071,8 @@ export default function GuarantorForm() {
                           <Input
                             id="company-name"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.companyName}
+                            onChange={(e) => handleFormChange("companyName", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -924,6 +1085,8 @@ export default function GuarantorForm() {
                           <Input
                             id="company-number"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.companyNumber}
+                            onChange={(e) => handleFormChange("companyNumber", e.target.value)}
                           />
                         </div>
                       </div>
@@ -939,6 +1102,8 @@ export default function GuarantorForm() {
                           <Input
                             id="position"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.position}
+                            onChange={(e) => handleFormChange("position", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -953,6 +1118,8 @@ export default function GuarantorForm() {
                             type="number"
                             placeholder="%"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.ownershipPercentage}
+                            onChange={(e) => handleFormChange("ownershipPercentage", e.target.value)}
                           />
                         </div>
                       </div>
@@ -969,6 +1136,8 @@ export default function GuarantorForm() {
                             id="director-income"
                             placeholder="£"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.directorIncome}
+                            onChange={(e) => handleFormChange("directorIncome", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -982,6 +1151,8 @@ export default function GuarantorForm() {
                             id="company-founded"
                             type="number"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.companyFounded}
+                            onChange={(e) => handleFormChange("companyFounded", e.target.value)}
                           />
                         </div>
                       </div>
@@ -996,6 +1167,8 @@ export default function GuarantorForm() {
                         <Input
                           id="company-address"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.companyAddress}
+                          onChange={(e) => handleFormChange("companyAddress", e.target.value)}
                         />
                       </div>
                     </motion.div>
@@ -1024,6 +1197,8 @@ export default function GuarantorForm() {
                           <Input
                             id="business-name-sole"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessNameSole}
+                            onChange={(e) => handleFormChange("businessNameSole", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -1036,6 +1211,8 @@ export default function GuarantorForm() {
                           <Input
                             id="business-nature-sole"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessNatureSole}
+                            onChange={(e) => handleFormChange("businessNatureSole", e.target.value)}
                           />
                         </div>
                       </div>
@@ -1052,6 +1229,8 @@ export default function GuarantorForm() {
                             id="business-years-sole"
                             type="number"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessYearsSole}
+                            onChange={(e) => handleFormChange("businessYearsSole", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -1065,6 +1244,8 @@ export default function GuarantorForm() {
                             id="annual-income-sole"
                             placeholder="£"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.annualIncomeSole}
+                            onChange={(e) => handleFormChange("annualIncomeSole", e.target.value)}
                           />
                         </div>
                       </div>
@@ -1079,6 +1260,8 @@ export default function GuarantorForm() {
                         <Input
                           id="business-address-sole"
                           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                          value={formData.businessAddressSole}
+                          onChange={(e) => handleFormChange("businessAddressSole", e.target.value)}
                         />
                       </div>
 
@@ -1093,6 +1276,8 @@ export default function GuarantorForm() {
                           <Input
                             id="business-registration"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                            value={formData.businessRegistration}
+                            onChange={(e) => handleFormChange("businessRegistration", e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -1105,7 +1290,9 @@ export default function GuarantorForm() {
                           <Input
                             id="utr-number-sole"
                             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                          />
+                            value={formData.utrNumberSole}
+                            onChange={(e) => handleFormChange("utrNumberSole", e.target.value)}
+                            />
                         </div>
                       </div>
                     </motion.div>
@@ -1177,7 +1364,7 @@ export default function GuarantorForm() {
                               </span>
                             </div>
                             <button
-                              onClick={() => removeDocument("id")}
+                              onClick={() => removeDocument("id", documents.id)}
                               className="text-red-500 hover:text-red-700"
                             >
                               <X className="h-5 w-5" />
@@ -1254,7 +1441,7 @@ export default function GuarantorForm() {
                               </span>
                             </div>
                             <button
-                              onClick={() => removeDocument("addressProof")}
+                              onClick={() => removeDocument("addressProof", documents.addressProof)}
                               className="text-red-500 hover:text-red-700"
                             >
                               <X className="h-5 w-5" />
@@ -1338,7 +1525,7 @@ export default function GuarantorForm() {
                                 </span>
                               </div>
                               <button
-                                onClick={() => removeDocument("incomeProof")}
+                                onClick={() => removeDocument("incomeProof", documents.incomeProof)}
                                 className="text-red-500 hover:text-red-700"
                               >
                                 <X className="h-5 w-5" />
@@ -1509,6 +1696,8 @@ export default function GuarantorForm() {
                   <Input
                     className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
                     placeholder="Guarantor's name"
+                    value={`${formData.title} ${formData.firstName} ${formData.middleName} ${formData.lastName}`}
+                    onChange={(e) => handleFormChange("guarantorName", e.target.value)}
                   />
                   <span className="whitespace-nowrap font-medium">
                     agree to act as a guarantor for
@@ -1516,6 +1705,8 @@ export default function GuarantorForm() {
                   <Input
                     className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
                     placeholder="Tenant's name"
+                    value={formData.tenantName}
+                    onChange={(e) => handleFormChange("tenantName", e.target.value)}
                   />
                   <span className="whitespace-nowrap font-medium">
                     regarding their tenancy at [Property Address].
@@ -1559,6 +1750,8 @@ export default function GuarantorForm() {
                   <Checkbox
                     id="declaration"
                     className="mt-1 h-5 w-5 border-gray-300 text-[#dc0a3c] rounded focus:ring-[#dc0a3c]"
+                    checked={formData.declaration}
+                    onChange={(e) => handleFormChange("declaration", e.target)}
                   />
                   <Label
                     htmlFor="declaration"
@@ -1582,6 +1775,8 @@ export default function GuarantorForm() {
                       <Input
                         id="guarantor-name"
                         className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                        value={`${formData.title} ${formData.firstName} ${formData.middleName} ${formData.lastName}`}
+                        onChange={(e) => handleFormChange("guarantorName", e.target.value)}
                       />
                     </div>
 
@@ -1595,6 +1790,8 @@ export default function GuarantorForm() {
                       <Input
                         id="guarantor-signature"
                         className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                        value={formData.guarantorSignature}
+                        onChange={(e) => handleFormChange("guarantorSignature", e.target.value)}
                       />
                     </div>
 
@@ -1609,6 +1806,8 @@ export default function GuarantorForm() {
                         id="guarantor-date"
                         type="date"
                         className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+                        value={formData.guarantorDate}
+                        onChange={(e) => handleFormChange("guarantorDate", e.target.value)}
                       />
                     </div>
                   </div>
@@ -1637,7 +1836,7 @@ export default function GuarantorForm() {
             </Button>
           ) : (
             <Button
-              onClick={() => alert("Form submitted!")}
+              onClick={handleSubmit}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
             >
               Submit
