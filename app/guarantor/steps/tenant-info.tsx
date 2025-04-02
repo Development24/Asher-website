@@ -2,21 +2,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
+  SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-  SelectContent
+  SelectValue
 } from "@/components/ui/select";
 import { days, months, years } from "@/lib/utils";
-interface PersonalInfoStepProps {
+import { useState } from "react";
+
+interface TenantInfoProps {
   formData: any;
-  onChange: (field: string, value: any) => void;
+  handleFormChange: (field: string, value: any) => void;
 }
 
-export function PersonalInfoStep({
-  formData,
-  onChange
-}: PersonalInfoStepProps) {
+const TenantInfo = ({ formData, handleFormChange }: TenantInfoProps) => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -27,6 +26,8 @@ export function PersonalInfoStep({
           id="tenant-fullname"
           placeholder="Enter full name"
           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+          value={formData.fullName}
+          onChange={(e) => handleFormChange("fullName", e.target.value)}
         />
       </div>
 
@@ -42,6 +43,10 @@ export function PersonalInfoStep({
             id="property-address"
             placeholder="Address"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+            value={formData.propertyAddress}
+            onChange={(e) =>
+              handleFormChange("propertyAddress", e.target.value)
+            }
           />
         </div>
         <div className="space-y-2">
@@ -52,6 +57,8 @@ export function PersonalInfoStep({
             id="rent-amount"
             placeholder="Enter amount"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
+            value={formData.rentAmount}
+            onChange={(e) => handleFormChange("rentAmount", e.target.value)}
           />
         </div>
       </div>
@@ -59,7 +66,12 @@ export function PersonalInfoStep({
       <div className="space-y-2">
         <Label className="text-gray-700 font-medium">Tenancy start date</Label>
         <div className="grid grid-cols-3 gap-4">
-          <Select>
+          <Select
+            value={formData.tenancyStartDay}
+            onValueChange={(value) =>
+              handleFormChange("tenancyStartDay", value)
+            }
+          >
             <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
               <SelectValue placeholder="Day" />
             </SelectTrigger>
@@ -72,7 +84,12 @@ export function PersonalInfoStep({
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={formData.tenancyStartMonth}
+            onValueChange={(value) =>
+              handleFormChange("tenancyStartMonth", value)
+            }
+          >
             <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
@@ -85,7 +102,12 @@ export function PersonalInfoStep({
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={formData.tenancyStartYear}
+            onValueChange={(value) =>
+              handleFormChange("tenancyStartYear", value)
+            }
+          >
             <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
@@ -101,4 +123,6 @@ export function PersonalInfoStep({
       </div>
     </div>
   );
-}
+};
+
+export default TenantInfo;

@@ -1,18 +1,22 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ChevronLeft, CheckCircle2 } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useCreateLandlordReference } from "@/services/refrences/referenceFn"
+import { AnimatePresence, motion } from "framer-motion"
+import { CheckCircle2, ChevronLeft } from "lucide-react"
+import { useParams } from "next/navigation"
+import { useState } from "react"
+import AdditionalInfo from "./steps/addidtional-info"
+import LandlordInfo from "./steps/landlord-info"
+import TenantConduct from "./steps/tenant-conduct"
+import TenantInfo from "./steps/tenant-info"
 
 export default function LandlordReferenceForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 4
-
+  const { id: applicationId } = useParams()
+  const { mutate: createLandlordReference, isPending: isCreatingLandlordReference } = useCreateLandlordReference()
   const [formData, setFormData] = useState({
     // Tenant Information
     tenantName: "",
@@ -74,7 +78,11 @@ export default function LandlordReferenceForm() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     console.log("Form submitted:", formData)
-    alert("Form submitted successfully!")
+    const payload = {
+      applicationId: applicationId as string,
+      data: formData
+    }
+    createLandlordReference(payload)
   }
 
   const steps = [
@@ -167,454 +175,22 @@ export default function LandlordReferenceForm() {
           >
             {/* Step 1: Tenant Information */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="tenant-name" className="text-gray-700 font-medium">
-                    Full name
-                  </Label>
-                  <Input
-                    id="tenant-name"
-                    placeholder="Enter full name"
-                    className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                    value={formData.tenantName}
-                    onChange={(e) => handleChange("tenantName", e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="current-address" className="text-gray-700 font-medium">
-                      Current address
-                    </Label>
-                    <Input
-                      id="current-address"
-                      placeholder="Address"
-                      className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                      value={formData.currentAddress}
-                      onChange={(e) => handleChange("currentAddress", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="monthly-rent" className="text-gray-700 font-medium">
-                      Monthly Rent Paid (£)
-                    </Label>
-                    <Input
-                      id="monthly-rent"
-                      placeholder="Enter amount"
-                      className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                      value={formData.monthlyRent}
-                      onChange={(e) => handleChange("monthlyRent", e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-gray-700 font-medium">Rental period</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="rental-start-date" className="text-xs text-gray-500 mb-1 block">
-                        Start date
-                      </Label>
-                      <Input
-                        id="rental-start-date"
-                        type="date"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.rentalStartDate}
-                        onChange={(e) => handleChange("rentalStartDate", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="rental-end-date" className="text-xs text-gray-500 mb-1 block">
-                        End date
-                      </Label>
-                      <Input
-                        id="rental-end-date"
-                        type="date"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.rentalEndDate}
-                        onChange={(e) => handleChange("rentalEndDate", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="reason-for-leaving" className="text-gray-700 font-medium">
-                    Reason for leaving
-                  </Label>
-                  <Input
-                    id="reason-for-leaving"
-                    placeholder="Please specify"
-                    className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                    value={formData.reasonForLeaving}
-                    onChange={(e) => handleChange("reasonForLeaving", e.target.value)}
-                  />
-                </div>
-              </div>
+              <TenantInfo formData={formData} handleChange={handleChange} />
             )}
 
             {/* Step 2: Landlord Information */}
             {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="landlord-name" className="text-gray-700 font-medium">
-                    Landlord/Agent Name
-                  </Label>
-                  <Input
-                    id="landlord-name"
-                    placeholder="Enter name"
-                    className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                    value={formData.landlordName}
-                    onChange={(e) => handleChange("landlordName", e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="contact-number" className="text-gray-700 font-medium">
-                      Contact number
-                    </Label>
-                    <Input
-                      id="contact-number"
-                      placeholder="Phone number"
-                      className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                      value={formData.contactNumber}
-                      onChange={(e) => handleChange("contactNumber", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email-address" className="text-gray-700 font-medium">
-                      Email address
-                    </Label>
-                    <Input
-                      id="email-address"
-                      type="email"
-                      placeholder="Email"
-                      className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                      value={formData.emailAddress}
-                      onChange={(e) => handleChange("emailAddress", e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
+              <LandlordInfo formData={formData} handleChange={handleChange} />
             )}
 
             {/* Step 3: Tenant Conduct & Payment History */}
             {currentStep === 3 && (
-              <div className="space-y-6 bg-gray-50 p-6 rounded-lg">
-                {/* Question 1 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start">
-                      <span className="font-medium text-gray-700 mr-2">1.</span>
-                      <span className="font-medium text-gray-700">Did the tenant pay rent on time?</span>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="rent-on-time-yes" className="text-gray-700">
-                          Yes
-                        </Label>
-                        <Checkbox
-                          id="rent-on-time-yes"
-                          checked={formData.rentOnTime === true}
-                          onCheckedChange={() => handleChange("rentOnTime", true)}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="rent-on-time-no" className="text-gray-700">
-                          No
-                        </Label>
-                        <Checkbox
-                          id="rent-on-time-no"
-                          checked={formData.rentOnTime === false}
-                          onCheckedChange={() => handleChange("rentOnTime", false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {formData.rentOnTime === false && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Please provide details"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.rentOnTimeDetails}
-                        onChange={(e) => handleChange("rentOnTimeDetails", e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Question 2 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start">
-                      <span className="font-medium text-gray-700 mr-2">2.</span>
-                      <span className="font-medium text-gray-700">
-                        Were there any rent arrears or outstanding balances?
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="rent-arrears-yes" className="text-gray-700">
-                          Yes
-                        </Label>
-                        <Checkbox
-                          id="rent-arrears-yes"
-                          checked={formData.rentArrears === true}
-                          onCheckedChange={() => handleChange("rentArrears", true)}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="rent-arrears-no" className="text-gray-700">
-                          No
-                        </Label>
-                        <Checkbox
-                          id="rent-arrears-no"
-                          checked={formData.rentArrears === false}
-                          onCheckedChange={() => handleChange("rentArrears", false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {formData.rentArrears === true && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Please specify"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.rentArrearsDetails}
-                        onChange={(e) => handleChange("rentArrearsDetails", e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Question 3 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start">
-                      <span className="font-medium text-gray-700 mr-2">3.</span>
-                      <span className="font-medium text-gray-700">Did the tenant take good care of the property?</span>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="property-condition-yes" className="text-gray-700">
-                          Yes
-                        </Label>
-                        <Checkbox
-                          id="property-condition-yes"
-                          checked={formData.propertyCondition === true}
-                          onCheckedChange={() => handleChange("propertyCondition", true)}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="property-condition-no" className="text-gray-700">
-                          No
-                        </Label>
-                        <Checkbox
-                          id="property-condition-no"
-                          checked={formData.propertyCondition === false}
-                          onCheckedChange={() => handleChange("propertyCondition", false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {formData.propertyCondition === false && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Please provide details"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.propertyConditionDetails}
-                        onChange={(e) => handleChange("propertyConditionDetails", e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Question 4 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start">
-                      <span className="font-medium text-gray-700 mr-2">4.</span>
-                      <span className="font-medium text-gray-700">
-                        Were there any complaints from neighbors or property damage?
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="complaints-yes" className="text-gray-700">
-                          Yes
-                        </Label>
-                        <Checkbox
-                          id="complaints-yes"
-                          checked={formData.complaints === true}
-                          onCheckedChange={() => handleChange("complaints", true)}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="complaints-no" className="text-gray-700">
-                          No
-                        </Label>
-                        <Checkbox
-                          id="complaints-no"
-                          checked={formData.complaints === false}
-                          onCheckedChange={() => handleChange("complaints", false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {formData.complaints === true && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Please specify"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.complaintsDetails}
-                        onChange={(e) => handleChange("complaintsDetails", e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Question 5 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start">
-                      <span className="font-medium text-gray-700 mr-2">5.</span>
-                      <span className="font-medium text-gray-700">
-                        Was the property left in good condition at the end of the tenancy?
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="end-condition-yes" className="text-gray-700">
-                          Yes
-                        </Label>
-                        <Checkbox
-                          id="end-condition-yes"
-                          checked={formData.endCondition === true}
-                          onCheckedChange={() => handleChange("endCondition", true)}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="end-condition-no" className="text-gray-700">
-                          No
-                        </Label>
-                        <Checkbox
-                          id="end-condition-no"
-                          checked={formData.endCondition === false}
-                          onCheckedChange={() => handleChange("endCondition", false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {formData.endCondition === false && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Please provide details"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.endConditionDetails}
-                        onChange={(e) => handleChange("endConditionDetails", e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Question 6 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start">
-                      <span className="font-medium text-gray-700 mr-2">6.</span>
-                      <span className="font-medium text-gray-700">Would you rent to this tenant again?</span>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="rent-again-yes" className="text-gray-700">
-                          Yes
-                        </Label>
-                        <Checkbox
-                          id="rent-again-yes"
-                          checked={formData.rentAgain === true}
-                          onCheckedChange={() => handleChange("rentAgain", true)}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="rent-again-no" className="text-gray-700">
-                          No
-                        </Label>
-                        <Checkbox
-                          id="rent-again-no"
-                          checked={formData.rentAgain === false}
-                          onCheckedChange={() => handleChange("rentAgain", false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {formData.rentAgain === false && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Please explain"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.rentAgainDetails}
-                        onChange={(e) => handleChange("rentAgainDetails", e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <TenantConduct formData={formData} handleChange={handleChange} />
             )}
 
             {/* Step 4: Additional Comments & Signature */}
             {currentStep === 4 && (
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Additional Comments</h3>
-                  <Textarea
-                    placeholder="Please provide any additional information that may be helpful"
-                    className="min-h-[150px] rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                    value={formData.additionalComments}
-                    onChange={(e) => handleChange("additionalComments", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-6 pt-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Signature</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="signer-name" className="text-gray-700 font-medium">
-                        Name
-                      </Label>
-                      <Input
-                        id="signer-name"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.signerName}
-                        onChange={(e) => handleChange("signerName", e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signature" className="text-gray-700 font-medium">
-                        Signature
-                      </Label>
-                      <Input
-                        id="signature"
-                        className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                        value={formData.signature}
-                        onChange={(e) => handleChange("signature", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2 max-w-xs">
-                    <Label htmlFor="signature-date" className="text-gray-700 font-medium">
-                      Date
-                    </Label>
-                    <Input
-                      id="signature-date"
-                      type="date"
-                      className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                      value={formData.date}
-                      onChange={(e) => handleChange("date", e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
+              <AdditionalInfo formData={formData} handleChange={handleChange} />
             )}
           </motion.div>
         </AnimatePresence>
@@ -623,7 +199,7 @@ export default function LandlordReferenceForm() {
           <Button
             type="button"
             onClick={goToPreviousStep}
-            disabled={currentStep === 1}
+            disabled={currentStep === 1 || isCreatingLandlordReference}
             variant="outline"
             className="flex-1 h-12 rounded-md border-[#dc0a3c] text-[#dc0a3c] bg-white hover:bg-gray-50 hover:text-[#dc0a3c] disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 transition-colors"
           >
@@ -635,6 +211,7 @@ export default function LandlordReferenceForm() {
               type="button"
               onClick={goToNextStep}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
+              loading={isCreatingLandlordReference}
             >
               Next
             </Button>
@@ -642,6 +219,7 @@ export default function LandlordReferenceForm() {
             <Button
               type="submit"
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
+              loading={isCreatingLandlordReference}
             >
               Submit
             </Button>

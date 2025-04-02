@@ -1,4 +1,4 @@
-import LandlordReferenceForm from "./landlord-reference-form"
+import LandlordReferenceForm from "@/app/landlord/landlord-reference-form"
 
 export default function LandlordReference() {
   return (

@@ -1,4 +1,4 @@
-import GuarantorForm from "./guarantor-form"
+import GuarantorForm from "@/app/guarantor/guarantor-form"
 
 export default function Home() {
   return (
