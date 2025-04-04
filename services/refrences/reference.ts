@@ -22,7 +22,7 @@ export const createGuarantorReference = async (applicationId: string, data: any)
 
 
 export const createEmployeeReference = async (applicationId: string, data: any) => {
-    const response = await apiFormData.post(URL + referenceURL.employeeReference.replace(":applicationId", applicationId), data)
+    const response = await api.post(URL + referenceURL.employeeReference.replace(":applicationId", applicationId), data)
     return response.data
 }
 

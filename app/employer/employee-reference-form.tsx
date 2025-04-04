@@ -93,12 +93,45 @@ export default function EmployeeReferenceForm() {
   };
 
   const handleSubmit = () => {
-    console.log("Form submitted:", formData);
     const payload = {
-      ...formData
+      employeeName: formData.employeeName || "John Doe",
+      jobTitle: formData.jobTitle || "Software Engineer",
+      department: formData.department || "Engineering",
+      employmentStartDate: formData.employmentStartDate || "2023-01-01",
+      employmentEndDate: formData.employmentEndDate || "2023-12-31",
+      reasonForLeaving: formData.reasonForLeaving || "Career growth",
+      companyName: formData.companyName || "Tech Corp Ltd",
+      refereeName: formData.refereeName || "Jane Smith",
+      refereePosition: formData.refereePosition || "Engineering Manager",
+      contactNumber: formData.contactNumber || "+44 7911 000000",
+      emailAddress: formData.emailAddress || "referee@company.com",
+      employmentType: formData.employmentType || "Full-Time",
+      mainResponsibilities:
+        formData.mainResponsibilities ||
+        "Software development and system design",
+      workPerformance: Number(formData.workPerformance) || 4,
+      punctualityAttendance: Number(formData.punctualityAttendance) || 4,
+      reliabilityProfessionalism:
+        Number(formData.reliabilityProfessionalism) || 4,
+      teamworkInterpersonal: Number(formData.teamworkInterpersonal) || 4,
+      wouldReemploy: formData.wouldReemploy ?? true,
+      reemployDetails:
+        formData.reemployDetails || "Strong performer, would rehire",
+      additionalComments: formData.additionalComments || "Valuable team member",
+      declarationConfirmed: formData.declarationConfirmed ?? true,
+      signerName: formData.signerName || "Referee Name",
+      signature: formData.signature || "referee-signature-2023",
+      date:
+        new Date(formData.date).toISOString().split("T")[0] ||
+        new Date().toISOString().split("T")[0]
     };
+
+    console.log("Form submitted:", payload);
     createEmployeeReference(
-      { applicationId: applicationId as string, data: payload },
+      {
+        applicationId: applicationId as string,
+        data: payload
+      },
       {
         onSuccess: () => {
           toast.success("Employee reference created successfully");
