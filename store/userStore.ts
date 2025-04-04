@@ -1,3 +1,5 @@
+'use client'
+
 import { IUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
 import { create } from 'zustand';

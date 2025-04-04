@@ -10,7 +10,7 @@ const referenceURL = {
 }
 
 export const createLandlordReference = async (applicationId: string, data: any) => {
-    const response = await apiFormData.post(URL + referenceURL.landlordReference.replace(":applicationId", applicationId), data)
+    const response = await api.post(URL + referenceURL.landlordReference.replace(":applicationId", applicationId), data)
     return response.data
 }
 

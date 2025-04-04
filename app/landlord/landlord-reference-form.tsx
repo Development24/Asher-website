@@ -82,34 +82,29 @@ export default function LandlordReferenceForm() {
 
   const handleSubmit = () => {
     // Group data into required categories
-    const tenantHistory = {
+    const tenancyHistory = {
       tenantName: formData.tenantName,
       currentAddress: formData.currentAddress,
-      monthlyRent: formData.monthlyRent,
-      rentalStartDate: formData.rentalStartDate,
-      rentalEndDate: formData.rentalEndDate,
-      reasonForLeaving: formData.reasonForLeaving,
+      rentAmount: formData.monthlyRent,
+      // monthlyRent: formData.monthlyRent,
+      rentStartDate: formData.rentalStartDate,
+      rentEndDate: formData.rentalEndDate,
+      reasonForLeaving: formData.reasonForLeaving
     };
 
     const externalLandlord = {
-      landlordName: formData.landlordName,
+      name: formData.landlordName,
       contactNumber: formData.contactNumber,
-      emailAddress: formData.emailAddress,
+      emailAddress: formData.emailAddress
     };
 
-    const tenantConduct = {
+    const conduct = {
       rentOnTime: formData.rentOnTime,
-      rentOnTimeDetails: formData.rentOnTimeDetails,
       rentArrears: formData.rentArrears,
-      rentArrearsDetails: formData.rentArrearsDetails,
       propertyCondition: formData.propertyCondition,
       propertyConditionDetails: formData.propertyConditionDetails,
-      complaints: formData.complaints,
-      complaintsDetails: formData.complaintsDetails,
       endCondition: formData.endCondition,
-      endConditionDetails: formData.endConditionDetails,
-      rentAgain: formData.rentAgain,
-      rentAgainDetails: formData.rentAgainDetails,
+      rentAgain: formData.rentAgain
     };
 
     // Filter out empty values from each category
@@ -120,10 +115,11 @@ export default function LandlordReferenceForm() {
     };
 
     const payload = {
-      ...formData,
-      tenantHistory: cleanObject(tenantHistory),
+      // applicationId: applicationId as string,
+      status: "COMPLETED",
+      tenancyHistory: cleanObject(tenancyHistory),
       externalLandlord: cleanObject(externalLandlord),
-      tenantConduct: cleanObject(tenantConduct),
+      conduct: cleanObject(conduct),
       additionalComments: formData.additionalComments,
       signerName: formData.signerName,
       signature: formData.signature
@@ -254,7 +250,7 @@ export default function LandlordReferenceForm() {
               <LandlordInfo formData={formData} handleChange={handleChange} />
             )}
 
-            {/* Step 3: Tenant Conduct & Payment History */}
+            {/* Step 3: Tenant Conduct */}
             {currentStep === 3 && (
               <TenantConduct formData={formData} handleChange={handleChange} />
             )}
