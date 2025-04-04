@@ -6,6 +6,7 @@ export const useGetUserChats = (chatRoomId: string) => {
         queryKey: ['chatsRoom', chatRoomId],
         queryFn: () => getUserChats(chatRoomId),
         enabled: !!chatRoomId,
+        retry: false,
     });
 };
 
@@ -13,8 +14,9 @@ export const useGetUserRooms = () => {
     return useQuery({
         queryKey: ['chats'],
         queryFn: getUserRooms,
-        refetchInterval: 10000,
-        refetchIntervalInBackground: true,
+        // refetchInterval: 10000,
+        // refetchIntervalInBackground: true,
+        retry: false,
     });
 };
 
