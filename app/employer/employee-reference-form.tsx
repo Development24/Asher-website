@@ -1,23 +1,34 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useCreateEmployeeReference } from "@/services/refrences/referenceFn"
-import { AnimatePresence, motion } from "framer-motion"
-import { CheckCircle2, ChevronLeft } from "lucide-react"
-import { useParams } from "next/navigation"
-import { useState } from "react"
-import Decleration from "./steps/decleration"
-import EmployeeDetails from "./steps/employee-details"
-import EmployeeInfo from "./steps/employee-info"
-import EmployerInfo from "./steps/employer-info"
-import Performance from "./steps/performance"
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useCreateEmployeeReference } from "@/services/refrences/referenceFn";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, ChevronLeft } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import Decleration from "./steps/decleration";
+import EmployeeDetails from "./steps/employee-details";
+import EmployeeInfo from "./steps/employee-info";
+import EmployerInfo from "./steps/employer-info";
+import Performance from "./steps/performance";
+import { toast } from "sonner";
+const steps = [
+  { id: 1, name: "Employee Information" },
+  { id: 2, name: "Employer Information" },
+  { id: 3, name: "Employment Details" },
+  { id: 4, name: "Performance & Comments" },
+  { id: 5, name: "Declaration & Signature" }
+];
 export default function EmployeeReferenceForm() {
-  const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 5
-  const { id: applicationId } = useParams()
-  const { mutate: createEmployeeReference, isPending: isCreatingEmployeeReference } = useCreateEmployeeReference()
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
+  const { id: applicationId } = useParams();
+  const {
+    mutate: createEmployeeReference,
+    isPending: isCreatingEmployeeReference
+  } = useCreateEmployeeReference();
   const [formData, setFormData] = useState({
     // Employee Information
     employeeName: "",
@@ -57,57 +68,63 @@ export default function EmployeeReferenceForm() {
     // Signature
     signerName: "",
     signature: "",
-    date: "",
-  })
+    date: ""
+  });
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
-    }))
-  }
+      [field]: value
+    }));
+  };
 
   const goToNextStep = () => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }
+  };
 
   const goToPreviousStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }
+  };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
+  const handleSubmit = () => {
+    console.log("Form submitted:", formData);
     const payload = {
-      applicationId: applicationId as string,
-      data: formData
-    }
-    createEmployeeReference(payload)
-  }
-
-  const steps = [
-    { id: 1, name: "Employee Information" },
-    { id: 2, name: "Employer Information" },
-    { id: 3, name: "Employment Details" },
-    { id: 4, name: "Performance & Comments" },
-    { id: 5, name: "Declaration & Signature" },
-  ]
+      ...formData
+    };
+    createEmployeeReference(
+      { applicationId: applicationId as string, data: payload },
+      {
+        onSuccess: () => {
+          toast.success("Employee reference created successfully");
+          router.replace("/");
+        },
+        onError: () => {
+          toast.error("Failed to create employee reference");
+        }
+      }
+    );
+  };
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="p-6 bg-gray-50 border-b">
         <div className="flex items-center mb-6">
-          <button onClick={() => {}} className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+          <button
+            onClick={() => {}}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
             <ChevronLeft className="h-4 w-4 mr-1" />
             <span className="text-sm font-medium">Back</span>
           </button>
-          <h1 className="text-xl font-bold text-center flex-1 mr-8">Employee Reference Form</h1>
+          <h1 className="text-xl font-bold text-center flex-1 mr-8">
+            Employee Reference Form
+          </h1>
         </div>
 
         {/* Progress Bar */}
@@ -131,7 +148,10 @@ export default function EmployeeReferenceForm() {
         {/* Step Indicators */}
         <div className="flex justify-between mt-4 overflow-x-auto pb-2">
           {steps.map((step) => (
-            <div key={step.id} className="flex flex-col items-center min-w-[80px]">
+            <div
+              key={step.id}
+              className="flex flex-col items-center min-w-[80px]"
+            >
               <div
                 className={`w-8 h-8 flex items-center justify-center rounded-full border-2 transition-colors ${
                   currentStep >= step.id
@@ -157,11 +177,15 @@ export default function EmployeeReferenceForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-8">
+      <div className="p-8">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800">{steps[currentStep - 1].name}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {steps[currentStep - 1].name}
+          </h2>
           <div className="flex items-center">
-            <span className="mr-2 text-sm font-medium text-gray-600">Today's Date</span>
+            <span className="mr-2 text-sm font-medium text-gray-600">
+              Today's Date
+            </span>
             <Input
               type="date"
               className="w-40"
@@ -192,7 +216,10 @@ export default function EmployeeReferenceForm() {
 
             {/* Step 3: Employment Details */}
             {currentStep === 3 && (
-              <EmployeeDetails formData={formData} handleChange={handleChange} />
+              <EmployeeDetails
+                formData={formData}
+                handleChange={handleChange}
+              />
             )}
 
             {/* Step 4: Performance & Comments */}
@@ -209,7 +236,6 @@ export default function EmployeeReferenceForm() {
 
         <div className="flex justify-between mt-12 gap-4">
           <Button
-            type="button"
             onClick={goToPreviousStep}
             disabled={currentStep === 1 || isCreatingEmployeeReference}
             variant="outline"
@@ -220,7 +246,6 @@ export default function EmployeeReferenceForm() {
 
           {currentStep < totalSteps ? (
             <Button
-              type="button"
               onClick={goToNextStep}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
               loading={isCreatingEmployeeReference}
@@ -229,16 +254,16 @@ export default function EmployeeReferenceForm() {
             </Button>
           ) : (
             <Button
-              type="submit"
+              onClick={handleSubmit}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
               loading={isCreatingEmployeeReference}
+              disabled={!formData.declarationConfirmed}
             >
               Submit
             </Button>
           )}
         </div>
-      </form>
+      </div>
     </div>
-  )
+  );
 }
-

@@ -1,5 +1,14 @@
 import * as z from "zod"
 
+const nextOfKinSchema = z.object({
+  firstName: z.string().min(2, "First name is required"),
+  middleName: z.string().optional(),
+  lastName: z.string().min(2, "Last name is required"),
+  relationship: z.string().min(2, "Relationship is required"),
+  email: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+})
+
 export const personalDetailsSchema = z.object({
   title: z.enum(["Mr.", "Mrs.", "Miss", "Dr."]),
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -21,14 +30,7 @@ export const personalDetailsSchema = z.object({
   expiryDate: z.string().refine((date) => {
     return new Date(date) > new Date();
   }, "Expiry date must be in the future"),
-  nextOfKin: z.array(z.object({
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    middleName: z.string().optional(),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
-    relationship: z.string().min(2, "Relationship is required"),
-    email: z.string().email("Invalid email address"),
-    phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-  })),
+  nextOfKin: z.array(nextOfKinSchema).min(1, "At least one next of kin is required"),
 })
 
 export type PersonalDetailsFormValues = z.infer<typeof personalDetailsSchema> 

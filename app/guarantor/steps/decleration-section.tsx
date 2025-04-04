@@ -4,33 +4,35 @@ import React from "react";
 interface DeclerationSectionProps {
   formData: any;
   handleFormChange: (field: string, value: any) => void;
+  applicationInfo: any;
 }
 
 const DeclerationSection = ({
   formData,
-  handleFormChange
+  handleFormChange,
+  applicationInfo
 }: DeclerationSectionProps) => {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-gray-50 p-4 rounded-lg">
+      <div className="flex flex-wrap bg-gray-50 p-4 rounded-lg gap-2 items-center">
         <span className="whitespace-nowrap font-medium">I,</span>
-        <Input
-          className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-          placeholder="Guarantor's name"
-          value={`${formData.title} ${formData.firstName} ${formData.middleName} ${formData.lastName}`}
-          onChange={(e) => handleFormChange("guarantorName", e.target.value)}
-        />
+        <div className="inline-block px-4 py-2 bg-white rounded-lg border border-gray-300 shadow-sm min-w-[200px]">
+          <span className="text-gray-900">
+            {`${formData.title} ${formData.firstName} ${formData.middleName} ${formData.lastName}`.trim()}
+          </span>
+        </div>
         <span className="whitespace-nowrap font-medium">
           agree to act as a guarantor for
         </span>
-        <Input
-          className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-          placeholder="Tenant's name"
-          value={formData.tenantName}
-          onChange={(e) => handleFormChange("tenantName", e.target.value)}
-        />
-        <span className="whitespace-nowrap font-medium">
-          regarding their tenancy at [Property Address].
+        <div className="inline-block px-4 py-2 bg-white rounded-lg border border-gray-300 shadow-sm min-w-[200px]">
+          <span className="text-gray-900">
+            {`${applicationInfo?.personalDetails?.title} ${applicationInfo?.personalDetails?.firstName} ${applicationInfo?.personalDetails?.middleName} ${applicationInfo?.personalDetails?.lastName}`.trim()}
+          </span>
+        </div>
+        <span className="text-balance text-gray-900">
+          regarding their tenancy at{" "}
+          {`${applicationInfo?.properties?.location} ${applicationInfo?.properties?.city} ${applicationInfo?.properties?.country}`.trim()}
+          .
         </span>
       </div>
 

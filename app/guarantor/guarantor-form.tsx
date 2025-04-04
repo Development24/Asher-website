@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { uploadSingleFile } from "@/services/general/general";
 import { useCreateGuarantorReference } from "@/services/refrences/referenceFn";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ChevronLeft } from "lucide-react";
@@ -13,8 +14,24 @@ import { DocumentUploadStep } from "./steps/document-upload-step";
 import { EmploymentStep } from "./steps/employment-step";
 import { PersonalInfoStep } from "./steps/personal-info-step";
 import TenantInfo from "./steps/tenant-info";
+import SkeletonLoader from "./SkeletonLoader";
 
-export default function GuarantorForm() {
+interface GuarantorFormProps {
+  applicationData: any;
+  loading: boolean;
+}
+
+interface UploadResponse {
+  documentName: string;
+  type: string;
+  size: string;
+  documentUrl: string;
+}
+
+export default function GuarantorForm({
+  applicationData,
+  loading
+}: GuarantorFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
   const [employmentType, setEmploymentType] = useState("");
@@ -31,7 +48,7 @@ export default function GuarantorForm() {
     mutate: createGuarantorReference,
     isPending: isCreatingGuarantorReference
   } = useCreateGuarantorReference();
-
+  const { mutateAsync: uploadFile, isPending: isUploadingFile } = uploadSingleFile();
   const idInputRef = useRef<HTMLInputElement>(null);
   const addressProofInputRef = useRef<HTMLInputElement>(null);
   const incomeProofInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +78,7 @@ export default function GuarantorForm() {
     employerEmail: "",
     businessName: "",
     businessNature: "",
-    businessYears: "",
+    yearsInBusiness: "",
     annualIncome: "",
     annualIncomeSelf: "",
     businessAddress: "",
@@ -69,7 +86,7 @@ export default function GuarantorForm() {
     accountantContact: "",
     utrNumber: "",
     freelanceType: "",
-    freelanceYears: "",
+    yearsFreelancing: "",
     freelanceMonthlyIncome: "",
     freelancePortfolioWebsite: "",
     freelanceMajorClients: "",
@@ -90,9 +107,9 @@ export default function GuarantorForm() {
     utrNumberSole: "",
     guarantorName: "",
     guarantorSignature: "",
-    guarantorDate: "",
+    guarantorSignedAt: "",
     tenantName: "",
-    declaration: false,
+    signedByGuarantor: false,
     employmentStartDate: "",
     monthlyIncome: "",
     portfolioWebsite: "",
@@ -185,7 +202,7 @@ export default function GuarantorForm() {
   };
 
   // Process the file
-  const handleFile = (file: File, docType: string) => {
+  const handleFile = async (file: File, docType: string) => {
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert("File is too large. Maximum size is 5MB.");
@@ -204,23 +221,61 @@ export default function GuarantorForm() {
 
     // Update state based on document type
     if (docType === "id") {
-      setDocuments((prev) => ({ ...prev, id: { file, url: fileURL } as any }));
-    } else if (docType === "addressProof") {
+      const res = await uploadFile(file);
+      const uploadResponse: UploadResponse = res?.url;
+      console.log(res);
       setDocuments((prev) => ({
         ...prev,
-        addressProof: { file, url: fileURL } as any
+        id: {
+          file,
+          url: uploadResponse?.documentUrl,
+          type: uploadResponse?.type,
+          size: uploadResponse?.size
+        } as any
+      }));
+    } else if (docType === "addressProof") {
+      const res = await uploadFile(file);
+      const uploadResponse: UploadResponse = res?.url;
+      console.log(res);
+      setDocuments((prev) => ({
+        ...prev,
+        addressProof: {
+          file,
+          url: uploadResponse?.documentUrl,
+          type: uploadResponse?.type,
+          size: uploadResponse?.size
+        } as any
       }));
     } else if (docType === "incomeProof") {
+      const res = await uploadFile(file);
+      const uploadResponse: UploadResponse = res?.url;
+      console.log(res);
       setDocuments((prev) => ({
         ...prev,
-        incomeProof: { file, url: fileURL } as any
+        incomeProof: {
+          file,
+          url: uploadResponse?.documentUrl,
+          type: uploadResponse?.type,
+          size: uploadResponse?.size
+        } as any
       }));
     } else if (docType === "additionalDocs") {
+      const res = await uploadFile(file);
+      const uploadResponse: UploadResponse = res?.url;
+      console.log(res);
       setDocuments(
         (prev) =>
           ({
             ...prev,
-            additionalDocs: [...prev.additionalDocs, { file, url: fileURL }]
+            additionalDocs: [
+              ...prev.additionalDocs,
+              {
+                file,
+                url: uploadResponse?.documentUrl,
+                type: uploadResponse?.type,
+                size: uploadResponse?.size
+              } as any
+            ]
           } as any)
       );
     }
@@ -276,25 +331,108 @@ export default function GuarantorForm() {
     }
   };
 
+  // Define employment-related fields
+  const employmentFields = [
+    'employmentType',
+    'employmentStartDate',
+    'monthlyIncome',
+    'portfolioWebsite',
+    'majorClients',
+    'jobTitle',
+    'businessRegistrationNumber',
+    'businessAddress',
+    'businessName',
+    'businessNature',
+    'yearsInBusiness',
+    'annualIncome',
+    'annualIncomeSelf',
+    'businessAddressSole',
+    'businessNameSole',
+    'businessNatureSole',
+    'businessYearsSole',
+    'annualIncomeSole',
+    'utrNumberSole',
+    'freelanceType',
+    'yearsFreelancing',
+    'freelanceMonthlyIncome',
+    'freelancePortfolioWebsite',
+    'freelanceMajorClients',
+    'freelanceUtrNumber',
+    'companyName',
+    'companyNumber',
+    'position',
+    'ownershipPercentage',
+    'directorIncome',
+    'companyFounded',
+    'companyAddress',
+    'employerName',
+    'employerAddress',
+    'employerPhone',
+    'employerEmail'
+  ];
   const handleSubmit = () => {
     console.log("Form submission started");
     console.log("Form Data:", formData);
     console.log("Documents:", documents);
-    const tenancyStartDate = new Date(
-      `${formData.tenancyStartYear}-${formData.tenancyStartMonth}-${formData.tenancyStartDay}`
-    );
+
+
     const dateOfBirth = new Date(
       `${formData.dateOfBirthYear}-${formData.dateOfBirthMonth}-${formData.dateOfBirthDay}`
     );
+    // filter form data that has value
+    const filteredFormData = Object.entries(formData)
+      .filter(([key, value]) => value !== "" && !employmentFields.includes(key))
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+    const cleanDocumentData = Object.entries(documents).reduce(
+      (acc: any[], [key, value]: [string, any]) => {
+        // Handle additionalDocs array
+        if (key === "additionalDocs" && Array.isArray(value)) {
+          value.forEach(doc => {
+            if (doc?.url) {
+              acc.push({
+                documentUrl: doc.url,
+                type: doc.type,
+                size: doc.size,
+                documentName: doc.documentName || "Additional Document",
+                idType: idType?.toUpperCase() || "PASSPORT",
+                docType: "ID"
+              });
+            }
+          });
+        } 
+        // Handle single document objects
+        else if (value && typeof value === "object" && value.url) {
+          acc.push({
+            documentUrl: value.url,
+            type: value.type,
+            size: value.size,
+            documentName: key,
+            idType: idType?.toUpperCase() || "PASSPORT",
+            docType: "ID"
+          });
+        }
+        return acc;
+      },
+      [] // Start with an empty array instead of an object
+    );
+
+    // Create guarantorEmployment object with only non-empty employment fields
+    const guarantorEmployment = Object.entries(formData)
+      .filter(([key, value]) => value !== "" && employmentFields.includes(key))
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    const {dateOfBirthDay, dateOfBirthMonth, dateOfBirthYear, additionalDocs, ...rest} = filteredFormData as any
     const payload = {
-      applicationId: applicationId as string,
-      data: {
-        ...formData,
-        tenancyStartDate: tenancyStartDate.toISOString(),
-        dateOfBirth: dateOfBirth.toISOString()
-      }
+      ...rest,
+      guarantorEmployment,
+      documents: cleanDocumentData,
+      // tenancyStartDate: new Date(applicationData?.createdAt).toISOString(),
+      dateOfBirth: dateOfBirth.toISOString(),
+      // applicationId: applicationId as string
     };
-    createGuarantorReference(payload);
+    console.log("Payload:", payload);
+
+    createGuarantorReference({ applicationId: applicationId as string, data: payload });
   };
 
   return (
@@ -380,74 +518,80 @@ export default function GuarantorForm() {
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-8"
-          >
-            {currentStep === 1 && (
-              <TenantInfo
-                formData={formData}
-                handleFormChange={handleFormChange}
-              />
-            )}
+        {loading ? (
+          <SkeletonLoader />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {currentStep === 1 && (
+                <TenantInfo
+                  formData={formData}
+                  applicationInfo={applicationData}
+                  handleFormChange={handleFormChange}
+                />
+              )}
 
-            {currentStep === 2 && (
-              <PersonalInfoStep
-                formData={formData}
-                handleFormChange={handleFormChange}
-              />
-            )}
+              {currentStep === 2 && (
+                <PersonalInfoStep
+                  formData={formData}
+                  handleFormChange={handleFormChange}
+                />
+              )}
 
-            {currentStep === 3 && (
-              <EmploymentStep
-                formData={formData}
-                handleFormChange={handleFormChange}
-                employmentType={employmentType}
-                setEmploymentType={setEmploymentType}
-              />
-            )}
+              {currentStep === 3 && (
+                <EmploymentStep
+                  formData={formData}
+                  handleFormChange={handleFormChange}
+                  employmentType={employmentType}
+                  setEmploymentType={setEmploymentType}
+                />
+              )}
 
-            {currentStep === 4 && (
-              <DocumentUploadStep
-                documents={documents}
-                idType={idType}
-                setIdType={setIdType}
-                dragActive={dragActive}
-                handleDrag={handleDrag}
-                handleDrop={handleDrop}
-                employmentType={employmentType}
-                getIncomeProofLabel={getIncomeProofLabel}
-                getAdditionalDocRequirements={getAdditionalDocRequirements}
-                idInputRef={idInputRef}
-                addressProofInputRef={addressProofInputRef}
-                incomeProofInputRef={incomeProofInputRef}
-                additionalDocsInputRef={additionalDocsInputRef}
-                removeDocument={removeDocument}
-                handleFileUpload={handleFileUpload}
-              />
-            )}
+              {currentStep === 4 && (
+                <DocumentUploadStep
+                  documents={documents}
+                  idType={idType}
+                  setIdType={setIdType}
+                  dragActive={dragActive}
+                  handleDrag={handleDrag}
+                  handleDrop={handleDrop}
+                  employmentType={employmentType}
+                  getIncomeProofLabel={getIncomeProofLabel}
+                  getAdditionalDocRequirements={getAdditionalDocRequirements}
+                  idInputRef={idInputRef}
+                  addressProofInputRef={addressProofInputRef}
+                  incomeProofInputRef={incomeProofInputRef}
+                  additionalDocsInputRef={additionalDocsInputRef}
+                  removeDocument={removeDocument}
+                  handleFileUpload={handleFileUpload}
+                />
+              )}
 
-            {currentStep === 5 && (
-              <DeclerationSection
-                formData={formData}
-                handleFormChange={handleFormChange}
-              />
-            )}
+              {currentStep === 5 && (
+                <DeclerationSection
+                  formData={formData}
+                  handleFormChange={handleFormChange}
+                  applicationInfo={applicationData}
+                />
+              )}
 
-            {currentStep === 6 && (
-              <DeclerationFinal
-                formData={formData}
-                handleFormChange={handleFormChange}
-                handleCheckboxChange={handleCheckboxChange}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+              {currentStep === 6 && (
+                <DeclerationFinal
+                  formData={formData}
+                  handleFormChange={handleFormChange}
+                  handleCheckboxChange={handleCheckboxChange}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
 
         <div className="flex justify-between mt-12 gap-4">
           <Button
@@ -464,6 +608,7 @@ export default function GuarantorForm() {
               onClick={goToNextStep}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
               loading={isCreatingGuarantorReference}
+              disabled={isUploadingFile}
             >
               Next
             </Button>
@@ -472,6 +617,7 @@ export default function GuarantorForm() {
               onClick={handleSubmit}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
               loading={isCreatingGuarantorReference}
+              disabled={!formData.signedByGuarantor}
             >
               Submit
             </Button>

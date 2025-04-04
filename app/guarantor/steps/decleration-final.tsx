@@ -19,12 +19,12 @@ const DeclerationFinal = ({
         <Checkbox
           id="declaration"
           className="h-5 w-5 border-gray-300 text-[#dc0a3c] rounded focus:ring-[#dc0a3c]"
-          checked={formData.declaration}
+          checked={formData.signedByGuarantor}
           onCheckedChange={(value) =>
-            handleCheckboxChange("declaration", value)
+            handleCheckboxChange("signedByGuarantor", value)
           }
         />
-        <Label htmlFor="declaration" className="font-medium text-gray-700">
+        <Label htmlFor="signedByGuarantor" className="font-medium text-gray-700">
           I confirm that I have read and understood this agreement. I
           acknowledge my legal responsibility as a guarantor.
         </Label>
@@ -78,10 +78,10 @@ const DeclerationFinal = ({
               id="guarantor-date"
               type="date"
               className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-              value={formData.guarantorDate}
+              value={formData.guarantorSignedAt}
               defaultValue={new Date().toISOString().split("T")[0]}
               onChange={(e) =>
-                handleFormChange("guarantorDate", e.target.value)
+                handleFormChange("guarantorSignedAt", e.target.value)
               }
             />
           </div>

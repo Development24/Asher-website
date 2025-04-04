@@ -1,5 +1,6 @@
 "use client";
 
+import DatePicker from "@/app/components/DatePicker";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,22 +18,19 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useStartApplication } from "@/services/application/applicationFn";
+import { useReuseAbleStore } from "@/store/reuseAble";
 import { useApplicationFormStore } from "@/store/useApplicationFormStore";
+import { ApplicationData } from "@/types/applicationInterface";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2 } from "lucide-react";
+import { useParams, useSearchParams } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {
   personalDetailsSchema,
   type PersonalDetailsFormValues
 } from "./schemas/personal-details-schema";
-import { toast } from "sonner";
-import { updateDate } from "@/lib/utils";
-import DatePicker from "@/app/components/DatePicker";
-import { useStartApplication } from "@/services/application/applicationFn";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { IApplicationInterface } from "@/types/application-form";
-import { Plus, Trash2 } from "lucide-react";
-import { ApplicationData } from "@/types/applicationInterface";
 interface PersonalDetailsFormProps {
   params: {
     id: string;
@@ -53,9 +51,10 @@ export function PersonalDetailsForm({
   const { formData, updateFormData } = useApplicationFormStore();
   const { id } = useParams();
   const searchParams = useSearchParams();
-  const applicationInvitedId = searchParams.get("applicationId");
-  console.log(id);
-  
+  // const applicationInvitedId = searchParams.get("applicationId");
+  // console.log(id);
+  const applicationInvitedId = useReuseAbleStore((state) => state.applicationInvitedId);
+
   const { mutate: startApplication, isPending } = useStartApplication();
   const form = useForm<PersonalDetailsFormValues>({
     resolver: zodResolver(personalDetailsSchema),
@@ -95,10 +94,18 @@ export function PersonalDetailsForm({
       expiryDate: applicationData?.personalDetails?.expiryDate
         ? applicationData?.personalDetails?.expiryDate.split("T")[0]
         : "",
-      nextOfKin: applicationData?.personalDetails?.nextOfKin
+      nextOfKin: applicationData?.personalDetails?.nextOfKin?.length > 0 ? applicationData?.personalDetails?.nextOfKin : [{
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        relationship: "",
+        email: "",
+        phoneNumber: ""
+      }]
     }
   });
 
+  const { setApplicationId } = useReuseAbleStore();
   console.log(form.formState.errors);
   console.log(isStepCompleted);
 
@@ -130,22 +137,23 @@ export function PersonalDetailsForm({
         data: payload
       },
       {
-        onSuccess: (data) => {
+        onSuccess: (data: any) => {
           // updateFormData({
           //   ...formData,
           //   applicationId: data?.application?.id
           // });
+          setApplicationId(data?.application?.id);
           onNext();
         },
         onError: (err: any) => {
           console.log(err?.response?.data?.message);
-          if (
-            err?.response?.data?.message.includes(
-              "You have already applied for this property in the last 3 months"
-            )
-          ) {
-            onNext();
-          }
+          // if (
+          //   err?.response?.data?.message.includes(
+          //     "You have already applied for this property in the last 3 months"
+          //   )
+          // ) {
+          //   onNext();
+          // }
           toast.error(err?.response?.data?.message);
         }
       }
@@ -154,7 +162,13 @@ export function PersonalDetailsForm({
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "nextOfKin"
+    name: "nextOfKin",
+    rules: {
+      minLength: {
+        value: 1,
+        message: "At least one next of kin is required"
+      }
+    }
   });
 
   return (
@@ -402,6 +416,7 @@ export function PersonalDetailsForm({
           <div className="space-y-6 mt-6">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Next of Kin Information</h3>
+              {fields.length < 3 && (
               <Button
                 type="button"
                 variant="outline"
@@ -418,14 +433,16 @@ export function PersonalDetailsForm({
                 }
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Next of Kin
+                Add Another Next of Kin
               </Button>
+            )}
             </div>
 
             {fields.map((field, index) => (
               <div key={field.id} className="p-4 border rounded-lg space-y-4">
                 <div className="flex justify-between items-center">
                   <h4 className="font-medium">Next of Kin #{index + 1}</h4>
+                  {fields.length > 1 && (
                   <Button
                     type="button"
                     variant="ghost"
@@ -434,6 +451,7 @@ export function PersonalDetailsForm({
                   >
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
+                )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">

@@ -1,22 +1,27 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useCreateLandlordReference } from "@/services/refrences/referenceFn"
-import { AnimatePresence, motion } from "framer-motion"
-import { CheckCircle2, ChevronLeft } from "lucide-react"
-import { useParams } from "next/navigation"
-import { useState } from "react"
-import AdditionalInfo from "./steps/addidtional-info"
-import LandlordInfo from "./steps/landlord-info"
-import TenantConduct from "./steps/tenant-conduct"
-import TenantInfo from "./steps/tenant-info"
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useCreateLandlordReference } from "@/services/refrences/referenceFn";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, ChevronLeft } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import AdditionalInfo from "./steps/addidtional-info";
+import LandlordInfo from "./steps/landlord-info";
+import TenantConduct from "./steps/tenant-conduct";
+import TenantInfo from "./steps/tenant-info";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 export default function LandlordReferenceForm() {
-  const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 4
-  const { id: applicationId } = useParams()
-  const { mutate: createLandlordReference, isPending: isCreatingLandlordReference } = useCreateLandlordReference()
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+  const { id: applicationId } = useParams();
+  const {
+    mutate: createLandlordReference,
+    isPending: isCreatingLandlordReference
+  } = useCreateLandlordReference();
   const [formData, setFormData] = useState({
     // Tenant Information
     tenantName: "",
@@ -51,56 +56,115 @@ export default function LandlordReferenceForm() {
     // Signature
     signerName: "",
     signature: "",
-    date: "",
-  })
+    date: ""
+  });
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
-    }))
-  }
+      [field]: value
+    }));
+  };
 
   const goToNextStep = () => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }
+  };
 
   const goToPreviousStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }
+  };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
+  const handleSubmit = () => {
+    // Group data into required categories
+    const tenantHistory = {
+      tenantName: formData.tenantName,
+      currentAddress: formData.currentAddress,
+      monthlyRent: formData.monthlyRent,
+      rentalStartDate: formData.rentalStartDate,
+      rentalEndDate: formData.rentalEndDate,
+      reasonForLeaving: formData.reasonForLeaving,
+    };
+
+    const externalLandlord = {
+      landlordName: formData.landlordName,
+      contactNumber: formData.contactNumber,
+      emailAddress: formData.emailAddress,
+    };
+
+    const tenantConduct = {
+      rentOnTime: formData.rentOnTime,
+      rentOnTimeDetails: formData.rentOnTimeDetails,
+      rentArrears: formData.rentArrears,
+      rentArrearsDetails: formData.rentArrearsDetails,
+      propertyCondition: formData.propertyCondition,
+      propertyConditionDetails: formData.propertyConditionDetails,
+      complaints: formData.complaints,
+      complaintsDetails: formData.complaintsDetails,
+      endCondition: formData.endCondition,
+      endConditionDetails: formData.endConditionDetails,
+      rentAgain: formData.rentAgain,
+      rentAgainDetails: formData.rentAgainDetails,
+    };
+
+    // Filter out empty values from each category
+    const cleanObject = (obj: Record<string, any>) => {
+      return Object.entries(obj)
+        .filter(([_, value]) => value !== "" && value !== null)
+        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    };
+
     const payload = {
-      applicationId: applicationId as string,
-      data: formData
-    }
-    createLandlordReference(payload)
-  }
+      ...formData,
+      tenantHistory: cleanObject(tenantHistory),
+      externalLandlord: cleanObject(externalLandlord),
+      tenantConduct: cleanObject(tenantConduct),
+      additionalComments: formData.additionalComments,
+      signerName: formData.signerName,
+      signature: formData.signature
+    };
+
+    console.log("Form submitted:", payload);
+    createLandlordReference(
+      { applicationId: applicationId as string, data: payload },
+      {
+        onSuccess: () => {
+          toast.success("Landlord reference created successfully");
+          router.replace("/");
+        },
+        onError: () => {
+          toast.error("Failed to create landlord reference");
+        }
+      }
+    );
+  };
 
   const steps = [
     { id: 1, name: "Tenant Information" },
     { id: 2, name: "Landlord Information" },
     { id: 3, name: "Tenant Conduct" },
-    { id: 4, name: "Comments & Signature" },
-  ]
+    { id: 4, name: "Comments & Signature" }
+  ];
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="p-6 bg-gray-50 border-b">
         <div className="flex items-center mb-6">
-          <button onClick={() => {}} className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+          <button
+            onClick={() => {}}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
             <ChevronLeft className="h-4 w-4 mr-1" />
             <span className="text-sm font-medium">Back</span>
           </button>
-          <h1 className="text-xl font-bold text-center flex-1 mr-8">Landlord Reference Form</h1>
+          <h1 className="text-xl font-bold text-center flex-1 mr-8">
+            Landlord Reference Form
+          </h1>
         </div>
 
         {/* Progress Bar */}
@@ -124,7 +188,10 @@ export default function LandlordReferenceForm() {
         {/* Step Indicators */}
         <div className="flex justify-between mt-4 overflow-x-auto pb-2">
           {steps.map((step) => (
-            <div key={step.id} className="flex flex-col items-center min-w-[80px]">
+            <div
+              key={step.id}
+              className="flex flex-col items-center min-w-[80px]"
+            >
               <div
                 className={`w-8 h-8 flex items-center justify-center rounded-full border-2 transition-colors ${
                   currentStep >= step.id
@@ -150,11 +217,15 @@ export default function LandlordReferenceForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-8">
+      <div className="p-8">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800">{steps[currentStep - 1].name}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {steps[currentStep - 1].name}
+          </h2>
           <div className="flex items-center">
-            <span className="mr-2 text-sm font-medium text-gray-600">Today's Date</span>
+            <span className="mr-2 text-sm font-medium text-gray-600">
+              Today's Date
+            </span>
             <Input
               type="date"
               className="w-40"
@@ -197,7 +268,6 @@ export default function LandlordReferenceForm() {
 
         <div className="flex justify-between mt-12 gap-4">
           <Button
-            type="button"
             onClick={goToPreviousStep}
             disabled={currentStep === 1 || isCreatingLandlordReference}
             variant="outline"
@@ -208,7 +278,6 @@ export default function LandlordReferenceForm() {
 
           {currentStep < totalSteps ? (
             <Button
-              type="button"
               onClick={goToNextStep}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
               loading={isCreatingLandlordReference}
@@ -217,7 +286,7 @@ export default function LandlordReferenceForm() {
             </Button>
           ) : (
             <Button
-              type="submit"
+              onClick={handleSubmit}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
               loading={isCreatingLandlordReference}
             >
@@ -225,8 +294,7 @@ export default function LandlordReferenceForm() {
             </Button>
           )}
         </div>
-      </form>
+      </div>
     </div>
-  )
+  );
 }
-

@@ -1,6 +1,7 @@
 export interface ApplicationData {
     id: string;
     completedSteps: string[];
+    applicationInviteId: string;
     lastStep: string;
     leaseStartDate: null | string;
     leaseEndDate: null | string;

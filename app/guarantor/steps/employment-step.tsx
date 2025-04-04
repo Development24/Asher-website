@@ -16,15 +16,15 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
   // Get income proof label based on employment type
   const getIncomeProofLabel = () => {
     switch (employmentType) {
-      case "employed":
+      case "EMPLOYED":
         return "Payslips (last 3 months)";
-      case "self-employed":
+      case "SELF_EMPLOYED":
         return "Tax Return or Accounts";
-      case "freelance":
+      case "FREELANCE":
         return "Bank Statements (last 3 months)";
-      case "director":
+      case "DIRECTOR":
         return "Company Accounts or Director's Salary";
-      case "sole-proprietor":
+      case "SOLE_PROPRIETOR":
         return "Business Accounts or Tax Return";
       default:
         return "Proof of Income";
@@ -34,13 +34,13 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
   // Get additional document requirements based on employment type
   const getAdditionalDocRequirements = () => {
     switch (employmentType) {
-      case "self-employed":
+      case "SELF_EMPLOYED":
         return "Business Registration or Tax Certificate";
-      case "freelance":
+      case "FREELANCE":
         return "Client Contracts (optional)";
-      case "director":
+      case "DIRECTOR":
         return "Certificate of Incorporation";
-      case "sole-proprietor":
+      case "SOLE_PROPRIETOR":
         return "Business License or Registration";
       default:
         return "Any Additional Supporting Documents";
@@ -55,45 +55,42 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
       </Label>
       <RadioGroup
         value={formData.employmentType}
-        onValueChange={(value) =>
-          handleFormChange("employmentType", value)
-        }
+        onValueChange={(value) => handleFormChange("employmentType", value)}
         className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
         {[
-          { value: "employed", label: "Employed" },
-          { value: "self-employed", label: "Self-employed" },
-          { value: "freelance", label: "Freelance" },
-          { value: "director", label: "Director" },
-          { value: "sole-proprietor", label: "Sole Proprietor" }
+          { value: "EMPLOYED", label: "Employed" },
+          { value: "SELF_EMPLOYED", label: "Self-employed" },
+          { value: "FREELANCE", label: "Freelance" },
+          { value: "DIRECTOR", label: "Director" },
+          { value: "SOLE_PROPRIETOR", label: "Sole Proprietor" }
         ].map((option) => (
-          <div
+          <Label
             key={option.value}
+            htmlFor={`employment-${option.value}`}
             className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer transition-all ${
               employmentType === option.value
                 ? "border-[#dc0a3c] bg-red-50"
                 : "border-gray-200 hover:border-gray-300"
             }`}
-            onClick={() => setEmploymentType(option.value)}
+            onClick={() => {
+              setEmploymentType(option.value);
+              handleFormChange("employmentType", option.value);
+            }}
           >
             <RadioGroupItem
               value={option.value}
               id={`employment-${option.value}`}
               className="text-[#dc0a3c]"
             />
-            <Label
-              htmlFor={`employment-${option.value}`}
-              className="cursor-pointer font-medium"
-            >
-              {option.label}
-            </Label>
-          </div>
+            <span className="font-medium">{option.label}</span>
+          </Label>
         ))}
       </RadioGroup>
     </div>
 
     <AnimatePresence mode="wait">
-      {employmentType === "employed" && (
+      {employmentType === "EMPLOYED" && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -235,7 +232,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "self-employed" && (
+      {employmentType === "SELF_EMPLOYED" && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -294,9 +291,9 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
                 id="business-years"
                 type="number"
                 className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                value={formData.businessYears}
+                value={formData.yearsInBusiness}
                 onChange={(e) =>
-                  handleFormChange("businessYears", e.target.value)
+                  handleFormChange("yearsInBusiness", e.target.value)
                 }
               />
             </div>
@@ -396,7 +393,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "freelance" && (
+      {employmentType === "FREELANCE" && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -436,9 +433,9 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
                 id="freelance-years"
                 type="number"
                 className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                value={formData.freelanceYears}
+                value={formData.yearsFreelancing}
                 onChange={(e) =>
-                  handleFormChange("freelanceYears", e.target.value)
+                  handleFormChange("yearsFreelancing", e.target.value)
                 }
               />
             </div>
@@ -523,7 +520,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "director" && (
+      {employmentType === "DIRECTOR" && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -666,7 +663,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "sole-proprietor" && (
+      {employmentType === "SOLE_PROPRIETOR" && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

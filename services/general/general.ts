@@ -1,10 +1,12 @@
 import { api, apiFormData } from "@/lib/config/api";
+import { useMutation } from "@tanstack/react-query";
 
 const URL = 'api/file-uploads';
 
 const fileUpload = {
   multipleBinary: 'multiple/string/file',
   singleBinary: 'single/string/file',
+  singleFile: '/single',
 };
 
 const getFileBinary = (file: File): Promise<ArrayBuffer> => {
@@ -57,9 +59,6 @@ export const uploadRawFiles = async (
   files: File | File[],
   isMultiple: boolean
 ) => {
-  const endpoint = isMultiple
-    ? fileUpload.multipleBinary
-    : fileUpload.singleBinary;
 
   let fileData: File | File[];
 
@@ -71,7 +70,7 @@ export const uploadRawFiles = async (
   }
   try {
     const response = await apiFormData.post(
-      `${URL}`,
+      `${URL}${fileUpload.singleFile}`,
       { files: fileData },
     );
     return response.data;
@@ -79,3 +78,9 @@ export const uploadRawFiles = async (
     throw new Error(error as string);
   }
 };
+
+export const uploadSingleFile = () => {
+  return useMutation({
+    mutationFn: (file: File) => uploadRawFiles(file, false),
+  });
+}

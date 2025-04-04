@@ -16,6 +16,7 @@ import { FeedbackModal } from "../../../components/modals/feedback-modal";
 import { completedStep } from "../../components/ApplicationCard";
 import { formatPrice } from "../../../../../lib/utils";
 import { format } from "date-fns";
+import { useReuseAbleStore } from "@/store/reuseAble";
 
 interface Milestone {
   title: string;
@@ -122,7 +123,8 @@ export default function ApplicationProgressPage() {
   const { id } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const applicationId = searchParams.get("applicationId");
+  // const applicationId = searchParams.get("applicationId");
+  const applicationId = useReuseAbleStore((state) => state.applicationId);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { loadDraft } = useApplicationForm();

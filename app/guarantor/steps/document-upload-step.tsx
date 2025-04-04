@@ -68,7 +68,11 @@ export function DocumentUploadStep({
                   className="flex space-x-4"
                 >
                   <div className="flex items-center space-x-1">
-                    <RadioGroupItem value="passport" id="passport" />
+                    <RadioGroupItem
+                      value="passport"
+                      id="passport"
+                      onClick={() => setIdType("PASSPORT")}
+                    />
                     <Label htmlFor="passport" className="text-sm">
                       Passport
                     </Label>
@@ -77,6 +81,7 @@ export function DocumentUploadStep({
                     <RadioGroupItem
                       value="driving-license"
                       id="driving-license"
+                      onClick={() => setIdType("DRIVING_LICENSE")}
                     />
                     <Label htmlFor="driving-license" className="text-sm">
                       Driving License

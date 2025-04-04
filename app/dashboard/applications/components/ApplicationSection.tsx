@@ -74,14 +74,14 @@ export function ApplicationSection({
         ) : data?.length === 0 ? (
           <EmptyState message={emptyMessage} />
         ) : (
-          data?.map((property) => (
+          data?.map((application) => (
             <motion.div
-              key={property.id}
+              key={application.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <ApplicationCard property={property} sectionType={sectionType as any} />
+              <ApplicationCard application={application} sectionType={sectionType as any} />
             </motion.div>
           ))
         )}

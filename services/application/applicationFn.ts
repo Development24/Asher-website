@@ -102,6 +102,7 @@ export const useGetSingleApplication = (applicationId: string) => {
         queryKey: ["singleApplication"],
         queryFn: () => singleApplication(applicationId),
         retry: false,
+        enabled: !!applicationId,
     })
 }
 
