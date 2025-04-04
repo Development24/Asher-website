@@ -1,30 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useGetSingleApplication } from "@/services/application/applicationFn";
+import { useReuseAbleStore } from "@/store/reuseAble";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
-import { ApplicationFormProvider } from "@/contexts/application-form-context";
+import { useState } from "react";
 import { ApplicationForm } from "./application-form";
 import { PaymentModal } from "./payment-modal";
-import { useGetSingleApplication } from "@/services/application/applicationFn";
-import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ApplicationPage() {
+const ApplicationPage = () => {
   const { id } = useParams();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const applicationId =
-    searchParams.get("applicationId") ||
-    (pathname.includes("progress") ? pathname.split("/").pop() : null);
+  const applicationId = searchParams.get("applicationId");
+  const applicationInviteId = searchParams.get("applicationInviteId");
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const { data: applicationData, isFetching: isApplicationFetching } =
-    useGetSingleApplication(applicationId as string);
-  console.log("applicationID is here", applicationId);
-  const validAplicationId = applicationId ?? applicationData?.application?.id;
-  // if (isApplicationFetching) {
-  //   return <Skeleton className="w-full h-[250px]" />;
-  // }
-  // console.log(id);
+  // Use the appropriate ID for your API call
+  const idToUse = applicationId;
+
+  // Get applicationId from all possible sources
+  // const pathApplicationId = pathname.includes("progress") ? pathname.split("/").pop() : null;
+  // const queryApplicationId = searchParams.get("applicationId");
+  // const storeApplicationId = useReuseAbleStore((state: any) => state.applicationId);
+  
+  // Use the first available applicationId
+  // const applicationId = storeApplicationId || queryApplicationId || pathApplicationId;
+  // console.log("applicationId", applicationId);
+  // Fetch application data
+  const { data: applicationData, isFetching: isApplicationFetching } = useGetSingleApplication(
+    idToUse as string,
+  );
+
+  // Show skeleton while loading
+  if (isApplicationFetching) {
+    return (
+      <div className="layout">
+        <div className="space-y-4">
+          <Skeleton className="w-full h-[100px]" />
+          <Skeleton className="w-full h-[400px]" />
+          <Skeleton className="w-3/4 h-[50px]" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Skeleton className="w-full h-[200px]" />
+            <Skeleton className="w-full h-[200px]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="layout">
       <div className="">
@@ -34,7 +57,7 @@ export default function ApplicationPage() {
             propertyId={id as string}
             applicationData={applicationData?.application}
             isApplicationFetching={isApplicationFetching}
-            applicationId={validAplicationId}
+            applicationId={applicationId as string}
           />
         </div>
       </div>
@@ -46,4 +69,6 @@ export default function ApplicationPage() {
       />
     </div>
   );
-}
+};
+
+export default ApplicationPage;

@@ -51,10 +51,10 @@ export function PersonalDetailsForm({
   const { formData, updateFormData } = useApplicationFormStore();
   const { id } = useParams();
   const searchParams = useSearchParams();
-  // const applicationInvitedId = searchParams.get("applicationId");
+  const applicationInvitedId = searchParams.get("applicationInviteId");
   // console.log(id);
-  const applicationInvitedId = useReuseAbleStore((state) => state.applicationInvitedId);
-
+  // const applicationInvitedId = useReuseAbleStore((state: any) => state.applicationInvitedId);
+  console.log(applicationInvitedId);
   const { mutate: startApplication, isPending } = useStartApplication();
   const form = useForm<PersonalDetailsFormValues>({
     resolver: zodResolver(personalDetailsSchema),
@@ -94,27 +94,28 @@ export function PersonalDetailsForm({
       expiryDate: applicationData?.personalDetails?.expiryDate
         ? applicationData?.personalDetails?.expiryDate.split("T")[0]
         : "",
-      nextOfKin: applicationData?.personalDetails?.nextOfKin?.length > 0 ? applicationData?.personalDetails?.nextOfKin : [{
-        firstName: "",
-        middleName: "",
-        lastName: "",
-        relationship: "",
-        email: "",
-        phoneNumber: ""
-      }]
+      nextOfKin:
+        applicationData?.personalDetails?.nextOfKin?.length > 0
+          ? applicationData?.personalDetails?.nextOfKin
+          : [
+              {
+                firstName: "",
+                middleName: "",
+                lastName: "",
+                relationship: "",
+                email: "",
+                phoneNumber: ""
+              }
+            ]
     }
   });
 
-  const { setApplicationId } = useReuseAbleStore();
+  const { setApplicationId } = useReuseAbleStore((state: any) => state);
   console.log(form.formState.errors);
   console.log(isStepCompleted);
 
   function onSubmit(values: PersonalDetailsFormValues) {
-    // const isStepCompleted =
-    //   applicationData?.completedSteps?.includes("PERSONAL_KIN");
-
     if (isStepCompleted) {
-      // If step is already completed, just move to next step
       console.log("Step already completed, skipping submission");
       onNext();
       return;
@@ -138,23 +139,21 @@ export function PersonalDetailsForm({
       },
       {
         onSuccess: (data: any) => {
-          // updateFormData({
-          //   ...formData,
-          //   applicationId: data?.application?.id
-          // });
+          console.log("Success Submitted", data);
+
+          // Store the applicationId in Zustand
           setApplicationId(data?.application?.id);
+
+          // ALSO update the URL to include the applicationId
+          const nextUrl = new URL(window.location.href);
+          nextUrl.searchParams.set("applicationId", data?.application?.id);
+          window.history.replaceState({}, "", nextUrl.toString());
+
           onNext();
         },
         onError: (err: any) => {
-          console.log(err?.response?.data?.message);
-          // if (
-          //   err?.response?.data?.message.includes(
-          //     "You have already applied for this property in the last 3 months"
-          //   )
-          // ) {
-          //   onNext();
-          // }
-          toast.error(err?.response?.data?.message);
+          console.log(err?.response?.data?.error);
+          toast.error(err?.response?.data?.error || err?.response?.data?.message || "An error occurred");
         }
       }
     );
@@ -417,25 +416,25 @@ export function PersonalDetailsForm({
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Next of Kin Information</h3>
               {fields.length < 3 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  append({
-                    firstName: "",
-                    middleName: "",
-                    lastName: "",
-                    relationship: "",
-                    email: "",
-                    phoneNumber: ""
-                  })
-                }
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Another Next of Kin
-              </Button>
-            )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    append({
+                      firstName: "",
+                      middleName: "",
+                      lastName: "",
+                      relationship: "",
+                      email: "",
+                      phoneNumber: ""
+                    })
+                  }
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Another Next of Kin
+                </Button>
+              )}
             </div>
 
             {fields.map((field, index) => (
@@ -443,15 +442,15 @@ export function PersonalDetailsForm({
                 <div className="flex justify-between items-center">
                   <h4 className="font-medium">Next of Kin #{index + 1}</h4>
                   {fields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => remove(index)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">

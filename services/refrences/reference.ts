@@ -16,7 +16,7 @@ export const createLandlordReference = async (applicationId: string, data: any) 
 
 
 export const createGuarantorReference = async (applicationId: string, data: any) => {
-    const response = await apiFormData.post(URL + referenceURL.guarantorReference.replace(":applicationId", applicationId), data)
+    const response = await api.post(URL + referenceURL.guarantorReference.replace(":applicationId", applicationId), data)
     return response.data
 }
 

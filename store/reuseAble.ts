@@ -1,5 +1,6 @@
 import { ApplicationData } from "@/types/applicationInterface";
 import { create } from "zustand";
+import { persist } from 'zustand/middleware'
 
 interface State {
     applicationId: string;
@@ -15,15 +16,21 @@ interface Actions {
     setApplicationData: (applicationData: ApplicationData) => void;
 }
 
-export const useReuseAbleStore = create<State & Actions>((set) => ({
-    applicationId: "",
-    propertyId: "",
-    applicationInvitedId: "",
-    applicationData: {} as ApplicationData,
-    setApplicationId: (applicationId) => set({ applicationId }),
-    setApplicationInvitedId: (applicationInvitedId) => set({ applicationInvitedId }),
-    setPropertyId: (propertyId) => set({ propertyId }),
-    setApplicationData: (applicationData) => set({ applicationData }),
-    reset: () => set({ applicationId: "", propertyId: "", applicationInvitedId: "", applicationData: {} as ApplicationData }),
-    
-}));
+export const useReuseAbleStore = create(
+    persist(
+        (set) => ({
+            applicationId: "",
+            propertyId: "",
+            applicationInvitedId: "",
+            applicationData: {} as ApplicationData,
+            setApplicationId: (applicationId: string) => set({ applicationId }),
+            setApplicationInvitedId: (applicationInvitedId: string) => set({ applicationInvitedId }),
+            setPropertyId: (propertyId: string) => set({ propertyId }),
+            setApplicationData: (applicationData: ApplicationData) => set({ applicationData }),
+            reset: () => set({ applicationId: "", propertyId: "", applicationInvitedId: "", applicationData: {} as ApplicationData }),
+        }),
+        {
+            name: 'application-storage',
+        }
+    )
+);

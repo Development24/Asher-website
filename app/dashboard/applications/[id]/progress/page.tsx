@@ -123,8 +123,8 @@ export default function ApplicationProgressPage() {
   const { id } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  // const applicationId = searchParams.get("applicationId");
-  const applicationId = useReuseAbleStore((state) => state.applicationId);
+  const applicationId = searchParams.get("applicationId");
+  // const applicationId = useReuseAbleStore((state: any) => state.applicationId);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { loadDraft } = useApplicationForm();

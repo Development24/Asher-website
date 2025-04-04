@@ -64,22 +64,45 @@ const ApplicationCard = ({
     | "declined";
 }) => {
   // console.log(application);
-  const { setApplicationInvitedId, setApplicationId, applicationInvitedId, applicationId } = useReuseAbleStore();
+  // const {
+  //   setApplicationInvitedId,
+  //   setApplicationId,
+  //   applicationInvitedId,
+  //   applicationId
+  // } = useReuseAbleStore((state: any) => state);
 
-  useEffect(() => {
-    if (application?.applicationInviteId) {
-      setApplicationInvitedId(application?.applicationInviteId);
-      console.log("applicationInvitedId", applicationInvitedId);
+  // useEffect(() => {
+  //   if ( application?.applicationInviteId || application?.id) {
+  //     setApplicationInvitedId(
+  //       application?.applicationInviteId ?? application?.id
+  //     );
+  //   }
+  // }, [application?.applicationInviteId, application?.id]);
+
+  // useEffect(() => {
+  //   if (application?.id) {
+  //     setApplicationId(application.id);
+  //   }
+  // }, [application?.id]);
+
+  const getNavigationUrl = () => {
+    if (sectionType === "ongoing") {
+      const statusPath = application?.status === "approved" 
+        ? "approved" 
+        : application?.status === "rejected" 
+          ? "rejected" 
+          : "success";
+        
+      return `/dashboard/applications/${application?.id}/${statusPath}?applicationId=${application?.id}`;
+    } 
+    
+    if (sectionType === "continue" || sectionType === "submitted") {
+      return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
     }
-  }, [application?.applicationInviteId]);
-
-  useEffect(() => {
-
-    if (application?.id) {
-      setApplicationId(application.id);
-      console.log("applicationId", applicationId);
-    }
-  }, [application?.id]);
+    
+    // For new applications
+    return `/dashboard/applications/${application?.properties?.id}/apply?applicationInviteId=${application?.applicationInviteId || application?.id}`;
+  }
 
   return (
     // NOTE: application is the application object
@@ -100,7 +123,8 @@ const ApplicationCard = ({
               application.status
             )}`}
           >
-            {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+            {application.status.charAt(0).toUpperCase() +
+              application.status.slice(1)}
           </Badge>
         )}
       </div>
@@ -133,28 +157,19 @@ const ApplicationCard = ({
               <div
                 className="h-full bg-red-600 rounded-full"
                 style={{
-                  width: `${completedStep(application?.completedSteps?.length)}%`
+                  width: `${completedStep(
+                    application?.completedSteps?.length
+                  )}%`
                 }}
               />
             </div>
             <div className="text-sm text-gray-500 mt-1">
-              Last updated: {new Date(application?.updatedAt).toLocaleDateString()}
+              Last updated:{" "}
+              {new Date(application?.updatedAt).toLocaleDateString()}
             </div>
           </div>
         )}
-        <Link
-          href={
-            sectionType === "ongoing"
-              ? application?.status === "approved"
-                ? `/dashboard/applications/${application?.id}/approved`
-                : application?.status === "rejected"
-                ? `/dashboard/applications/${application?.id}/rejected`
-                : `/dashboard/applications/${application?.id}/success`
-              : sectionType === "continue" || sectionType === "submitted"
-              ? `/dashboard/applications/${application?.properties?.id}/progress`
-              : `/dashboard/applications/${application?.properties?.id}/apply`
-          }
-        >
+        <Link href={getNavigationUrl()}>
           <Button className="w-full bg-red-600 hover:bg-red-700">
             {sectionType === "ongoing"
               ? application?.status === "approved"
