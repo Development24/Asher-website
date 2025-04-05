@@ -41,7 +41,7 @@ export default function GuarantorForm({
     incomeProof: null,
     additionalDocs: []
   });
-  const { id: applicationId } = useParams();
+  const applicationId = applicationData?.id;
   const [idType, setIdType] = useState("passport");
   const [dragActive, setDragActive] = useState("");
   const {

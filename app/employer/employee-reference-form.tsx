@@ -13,6 +13,7 @@ import EmployeeInfo from "./steps/employee-info";
 import EmployerInfo from "./steps/employer-info";
 import Performance from "./steps/performance";
 import { toast } from "sonner";
+import SkeletonLoader from "../guarantor/SkeletonLoader";
 const steps = [
   { id: 1, name: "Employee Information" },
   { id: 2, name: "Employer Information" },
@@ -20,15 +21,22 @@ const steps = [
   { id: 4, name: "Performance & Comments" },
   { id: 5, name: "Declaration & Signature" }
 ];
-export default function EmployeeReferenceForm() {
+interface EmployeeReferenceFormProps {
+  applicationData: any;
+  loading: boolean;
+}
+export default function EmployeeReferenceForm({
+  applicationData,
+  loading
+}: EmployeeReferenceFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
-  const { id: applicationId } = useParams();
   const {
     mutate: createEmployeeReference,
     isPending: isCreatingEmployeeReference
   } = useCreateEmployeeReference();
+  const applicationId = applicationData?.id;
   const [formData, setFormData] = useState({
     // Employee Information
     employeeName: "",
@@ -94,10 +102,10 @@ export default function EmployeeReferenceForm() {
 
   const handleSubmit = () => {
     const payload = {
-      employeeName: formData.employeeName || "John Doe",
-      jobTitle: formData.jobTitle || "Software Engineer",
-      department: formData.department || "Engineering",
-      employmentStartDate: formData.employmentStartDate || "2023-01-01",
+      employeeName: `${applicationData?.personalDetails?.firstName} ${applicationData?.personalDetails?.lastName}`,
+      jobTitle: applicationData?.employmentInfo?.positionTitle || "Software Engineer",
+      department: applicationData?.employmentInfo?.employerCompany || "Engineering",
+      employmentStartDate: applicationData?.employmentInfo?.startDate || "2023-01-01",
       employmentEndDate: formData.employmentEndDate || "2023-12-31",
       reasonForLeaving: formData.reasonForLeaving || "Career growth",
       companyName: formData.companyName || "Tech Corp Ltd",
@@ -227,46 +235,52 @@ export default function EmployeeReferenceForm() {
             />
           </div>
         </div>
+        {loading ? (
+          <SkeletonLoader />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {/* Step 1: Employee Information */}
+              {currentStep === 1 && (
+                <EmployeeInfo
+                  formData={formData}
+                  handleChange={handleChange}
+                  applicationInfo={applicationData}
+                />
+              )}
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-8"
-          >
-            {/* Step 1: Employee Information */}
-            {currentStep === 1 && (
-              <EmployeeInfo formData={formData} handleChange={handleChange} />
-            )}
+              {/* Step 2: Employer Information */}
+              {currentStep === 2 && (
+                <EmployerInfo formData={formData} handleChange={handleChange} />
+              )}
 
-            {/* Step 2: Employer Information */}
-            {currentStep === 2 && (
-              <EmployerInfo formData={formData} handleChange={handleChange} />
-            )}
+              {/* Step 3: Employment Details */}
+              {currentStep === 3 && (
+                <EmployeeDetails
+                  formData={formData}
+                  handleChange={handleChange}
+                />
+              )}
 
-            {/* Step 3: Employment Details */}
-            {currentStep === 3 && (
-              <EmployeeDetails
-                formData={formData}
-                handleChange={handleChange}
-              />
-            )}
+              {/* Step 4: Performance & Comments */}
+              {currentStep === 4 && (
+                <Performance formData={formData} handleChange={handleChange} />
+              )}
 
-            {/* Step 4: Performance & Comments */}
-            {currentStep === 4 && (
-              <Performance formData={formData} handleChange={handleChange} />
-            )}
-
-            {/* Step 5: Declaration & Signature */}
-            {currentStep === 5 && (
-              <Decleration formData={formData} handleChange={handleChange} />
-            )}
-          </motion.div>
-        </AnimatePresence>
-
+              {/* Step 5: Declaration & Signature */}
+              {currentStep === 5 && (
+                <Decleration formData={formData} handleChange={handleChange} />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
         <div className="flex justify-between mt-12 gap-4">
           <Button
             onClick={goToPreviousStep}

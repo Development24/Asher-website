@@ -13,7 +13,14 @@ import TenantConduct from "./steps/tenant-conduct";
 import TenantInfo from "./steps/tenant-info";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-export default function LandlordReferenceForm({ id }: { id: string }) {
+import SkeletonLoader from "../guarantor/SkeletonLoader";
+export default function LandlordReferenceForm({
+  applicationData,
+  loading
+}: {
+  applicationData: any;
+  loading: boolean;
+}) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
@@ -21,6 +28,7 @@ export default function LandlordReferenceForm({ id }: { id: string }) {
     mutate: createLandlordReference,
     isPending: isCreatingLandlordReference
   } = useCreateLandlordReference();
+  const applicationId = applicationData?.id;
   const [formData, setFormData] = useState({
     // Tenant Information
     tenantName: "",
@@ -82,10 +90,11 @@ export default function LandlordReferenceForm({ id }: { id: string }) {
   const handleSubmit = () => {
     // Group data into required categories
     const tenancyHistory = {
-      tenantName: formData.tenantName,
-      currentAddress: formData.currentAddress,
+      tenantName: `${applicationData?.personalDetails?.firstName} ${applicationData?.personalDetails?.lastName}`,
+      currentAddress: applicationData?.residentialInfo?.address
+        ? `${applicationData?.residentialInfo?.address}, ${applicationData?.residentialInfo?.city}, ${applicationData?.residentialInfo?.state}, ${applicationData?.residentialInfo?.country}`
+        : formData.currentAddress,
       rentAmount: formData.monthlyRent,
-      // monthlyRent: formData.monthlyRent,
       rentStartDate: formData.rentalStartDate,
       rentEndDate: formData.rentalEndDate,
       reasonForLeaving: formData.reasonForLeaving
@@ -126,7 +135,7 @@ export default function LandlordReferenceForm({ id }: { id: string }) {
 
     console.log("Form submitted:", payload);
     createLandlordReference(
-      { applicationId: id as string, data: payload },
+      { applicationId: applicationId as string, data: payload },
       {
         onSuccess: () => {
           toast.success("Landlord reference created successfully");
@@ -229,38 +238,50 @@ export default function LandlordReferenceForm({ id }: { id: string }) {
             />
           </div>
         </div>
+        {loading ? (
+          <SkeletonLoader />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {/* Step 1: Tenant Information */}
+              {currentStep === 1 && (
+                <TenantInfo
+                  formData={formData}
+                  handleChange={handleChange}
+                  applicationInfo={applicationData}
+                />
+              )}
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-8"
-          >
-            {/* Step 1: Tenant Information */}
-            {currentStep === 1 && (
-              <TenantInfo formData={formData} handleChange={handleChange} />
-            )}
+              {/* Step 2: Landlord Information */}
+              {currentStep === 2 && (
+                <LandlordInfo formData={formData} handleChange={handleChange} />
+              )}
 
-            {/* Step 2: Landlord Information */}
-            {currentStep === 2 && (
-              <LandlordInfo formData={formData} handleChange={handleChange} />
-            )}
+              {/* Step 3: Tenant Conduct */}
+              {currentStep === 3 && (
+                <TenantConduct
+                  formData={formData}
+                  handleChange={handleChange}
+                />
+              )}
 
-            {/* Step 3: Tenant Conduct */}
-            {currentStep === 3 && (
-              <TenantConduct formData={formData} handleChange={handleChange} />
-            )}
-
-            {/* Step 4: Additional Comments & Signature */}
-            {currentStep === 4 && (
-              <AdditionalInfo formData={formData} handleChange={handleChange} />
-            )}
-          </motion.div>
-        </AnimatePresence>
-
+              {/* Step 4: Additional Comments & Signature */}
+              {currentStep === 4 && (
+                <AdditionalInfo
+                  formData={formData}
+                  handleChange={handleChange}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
         <div className="flex justify-between mt-12 gap-4">
           <Button
             onClick={goToPreviousStep}

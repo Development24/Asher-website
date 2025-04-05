@@ -5,9 +5,31 @@ import React from "react";
 interface EmployeeInfoProps {
   formData: any;
   handleChange: (field: string, value: any) => void;
+  applicationInfo: any;
 }
 
-const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
+// Helper function to format date to YYYY-MM-DD
+const formatDateForInput = (dateString: string | undefined | null): string => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return ''; // Invalid date
+    
+    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+  } catch {
+    return '';
+  }
+};
+
+const EmployeeInfo = ({ formData, handleChange, applicationInfo }: EmployeeInfoProps) => {
+  const employeeName = `${applicationInfo?.personalDetails?.firstName} ${applicationInfo?.personalDetails?.lastName}`;
+  const jobTitle = applicationInfo?.employmentInfo?.positionTitle;
+  const department = applicationInfo?.employmentInfo?.employerCompany;
+  const employmentStartDate = formatDateForInput(applicationInfo?.employmentInfo?.startDate);
+  const employmentEndDate = formatDateForInput(applicationInfo?.employmentInfo?.endDate) || 
+                           formatDateForInput(formData?.employmentEndDate);
+  const reasonForLeaving = applicationInfo?.employmentInfo?.reasonForLeaving || formData?.reasonForLeaving;
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -17,8 +39,9 @@ const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
         <Input
           id="employee-name"
           placeholder="Enter full name"
+          disabled
           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-          value={formData.employeeName}
+          value={employeeName}
           onChange={(e) => handleChange("employeeName", e.target.value)}
         />
       </div>
@@ -30,9 +53,10 @@ const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
           </Label>
           <Input
             id="job-title"
+            disabled
             placeholder="Enter job title"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-            value={formData.jobTitle}
+            value={jobTitle}
             onChange={(e) => handleChange("jobTitle", e.target.value)}
           />
         </div>
@@ -42,9 +66,10 @@ const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
           </Label>
           <Input
             id="department"
+            disabled
             placeholder="Enter department"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-            value={formData.department}
+            value={department}
             onChange={(e) => handleChange("department", e.target.value)}
           />
         </div>
@@ -63,11 +88,10 @@ const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
             <Input
               id="employment-start-date"
               type="date"
+              disabled
               className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-              value={formData.employmentStartDate}
-              onChange={(e) =>
-                handleChange("employmentStartDate", e.target.value)
-              }
+              value={employmentStartDate}
+              onChange={(e) => handleChange("employmentStartDate", e.target.value)}
             />
           </div>
           <div>
@@ -81,10 +105,9 @@ const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
               id="employment-end-date"
               type="date"
               className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-              value={formData.employmentEndDate}
-              onChange={(e) =>
-                handleChange("employmentEndDate", e.target.value)
-              }
+              value={employmentEndDate}
+              onChange={(e) => handleChange("employmentEndDate", e.target.value)}
+              min={employmentStartDate}
             />
           </div>
         </div>
@@ -101,7 +124,7 @@ const EmployeeInfo = ({ formData, handleChange }: EmployeeInfoProps) => {
           id="reason-for-leaving"
           placeholder="Please specify"
           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-          value={formData.reasonForLeaving}
+          value={reasonForLeaving}
           onChange={(e) => handleChange("reasonForLeaving", e.target.value)}
         />
       </div>
