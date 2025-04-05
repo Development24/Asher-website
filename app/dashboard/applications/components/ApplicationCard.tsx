@@ -87,20 +87,19 @@ const ApplicationCard = ({
 
   const getNavigationUrl = () => {
     if (sectionType === "ongoing") {
-      const statusPath = application?.status === "approved" 
-        ? "approved" 
-        : application?.status === "rejected" 
-          ? "rejected" 
-          : "success";
-        
-      return `/dashboard/applications/${application?.id}/${statusPath}?applicationId=${application?.id}`;
+      const status = application?.status?.toLowerCase();
+      
+      return `/dashboard/applications/${application?.id}/${status}?applicationId=${application?.id}`;
     } 
     
-    if (sectionType === "continue" || sectionType === "submitted") {
+    if (sectionType === "continue") {
       return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
     }
     
-    // For new applications
+    if (sectionType === "submitted") {
+      return `/dashboard/applications/${application?.properties?.id}/submitted?applicationId=${application?.id}`;
+    }
+    
     return `/dashboard/applications/${application?.properties?.id}/apply?applicationInviteId=${application?.applicationInviteId || application?.id}`;
   }
 
@@ -172,13 +171,7 @@ const ApplicationCard = ({
         <Link href={getNavigationUrl()}>
           <Button className="w-full bg-red-600 hover:bg-red-700">
             {sectionType === "ongoing"
-              ? application?.status === "approved"
-                ? "View approved"
-                : application?.status === "rejected"
-                ? "View rejected"
-                : application?.status === "submitted"
-                ? "View submitted"
-                : "View application"
+              ? `View ${application?.status?.toLowerCase()}`
               : sectionType === "continue"
               ? "Resume application"
               : "View application"}

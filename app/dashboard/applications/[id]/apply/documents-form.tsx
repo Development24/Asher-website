@@ -124,7 +124,7 @@ export function DocumentsForm({
         return;
       }
       const formData = new FormData();
-      formData.append("applicationId", applicationId);
+      // formData.append("applicationId", applicationId);
 
       // Append each document with its metadata
       Object.entries(values)

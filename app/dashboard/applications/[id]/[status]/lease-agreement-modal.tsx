@@ -1,33 +1,43 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import SignatureCanvas from "react-signature-canvas"
+import { useState, useRef } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import SignatureCanvas from "react-signature-canvas";
 
 interface LeaseAgreementModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
 }
 
-export function LeaseAgreementModal({ isOpen, onClose, onSubmit }: LeaseAgreementModalProps) {
-  const [signature, setSignature] = useState<string | null>(null)
-  const signatureRef = useRef<SignatureCanvas>(null)
+export function LeaseAgreementModal({
+  isOpen,
+  onClose,
+  onSubmit
+}: LeaseAgreementModalProps) {
+  const [signature, setSignature] = useState<string | null>(null);
+
+  const signatureRef = useRef<SignatureCanvas>(null);
 
   const handleClear = () => {
-    signatureRef.current?.clear()
-    setSignature(null)
-  }
+    signatureRef.current?.clear();
+    setSignature(null);
+  };
 
   const handleSubmit = () => {
     if (signatureRef.current?.isEmpty()) {
-      alert("Please provide a signature before submitting.")
-      return
+      alert("Please provide a signature before submitting.");
+      return;
     }
-    setSignature(signatureRef.current?.toDataURL())
-    onSubmit()
-  }
+    setSignature(signatureRef.current?.toDataURL() || null);
+    onSubmit();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -40,8 +50,8 @@ export function LeaseAgreementModal({ isOpen, onClose, onSubmit }: LeaseAgreemen
             {/* Add your lease agreement content here */}
             <h2 className="text-lg font-semibold mb-2">Lease Agreement</h2>
             <p>
-              This is a sample lease agreement. In a real application, you would include the full text of the lease
-              agreement here.
+              This is a sample lease agreement. In a real application, you would
+              include the full text of the lease agreement here.
             </p>
             {/* ... more lease agreement content ... */}
           </div>
@@ -50,7 +60,7 @@ export function LeaseAgreementModal({ isOpen, onClose, onSubmit }: LeaseAgreemen
             <SignatureCanvas
               ref={signatureRef}
               canvasProps={{
-                className: "border rounded-md w-full h-40",
+                className: "border rounded-md w-full h-40"
               }}
             />
           </div>
@@ -63,6 +73,5 @@ export function LeaseAgreementModal({ isOpen, onClose, onSubmit }: LeaseAgreemen
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-
