@@ -14,9 +14,7 @@ const TenantInfo = ({
   applicationInfo
 }: TenantInfoProps) => {
   const tenantName = `${applicationInfo?.personalDetails?.firstName} ${applicationInfo?.personalDetails?.lastName}`;
-  const currentAddress = `${applicationInfo?.residentialInfo?.address}, ${applicationInfo?.residentialInfo?.city}, ${applicationInfo?.residentialInfo?.state}, ${applicationInfo?.residentialInfo?.country}`;
 
-  const reasonForLeaving = applicationInfo?.residentialInfo?.reasonForLeaving;
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -45,7 +43,7 @@ const TenantInfo = ({
             id="current-address"
             placeholder="Address"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-            value={currentAddress || formData.currentAddress}
+            value={formData.currentAddress}
             onChange={(e) => handleChange("currentAddress", e.target.value)}
           />
         </div>
@@ -110,7 +108,7 @@ const TenantInfo = ({
           id="reason-for-leaving"
           placeholder="Please specify"
           className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-          value={reasonForLeaving || formData.reasonForLeaving}
+          value={formData.reasonForLeaving}
           onChange={(e) => handleChange("reasonForLeaving", e.target.value)}
         />
       </div>

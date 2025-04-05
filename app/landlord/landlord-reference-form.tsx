@@ -32,11 +32,11 @@ export default function LandlordReferenceForm({
   const [formData, setFormData] = useState({
     // Tenant Information
     tenantName: "",
-    currentAddress: "",
+    currentAddress: `${applicationData?.residentialInfo?.address}, ${applicationData?.residentialInfo?.city}, ${applicationData?.residentialInfo?.state}, ${applicationData?.residentialInfo?.country}`,
     monthlyRent: "",
     rentalStartDate: "",
     rentalEndDate: "",
-    reasonForLeaving: "",
+    reasonForLeaving: applicationData?.residentialInfo?.reasonForLeaving,
 
     // Landlord Information
     landlordName: "",

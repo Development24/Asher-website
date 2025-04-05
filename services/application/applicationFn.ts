@@ -18,7 +18,8 @@ import {
     UpdateInvitePayload,
     getPropertyByInviteId,
     dashboardStats,
-    completeApplication
+    completeApplication,
+    getReferenceDetails
 } from "./application"
 
 export const useStartApplication = () => {
@@ -183,5 +184,12 @@ export const useCompleteApplication = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
         }
+    })
+}
+
+export const useGetReferenceDetails = (applicationId: string) => {
+    return useQuery({
+        queryKey: ["getReferenceDetails"],
+        queryFn: () => getReferenceDetails(applicationId),
     })
 }

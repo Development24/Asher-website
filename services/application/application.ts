@@ -20,7 +20,8 @@ const applicationURL = {
     updateInvite: "/invites/update/:id",
     getPropertyByInviteId: "/invities/:id/get",
     dashboardStats: "/applicant/stats",
-    completeApplication: "/complete/:applicationId"
+    completeApplication: "/complete/:applicationId",
+    getReferenceDetails: "/references/:applicationId"
 }
 
 export const startApplication = async (propertyId: string, payload: any) => {
@@ -117,6 +118,11 @@ export const dashboardStats = async () => {
 
 export const completeApplication = async (applicationId: string) => {
     const response = await api.post(URL + applicationURL.completeApplication.replace(":applicationId", applicationId))
+    return response.data
+}
+
+export const getReferenceDetails = async (applicationId: string) => {
+    const response = await api.get(URL + applicationURL.getReferenceDetails.replace(":applicationId", applicationId))
     return response.data
 }
 
