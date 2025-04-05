@@ -1,6 +1,6 @@
 "use client";
 import EmployeeReferenceForm from "@/app/employer/employee-reference-form";
-import { useGetSingleApplication } from "@/services/application/applicationFn";
+import { useGetReferenceDetails } from "@/services/application/applicationFn";
 interface EmployerReferenceProps {
   params: {
     id: string;
@@ -9,7 +9,7 @@ interface EmployerReferenceProps {
 export default function Home({ params }: EmployerReferenceProps) {
   const { id } = params;
   const { data: applicationData, isFetching: isApplicationFetching } =
-    useGetSingleApplication(id as string);
+    useGetReferenceDetails(id as string);
   console.log(applicationData);
   return (
     <main className="min-h-screen bg-gray-100 py-8 px-4">

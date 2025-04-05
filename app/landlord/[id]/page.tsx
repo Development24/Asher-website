@@ -1,6 +1,6 @@
-"use client"
-import LandlordReferenceForm from "@/app/landlord/landlord-reference-form"
-import { useGetSingleApplication } from "@/services/application/applicationFn"
+"use client";
+import LandlordReferenceForm from "@/app/landlord/landlord-reference-form";
+import { useGetReferenceDetails } from "@/services/application/applicationFn";
 
 interface LandlordReferenceProps {
   params: {
@@ -11,12 +11,14 @@ interface LandlordReferenceProps {
 export default function LandlordReference({ params }: LandlordReferenceProps) {
   const { id } = params;
   const { data: applicationData, isFetching: isApplicationFetching } =
-  useGetSingleApplication(id as string);
+    useGetReferenceDetails(id as string);
   console.log(applicationData);
   return (
     <main className="min-h-screen bg-gray-100 py-8 px-4">
-      <LandlordReferenceForm applicationData={applicationData?.application} loading={isApplicationFetching} />
+      <LandlordReferenceForm
+        applicationData={applicationData?.application}
+        loading={isApplicationFetching}
+      />
     </main>
-  )
+  );
 }
-

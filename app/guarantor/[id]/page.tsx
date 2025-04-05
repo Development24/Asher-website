@@ -1,8 +1,6 @@
 'use client'
-import GuarantorForm from "@/app/guarantor/guarantor-form"
-import { Skeleton } from "@/components/ui/skeleton";
-import { useGetSingleApplication } from "@/services/application/applicationFn";
-import SkeletonLoader from "../SkeletonLoader";
+import GuarantorForm from "@/app/guarantor/guarantor-form";
+import { useGetReferenceDetails } from "@/services/application/applicationFn";
 
 interface HomeInterface {
   params: {
@@ -12,7 +10,7 @@ interface HomeInterface {
 export default function Home({ params }: HomeInterface) {
   const { id } = params;
   const { data: applicationData, isFetching: isApplicationFetching } =
-  useGetSingleApplication(id as string);
+  useGetReferenceDetails(id as string);
   console.log(applicationData);
 
 
