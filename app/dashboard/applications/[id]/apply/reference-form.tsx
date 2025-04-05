@@ -19,6 +19,7 @@ import {
 } from "./schemas/reference-details-schema";
 import { useRefereesApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 interface ReferenceFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -38,6 +39,11 @@ export function ReferenceForm({
 }: ReferenceFormProps) {
   const { formData, updateFormData } = useApplicationFormStore();
   const { mutate: refereesApplication, isPending } = useRefereesApplication();
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const form = useForm<ReferenceDetailsFormValues>({
     resolver: zodResolver(referenceDetailsSchema),
     defaultValues: {
@@ -74,6 +80,9 @@ export function ReferenceForm({
       },
       {
         onSuccess: () => {
+          const params = new URLSearchParams(searchParams);
+          params.set("applicationId", applicationId as string);
+          router.replace(`${pathname}?${params.toString()}`);
           onNext();
         }
       }

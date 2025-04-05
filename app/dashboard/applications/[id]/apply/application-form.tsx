@@ -29,6 +29,7 @@ import { PersonalDetailsForm } from "./personal-details-form";
 import { ReferenceForm } from "./reference-form";
 import { ResidentialDetailsForm } from "./residential-details-form";
 import { ApplicationData } from "@/types/applicationInterface";
+import { useCompleteApplication } from "@/services/application/applicationFn";
 
 // PERSONAL_KIN
 //   REFEREE
@@ -137,6 +138,7 @@ interface ApplicationFormProps {
   applicationData: ApplicationData;
   isApplicationFetching: boolean;
   applicationId?: string;
+  refetch: () => void;
 }
 
 export function ApplicationForm({
@@ -144,12 +146,16 @@ export function ApplicationForm({
   propertyId,
   applicationData,
   applicationId,
-  isApplicationFetching
+  isApplicationFetching,
+  refetch
 }: ApplicationFormProps) {
   const lastCompletedStep = applicationData?.lastStep;
-  const lastStepInfo = steps.find((step) => step.lastStep === lastCompletedStep);
-  console.log(lastStepInfo);
-  const nextStepInfo = steps.find((step) => step.lastStep === lastStepInfo?.nextStep);
+  const lastStepInfo = steps.find(
+    (step) => step.lastStep === lastCompletedStep
+  );
+  const nextStepInfo = steps.find(
+    (step) => step.lastStep === lastStepInfo?.nextStep
+  );
   const completedSteps = applicationData?.completedSteps;
   // Initialize with a default value
   const [currentStep, setCurrentStep] = useState(1);
@@ -161,15 +167,17 @@ export function ApplicationForm({
     }
   }, [lastCompletedStep, nextStepInfo]);
 
-  console.log({
-    lastCompletedStep,
-    lastStepInfo,
-    nextStepInfo,
-    currentStep
-  });
+  // console.log({
+  //   lastCompletedStep,
+  //   lastStepInfo,
+  //   nextStepInfo,
+  //   currentStep
+  // });
 
   // Get the component for the current step
-  const CurrentStepComponent = steps.find((step) => step.id === currentStep)?.component;
+  const CurrentStepComponent = steps.find(
+    (step) => step.id === currentStep
+  )?.component;
 
   const isStepCompleted = (stepLastStep: string) => {
     return applicationData?.completedSteps?.includes(stepLastStep);
@@ -178,8 +186,8 @@ export function ApplicationForm({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const { formData, updateFormData } = useApplicationFormStore();
   const router = useRouter();
-  console.log(propertyId);
   const [lastStep, setLastStep] = useState("");
+  const { mutate: completeApplication, isPending } = useCompleteApplication();
 
   console.log(applicationData);
 
@@ -189,44 +197,65 @@ export function ApplicationForm({
   // Update submittedSteps when applicationData changes
   useEffect(() => {
     if (lastCompletedStep) {
-      const lastCompletedIndex = steps.findIndex((s) => s.lastStep === lastCompletedStep);
+      const lastCompletedIndex = steps.findIndex(
+        (s) => s.lastStep === lastCompletedStep
+      );
       if (lastCompletedIndex !== -1) {
         const completedStepIds = steps
           .slice(0, lastCompletedIndex + 1)
-          .map(step => step.id);
+          .map((step) => step.id);
         setSubmittedSteps(completedStepIds);
       }
     }
   }, [lastCompletedStep]);
 
+  // Handle step complete
   const handleStepComplete = () => {
     const currentStepInfo = steps.find((step) => step.id === currentStep);
-    
+    const isComplete = currentStepInfo?.nextStep === null;
+
     // Add current step to submitted steps if not already there
     if (!submittedSteps.includes(currentStep)) {
-      setSubmittedSteps(prev => [...prev, currentStep]);
+      setSubmittedSteps((prev) => [...prev, currentStep]);
     }
 
-    if (!currentStepInfo?.nextStep) {
+    // Show payment modal if current step is the last step
+    if (applicationData?.hasApplicationFee) {
       setShowPaymentModal(true);
       return;
     }
 
-    const nextStepInfo = steps.find((step) => step.lastStep === currentStepInfo.nextStep);
-    if (nextStepInfo) {
+    // Move to next step
+    const nextStepInfo = steps.find(
+      (step) => step.lastStep === currentStepInfo?.nextStep
+    );
+    if (nextStepInfo !== undefined) {
+      refetch();
       setCurrentStep(nextStepInfo.id);
+    }
+
+    if (nextStepInfo === undefined && isComplete) {
+      completeApplication(String(applicationId), {
+        onSuccess: (data: any) => {
+          router.replace(
+            `/dashboard/applications/${data?.id}/${data?.status?.toLowerCase()}`
+          );
+        }
+      });
     }
   };
 
+  // Save draft
   const handleSaveDraft = () => {
     updateFormData({ propertyId }); // Ensure propertyId is saved with the form data
     router.push("/dashboard/applications");
   };
 
+  // Previous step
   const handlePreviousStep = () => {
     // Find current step info
     const currentStepInfo = steps.find((step) => step.id === currentStep);
-    
+
     if (!currentStepInfo || !currentStepInfo.previousStep) {
       // If we're at the first step or something's wrong, stay at step 1
       setCurrentStep(1);
@@ -234,18 +263,22 @@ export function ApplicationForm({
     }
 
     // Find and set the previous step
-    const prevStepInfo = steps.find((step) => step.lastStep === currentStepInfo.previousStep);
+    const prevStepInfo = steps.find(
+      (step) => step.lastStep === currentStepInfo.previousStep
+    );
     if (prevStepInfo) {
       setCurrentStep(prevStepInfo.id);
     }
+    // refetch();
   };
 
+  // Loading state
   if (isApplicationFetching) {
     return (
       <div className="layout bg-white rounded-lg shadow-sm p-6">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <Skeleton className="h-8 w-64" /> 
+            <Skeleton className="h-8 w-64" />
             <Skeleton className="h-10 w-24" />
           </div>
           <div className="flex items-center justify-between mb-4">
@@ -257,11 +290,12 @@ export function ApplicationForm({
             ))}
           </div>
         </div>
-        <Skeleton className="w-full h-[600px]" /> 
+        <Skeleton className="w-full h-[600px]" />
       </div>
     );
   }
 
+  // Application form
   return (
     <div className="layout bg-white rounded-lg shadow-sm p-6">
       <div className="mb-8">
@@ -291,7 +325,9 @@ export function ApplicationForm({
               {index < steps.length - 1 && (
                 <div
                   className={`h-0.5 w-full absolute left-0 top-5 -z-10 ${
-                    isStepCompleted(step.lastStep) ? "bg-green-500" : "bg-gray-200"
+                    isStepCompleted(step.lastStep)
+                      ? "bg-green-500"
+                      : "bg-gray-200"
                   }`}
                 />
               )}
@@ -313,13 +349,16 @@ export function ApplicationForm({
               params={{ id: propertyId.toString() }}
               applicationId={applicationId}
               onNext={handleStepComplete}
+              loading={isPending}
               onPrevious={handlePreviousStep}
               continueButtonClass="bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950 text-white"
-              showContinueButton={!!steps.find((step) => step.id === currentStep)?.nextStep}
+              showContinueButton={
+                !!steps.find((step) => step.id === currentStep)?.nextStep
+              }
               showPreviousButton={currentStep !== 1}
               applicationData={applicationData}
               isStepCompleted={isStepCompleted(
-                steps.find(step => step.id === currentStep)?.lastStep || ''
+                steps.find((step) => step.id === currentStep)?.lastStep || ""
               )}
             />
           )}

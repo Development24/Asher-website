@@ -26,6 +26,7 @@ import {
 } from "./schemas/additional-details-schema";
 import { useAdditionalDetailsApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
+import { useQueryClient } from "@tanstack/react-query";
 interface AdditionalDetailsFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -46,6 +47,7 @@ export function AdditionalDetailsForm({
   const { formData, updateFormData } = useApplicationFormStore();
   const { mutate: additionalDetailsApplication, isPending } =
     useAdditionalDetailsApplication();
+  const queryClient = useQueryClient();
   const form = useForm<AdditionalDetailsFormValues>({
     resolver: zodResolver(additionalDetailsSchema),
     defaultValues: {
@@ -86,6 +88,7 @@ export function AdditionalDetailsForm({
       },
       {
         onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["singleApplication", "application", applicationId] });
           onNext();
         }
       }

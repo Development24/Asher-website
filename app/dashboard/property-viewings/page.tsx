@@ -12,6 +12,7 @@ import {
 } from "@/services/application/applicationFn";
 import { InviteData, InviteResponse, Landlord } from "./type";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams } from "next/navigation";
 
 interface Property {
   id: number;
@@ -83,9 +84,16 @@ export default function PropertyViewingsPage() {
   const rescheduledInvites = invitesData?.rescheduledInvites;
   const pendingInvites = invitesData?.pendingInvites;
   const feedbackInvites = invitesData?.awaitingFeedbackInvites;
-
+  const searchParams = useSearchParams();
   const { mutate: updateInvite, isPending: isUpdatingInvite } =
     useUpdateInvite();
+
+  useEffect(() => {
+    if (searchParams.get("#feedback")) {
+      const feedbackSection = document.getElementById("feedback-section");
+      feedbackSection?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
 
   const handleAcceptInvite = (invitationId: string) => {
     updateInvite({
@@ -260,7 +268,7 @@ export default function PropertyViewingsPage() {
         )}
       </section>
 
-      <section>
+      <section id="feedback-section">
         <h2 className="text-2xl font-semibold mb-4">What did you think?</h2>
         <p className="text-gray-500 mb-6">
           Leave feedback on your recently viewed properties.

@@ -68,7 +68,7 @@ export function ApplicationSection({
     <section className="mb-12">
       <h2 className="text-2xl font-semibold mb-4">{title}</h2>
       <p className="text-gray-500 mb-6">{description}</p>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {isLoading ? (
           <ApplicationSkeleton />
         ) : data?.length === 0 ? (

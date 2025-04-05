@@ -22,9 +22,13 @@ import {
 import DatePicker from "@/app/components/DatePicker";
 import { useDeclarationApplication } from "@/services/application/applicationFn";
 import { IApplicationInterface } from "@/types/application-form";
-import { UploadBox } from './documents-form';
-import { FileUploadBox } from './uploadDocs';
+import { UploadBox } from "./documents-form";
+import { FileUploadBox } from "./uploadDocs";
 import { ApplicationData } from "@/types/applicationInterface";
+import { useReuseAbleStore } from "@/store/reuseAble";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 interface DeclarationFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -50,8 +54,13 @@ export function DeclarationForm({
     resolver: zodResolver(declarationSchema),
     defaultValues: {
       declaration: !!applicationData?.declaration?.[0]?.declaration || false,
-      signature: applicationData?.personalDetails?.firstName + " " + applicationData?.personalDetails?.lastName || "",
-      date: applicationData?.declaration?.[0]?.date ? new Date(applicationData?.declaration?.[0]?.date)?.toISOString() : "",
+      signature:
+        applicationData?.personalDetails?.firstName +
+          " " +
+          applicationData?.personalDetails?.lastName || "",
+      date: applicationData?.declaration?.[0]?.date
+        ? new Date(applicationData?.declaration?.[0]?.date)?.toISOString()
+        : new Date().toISOString(),
       additionalNotes: applicationData?.declaration?.[0]?.additionalNotes || "",
       files: applicationData?.declaration?.[0]?.signature || ""
     }
@@ -69,20 +78,24 @@ export function DeclarationForm({
     const payload = {
       applicationId: applicationId,
       data: {
-        declaration: applicationData?.personalDetails?.firstName + " " + applicationData?.personalDetails?.lastName,
+        declaration:
+          applicationData?.personalDetails?.firstName +
+          " " +
+          applicationData?.personalDetails?.lastName,
         date: values.date ? new Date(values.date).toISOString() : "",
         additionalNotes: values.additionalNotes,
         files: values.files,
+        // signature: values.files
         // signature: applicationData?.personalDetails?.firstName + " " + applicationData?.personalDetails?.lastName
       }
     };
     declarationApplication(payload, {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
         onNext();
       },
       onError: (error: any) => {
-        onNext();
         console.log(error);
+        toast.error(error?.response?.data?.message || "An error occurred");
       }
     });
   }
@@ -153,11 +166,7 @@ export function DeclarationForm({
               )}
             />
 
-            <FileUploadBox
-              name="files"
-              label="Declaration Form"
-              form={form}
-            />
+            <FileUploadBox name="files" label="Declaration Form" form={form} />
 
             <FormField
               control={form.control}
@@ -188,7 +197,12 @@ export function DeclarationForm({
           >
             Previous
           </Button>
-          <Button type="submit" disabled={isPending || !form.getValues("declaration")} loading={isPending} className={continueButtonClass}>
+          <Button
+            type="submit"
+            disabled={isPending || !form.getValues("declaration")}
+            loading={isPending}
+            className={continueButtonClass}
+          >
             Continue
           </Button>
         </div>

@@ -1,46 +1,40 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Check,
-  Heart,
-  Share2,
-  ChevronLeft,
-  ChevronRight,
-  Mail,
-  MessageSquare
-} from "lucide-react";
+import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { PropertyCard } from "../../components/property-card";
-import { AcceptInviteModal } from "../../components/modals/accept-invite-modal";
-import { RejectInviteModal } from "../../components/modals/reject-invite-modal";
-import { RescheduleModal } from "../../components/modals/reschedule-modal";
-import {
-  useGetProperties,
-  useGetPropertyById
-} from "@/services/property/propertyFn";
-import { formatPrice } from "@/lib/utils";
-import { InviteData, Landlord } from "../type";
-import { format } from "date-fns";
+import { Card } from "@/components/ui/card";
+import { cn, formatPrice } from "@/lib/utils";
 import {
   useGetPropertyByInviteId,
   useUpdateInvite
 } from "@/services/application/applicationFn";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PropertyViewingDetailSkeleton } from "./PropertyViewingSkeleton";
-import SimilarPropertyCard from "@/app/components/PropertyCard";
+import { useGetProperties } from "@/services/property/propertyFn";
 import { Listing } from "@/services/property/types";
-import { Card } from "@/components/ui/card";
-import { RescheduleViewingModal } from "../../components/modals/reschedule-viewing-modal";
-import { CancelViewingModal } from "../../components/modals/cancel-viewing-modal";
-import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 import { motion } from "framer-motion";
+import {
+  Calendar,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Heart,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Share2
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { AcceptInviteModal } from "../../components/modals/accept-invite-modal";
+import { CancelViewingModal } from "../../components/modals/cancel-viewing-modal";
+import { RejectInviteModal } from "../../components/modals/reject-invite-modal";
+import { RescheduleModal } from "../../components/modals/reschedule-modal";
+import { RescheduleViewingModal } from "../../components/modals/reschedule-viewing-modal";
+import { InviteData, Landlord } from "../type";
+import { PropertyViewingDetailSkeleton } from "./PropertyViewingSkeleton";
 
 interface Property {
   id: number;
@@ -74,7 +68,8 @@ enum ViewingStatus {
   REJECTED = "REJECTED",
   RESCHEDULED = "RESCHEDULED",
   CANCELLED = "CANCELLED",
-  SCHEDULED = "SCHEDULED"
+  SCHEDULED = "SCHEDULED",
+  AWAITING_FEEDBACK = "AWAITING_FEEDBACK"
 }
 
 interface ScheduleDisplayProps {
@@ -209,6 +204,7 @@ export default function PropertyViewingDetailPage() {
   const rescheduledTimeData = dataInvite?.reScheduleDate
     ? format(new Date(dataInvite?.reScheduleDate as string), "HH:mm")
     : "";
+  const router = useRouter();
   const nextSimilar = () => {
     setSimilarIndex((prev) => (prev + 1) % similarProperties.length);
   };
@@ -541,10 +537,7 @@ export default function PropertyViewingDetailPage() {
                 </div> */}
 
                 {/* Initial Schedule */}
-                <ScheduleDisplay
-                  date={scheduledDate}
-                  time={scheduledTime}
-                />
+                <ScheduleDisplay date={scheduledDate} time={scheduledTime} />
 
                 {/* Accept/Reject Actions */}
                 <div className="space-y-3 mt-4">
@@ -619,6 +612,33 @@ export default function PropertyViewingDetailPage() {
                   </>
                 )}
 
+                {viewingStatus === ViewingStatus.AWAITING_FEEDBACK && (
+                  <div className="space-y-4">
+                    <Card className="p-6">
+                      <h2 className="text-lg font-semibold mb-4">
+                        Property Viewing Schedule
+                      </h2>
+                      <ScheduleDisplay
+                        date={scheduledDate}
+                        time={scheduledTime}
+                      />
+                    </Card>
+                    <div className="text-gray-600 font-medium mt-2">
+                      Landlord is awaiting your feedback
+                    </div>
+
+                    <Button
+                      className="w-full bg-red-600 hover:bg-red-700"
+                      onClick={() => {
+                        router.push(`/dashboard/property-viewings/#feedback-section`);
+                        
+                      }}
+                    >
+                      Leave Feedback
+                    </Button>
+                  </div>
+                )}
+
                 {/* Viewing Management Actions */}
                 {/* {viewingStatus !== ViewingStatus.CANCELLED && (
                   <ViewingActions
@@ -678,7 +698,7 @@ export default function PropertyViewingDetailPage() {
                     <SimilarPropertyCard
                       {...similarProperty}
                       showViewProperty
-                      property={similarProperty}
+                      property={similarProperty as any}
                     />
                   </div>
                 ))}

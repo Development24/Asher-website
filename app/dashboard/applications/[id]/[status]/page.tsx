@@ -56,9 +56,9 @@ export default function SuccessPage() {
     "idle" | "success" | "failure"
   >("idle");
   const [showSaveModal, setShowSaveModal] = useState(false);
-
+  const idToUse = id ?? applicationId;
   const { data: applicationData, isFetching } = useGetSingleApplication(
-    applicationId as string
+    idToUse as string
   );
   const application = applicationData?.application;
   const router = useRouter();
@@ -402,151 +402,80 @@ export default function SuccessPage() {
           </div>
 
           {/* Right Column - Contact & Actions */}
-          {status?.toString().toLowerCase() === "submitted" && (
-            <div className="space-y-6">
-              <Card className="p-6 shadow-sm w-full">
-                <h2 className="text-xl font-semibold mb-4">
-                  Application Status
-                </h2>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                    <Check className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      Application Submitted
-                    </h3>
-                    <p className="text-gray-600">
-                      Your application has been successfully submitted
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Application ID</span>
-                    <span className="font-medium">APP-{applicationId}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Submission Date</span>
-                    <span className="font-medium">
-                      {format(application?.createdAt, "MMMM d, yyyy")}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Status</span>
-                    <Badge className="bg-blue-100 text-blue-800 capitalize">
-                      {application?.status}
-                    </Badge>
-                  </div>
-                </div>
-              </Card>
-              <Card className="p-6 shadow-sm w-full">
-                <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-blue-600" />
+          <div className="space-y-6">
+            {(status?.toString().toLowerCase() === "submitted" ||
+              status?.toString().toLowerCase() === "completed") && (
+              <>
+                <Card className="p-6 shadow-sm w-full">
+                  <h2 className="text-xl font-semibold mb-4">
+                    Application Status
+                  </h2>
+                  <div className="flex items-center gap-4 mb-4 w-full">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium">Application Review</h3>
-                      <p className="text-sm text-gray-600">
-                        Your application will be reviewed by our team
+                      <h3 className="font-semibold text-lg">
+                        Application Submitted
+                      </h3>
+                      <p className="text-gray-600">
+                        Your application has been successfully submitted
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Home className="w-5 h-5 text-blue-600" />
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Application ID</span>
+                      <span className="font-medium break-all text-right">
+                        APP-{idToUse}
+                      </span>
                     </div>
-                    <div>
-                      <h3 className="font-medium">Property Inspection</h3>
-                      <p className="text-sm text-gray-600">
-                        Schedule a final property inspection if approved
-                      </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Submission Date</span>
+                      <span className="font-medium">
+                        {format(application?.createdAt, "MMMM d, yyyy")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Status</span>
+                      <Badge className="bg-blue-100 text-blue-800 capitalize">
+                        {application?.status}
+                      </Badge>
                     </div>
                   </div>
-                </div>
-              </Card>
-
-              <div>
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg sticky top-4">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative">
-                      <div
-                        className={cn(
-                          "w-12 h-12 rounded-full relative",
-                          "ring-2",
-                          propertyData?.landlord?.isOnline
-                            ? "ring-red-500"
-                            : "ring-gray-300"
-                        )}
-                      >
-                        <Image
-                          src={
-                            propertyData?.landlord?.image || "/placeholder.svg"
-                          }
-                          alt={propertyData?.landlord?.name}
-                          fill
-                          className="rounded-full object-cover"
-                        />
+                </Card>
+                <Card className="p-6 shadow-sm w-full">
+                  <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-blue-600" />
                       </div>
-                      {true && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold">
-                        {propertyData?.landlord?.name}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        Landlord
+                      <div>
+                        <h3 className="font-medium">Application Review</h3>
+                        <p className="text-sm text-gray-600">
+                          Your application will be reviewed by our team
+                        </p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="ml-auto"
-                      onClick={() => setShowLandlordProfile(true)}
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Home className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Property Inspection</h3>
+                        <p className="text-sm text-gray-600">
+                          Schedule a final property inspection if approved
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <Button
-                    className="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white mb-4"
-                    onClick={() => handleContactClick("chat")}
-                  >
-                    Chat with landlord
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleContactClick("email")}
-                  >
-                    Email landlord
-                  </Button>
+                </Card>
+              </>
+            )}
 
-                  <LandlordProfileModal
-                    isOpen={showLandlordProfile}
-                    onClose={() => setShowLandlordProfile(false)}
-                    landlord={{
-                      id: propertyData?.landlord?.id,
-                      name: propertyData?.landlord?.name,
-                      image: propertyData?.landlord?.image
-                      // address: `${propertyData?.landlord?.location}, ${propertyData?.landlord?.city},${propertyData?.landlord?.country}`,
-                      // isOnline: true
-                    }}
-                    // properties={landlordProperties}
-                    onChatClick={() => handleContactClick("chat")}
-                    onEmailClick={() => handleContactClick("email")}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {status?.toString()?.toLowerCase() === "approved" && (
-            <>
-              <div className="space-y-6">
+            {status?.toString()?.toLowerCase() === "approved" && (
+              <>
                 <Card className="p-6 shadow-sm w-full">
                   <h2 className="text-xl font-semibold mb-4">
                     Application Status
@@ -567,7 +496,9 @@ export default function SuccessPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Application ID</span>
-                      <span className="font-medium">APP-{applicationId}</span>
+                      <span className="font-medium break-all">
+                        APP-{idToUse}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Approval Date</span>
@@ -610,49 +541,11 @@ export default function SuccessPage() {
                     </div>
                   </div>
                 </Card>
+              </>
+            )}
 
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Contact Landlord
-                  </h2>
-                  <div className="flex items-center gap-4 mb-6">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage
-                        src={propertyData?.landlord?.image}
-                        alt={propertyData?.landlord?.name}
-                      />
-                      <AvatarFallback>AA</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">
-                        {propertyData?.landlord?.name}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {propertyData?.landlord?.email}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <Button className="w-full flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4" />
-                      Chat with landlord
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full flex items-center gap-2"
-                    >
-                      <Mail className="w-4 h-4" />
-                      Email landlord
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            </>
-          )}
-
-          {status?.toString()?.toLowerCase() === "rejected" && (
-            <>
-              <div className="space-y-6">
+            {status?.toString()?.toLowerCase() === "rejected" && (
+              <>
                 <Card className="p-6 shadow-sm w-full">
                   <h2 className="text-xl font-semibold mb-4">
                     Application Status
@@ -673,7 +566,9 @@ export default function SuccessPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Application ID</span>
-                      <span className="font-medium">APP-{applicationId}</span>
+                      <span className="font-medium break-all">
+                        APP-{idToUse}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Decision Date</span>
@@ -708,45 +603,83 @@ export default function SuccessPage() {
                     </Button>
                   </div>
                 </Card>
+              </>
+            )}
 
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Contact Landlord
-                  </h2>
-                  <div className="flex items-center gap-4 mb-6">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage
-                        src={propertyData?.landlord?.image}
-                        alt={propertyData?.landlord?.name}
-                      />
-                      <AvatarFallback>AA</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">
-                        {propertyData?.landlord?.name}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {propertyData?.landlord?.email}
-                      </div>
-                    </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg sticky top-4">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative">
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-full relative",
+                      "ring-2",
+                      propertyData?.landlord?.isOnline
+                        ? "ring-red-500"
+                        : "ring-gray-300"
+                    )}
+                  >
+                    <Image
+                      src={
+                        propertyData?.landlord?.user?.profile?.image ||
+                        "/placeholder.svg"
+                      }
+                      alt={propertyData?.landlord?.user?.profile?.firstName}
+                      fill
+                      className="rounded-full object-cover"
+                    />
                   </div>
-                  <div className="space-y-3">
-                    <Button className="w-full flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4" />
-                      Chat with landlord
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full flex items-center gap-2"
-                    >
-                      <Mail className="w-4 h-4" />
-                      Email landlord
-                    </Button>
+                  {true && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold">
+                    {propertyData?.landlord?.user?.profile?.firstName}{" "}
+                    {propertyData?.landlord?.user?.profile?.lastName}
                   </div>
-                </Card>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Landlord
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="ml-auto"
+                  onClick={() => setShowLandlordProfile(true)}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
               </div>
-            </>
-          )}
+              <Button
+                className="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white mb-4"
+                onClick={() => handleContactClick("chat")}
+              >
+                Chat with landlord
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleContactClick("email")}
+              >
+                Email landlord
+              </Button>
+
+              <LandlordProfileModal
+                isOpen={showLandlordProfile}
+                onClose={() => setShowLandlordProfile(false)}
+                landlord={{
+                  id: propertyData?.landlord?.id,
+                  name: propertyData?.landlord?.user?.profile?.firstName,
+                  image: propertyData?.landlord?.user?.profile?.image
+                  // address: `${propertyData?.landlord?.location}, ${propertyData?.landlord?.city},${propertyData?.landlord?.country}`,
+                  // isOnline: true
+                }}
+                // properties={landlordProperties}
+                onChatClick={() => handleContactClick("chat")}
+                onEmailClick={() => handleContactClick("email")}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Similar Properties */}
@@ -835,9 +768,10 @@ export default function SuccessPage() {
         isOpen={showChatModal}
         onClose={() => setShowChatModal(false)}
         landlord={{
-          name: "Adam Aleknd",
-          image: "/placeholder.svg",
-          role: "Landlord"
+          name: `${propertyData?.landlord?.user?.profile?.firstName} ${propertyData?.landlord?.user?.profile?.lastName}`,
+          image: propertyData?.landlord?.image || "",
+          role: "Landlord",
+          id: propertyData?.landlord?.userId
         }}
         propertyId={Number(id)}
       />

@@ -26,6 +26,7 @@ import {
 } from "@/services/general/generalFn";
 import { useRouter } from "next/navigation";
 import { ApplicationData } from "@/types/applicationInterface";
+import { useReuseAbleStore } from "@/store/reuseAble";
 interface DocumentsFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -47,6 +48,8 @@ export function DocumentsForm({
 }: DocumentsFormProps) {
   const { formData, updateFormData } = useApplicationFormStore();
   const { mutate: documentsApplication, isPending } = useDocumentsApplication();
+  const { setApplicationId } = useReuseAbleStore((state: any) => state);
+
   const { mutateAsync: uploadFiles, isPending: uploadFilesPend } =
     useUploadRawFiles(true);
   const router = useRouter();
@@ -141,8 +144,11 @@ export function DocumentsForm({
       documentsApplication({
         applicationId: String(applicationId),
         data: formData
+      }, {
+        onSuccess: (data: any) => {
+        onNext();
+        }
       });
-      onNext();
     } catch (error) {
       console.error("Error submitting documents:", error);
       // Handle error (show toast, etc.)

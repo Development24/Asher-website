@@ -12,12 +12,11 @@ const ApplicationPage = () => {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const applicationId = searchParams.get("applicationId");
-  const applicationInviteId = searchParams.get("applicationInviteId");
+  // const applicationInviteId = searchParams.get("applicationInviteId");
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   // Use the appropriate ID for your API call
   const idToUse = applicationId;
-
   // Get applicationId from all possible sources
   // const pathApplicationId = pathname.includes("progress") ? pathname.split("/").pop() : null;
   // const queryApplicationId = searchParams.get("applicationId");
@@ -27,7 +26,8 @@ const ApplicationPage = () => {
   // const applicationId = storeApplicationId || queryApplicationId || pathApplicationId;
   // console.log("applicationId", applicationId);
   // Fetch application data
-  const { data: applicationData, isFetching: isApplicationFetching } = useGetSingleApplication(
+  
+  const { data: applicationData, isFetching: isApplicationFetching, refetch } = useGetSingleApplication(
     idToUse as string,
   );
 
@@ -58,6 +58,7 @@ const ApplicationPage = () => {
             applicationData={applicationData?.application}
             isApplicationFetching={isApplicationFetching}
             applicationId={applicationId as string}
+            refetch={refetch}
           />
         </div>
       </div>

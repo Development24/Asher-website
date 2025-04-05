@@ -26,6 +26,9 @@ import {
 } from "./schemas/guarantor-details-schema";
 import { useGuarantorApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
+import { useReuseAbleStore } from "@/store/reuseAble";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 interface GuarantorDetailsFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -53,8 +56,10 @@ export function GuarantorDetailsForm({
       email: applicationData?.guarantorInformation?.email || "",
       address: applicationData?.guarantorInformation?.address || "",
       relationship: applicationData?.guarantorInformation?.relationship || "",
-      identificationType: applicationData?.guarantorInformation?.identificationType || "",
-      identificationNo: applicationData?.guarantorInformation?.identificationNo || "",
+      identificationType:
+        applicationData?.guarantorInformation?.identificationType || "",
+      identificationNo:
+        applicationData?.guarantorInformation?.identificationNo || "",
       monthlyIncome: applicationData?.guarantorInformation?.monthlyIncome || "",
       employerName: applicationData?.guarantorInformation?.employerName || ""
     }
@@ -82,27 +87,31 @@ export function GuarantorDetailsForm({
     //     employerName: values.employerName
     //   }
     // };
-    
+
     // updateFormData(guarantorData);
     // console.log("After update - Store data:", formData);
-    guarantorApplication({
-      applicationId: applicationId,
-      data: {
-        fullName: values.fullName,
-        phoneNumber: values.phoneNumber,
-        email: values.email,
-        address: values.address,
-        relationship: values.relationship,
-        identificationType: values.identificationType,
-        identificationNo: values.identificationNo,
-        monthlyIncome: values.monthlyIncome,
-        employerName: values.employerName
+    guarantorApplication(
+      {
+        applicationId: applicationId,
+        data: {
+          fullName: values.fullName,
+          phoneNumber: values.phoneNumber,
+          email: values.email,
+          address: values.address,
+          relationship: values.relationship,
+          identificationType: values.identificationType,
+          identificationNo: values.identificationNo,
+          monthlyIncome: values.monthlyIncome,
+          employerName: values.employerName
+        }
+      },
+      {
+        onSuccess: (data: any) => {
+          // console.log("Success Submitted", data);
+          onNext();
+        }
       }
-    }, {
-      onSuccess: () => {
-        onNext();
-      }
-    });
+    );
   }
 
   return (
@@ -264,10 +273,20 @@ export function GuarantorDetailsForm({
         </div>
 
         <div className="flex justify-between pt-6">
-          <Button type="button" variant="outline" onClick={onPrevious} disabled={isPending}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onPrevious}
+            disabled={isPending}
+          >
             Previous
           </Button>
-          <Button type="submit" disabled={isPending} loading={isPending} className={continueButtonClass}>
+          <Button
+            type="submit"
+            disabled={isPending}
+            loading={isPending}
+            className={continueButtonClass}
+          >
             Continue
           </Button>
         </div>

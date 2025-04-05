@@ -13,11 +13,10 @@ import TenantConduct from "./steps/tenant-conduct";
 import TenantInfo from "./steps/tenant-info";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-export default function LandlordReferenceForm() {
+export default function LandlordReferenceForm({ id }: { id: string }) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
-  const { id: applicationId } = useParams();
   const {
     mutate: createLandlordReference,
     isPending: isCreatingLandlordReference
@@ -127,7 +126,7 @@ export default function LandlordReferenceForm() {
 
     console.log("Form submitted:", payload);
     createLandlordReference(
-      { applicationId: applicationId as string, data: payload },
+      { applicationId: id as string, data: payload },
       {
         onSuccess: () => {
           toast.success("Landlord reference created successfully");

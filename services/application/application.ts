@@ -19,7 +19,8 @@ const applicationURL = {
     invites: "/invities/all",
     updateInvite: "/invites/update/:id",
     getPropertyByInviteId: "/invities/:id/get",
-    dashboardStats: "/applicant/stats"
+    dashboardStats: "/applicant/stats",
+    completeApplication: "/complete/:applicationId"
 }
 
 export const startApplication = async (propertyId: string, payload: any) => {
@@ -111,6 +112,11 @@ export const getPropertyByInviteId = async (id: string) => {
 
 export const dashboardStats = async () => {
     const response = await api.get(URL + applicationURL.dashboardStats)
+    return response.data
+}
+
+export const completeApplication = async (applicationId: string) => {
+    const response = await api.post(URL + applicationURL.completeApplication.replace(":applicationId", applicationId))
     return response.data
 }
 

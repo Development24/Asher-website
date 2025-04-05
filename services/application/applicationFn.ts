@@ -17,7 +17,8 @@ import {
     updateInvite,
     UpdateInvitePayload,
     getPropertyByInviteId,
-    dashboardStats
+    dashboardStats,
+    completeApplication
 } from "./application"
 
 export const useStartApplication = () => {
@@ -27,57 +28,93 @@ export const useStartApplication = () => {
 }
 
 export const useResidentApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => residentApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useEmployerApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => employerApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useEmergencyContactApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => emergencyContactApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useAdditionalDetailsApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => additionalDetailsApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useRefereesApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => refereesApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useGuarantorApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => guarantorApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 
 export const useDocumentsApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => documentsApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useChecklistApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => checklistApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
 export const useDeclarationApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => declarationApplication(payload.applicationId, payload.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }
 
@@ -136,5 +173,15 @@ export const useDashboardStats = () => {
     return useQuery({
         queryKey: ["dashboardStats"],
         queryFn: () => dashboardStats(),
+    })
+}
+
+export const useCompleteApplication = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (applicationId: string) => completeApplication(applicationId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+        }
     })
 }

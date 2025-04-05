@@ -24,7 +24,7 @@ import { useApplicationFormStore } from "@/store/useApplicationFormStore";
 import { ApplicationData } from "@/types/applicationInterface";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -51,6 +51,8 @@ export function PersonalDetailsForm({
   const { formData, updateFormData } = useApplicationFormStore();
   const { id } = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const applicationInvitedId = searchParams.get("applicationInviteId");
   // console.log(id);
   // const applicationInvitedId = useReuseAbleStore((state: any) => state.applicationInvitedId);
@@ -87,7 +89,7 @@ export function PersonalDetailsForm({
         | "driving licence"
         | "national id"
         | undefined,
-      identificationNo:
+        identificationNo:
         (applicationData?.personalDetails?.identificationNo as string | null) ||
         "",
       issuingAuthority: applicationData?.personalDetails?.issuingAuthority,
@@ -121,7 +123,6 @@ export function PersonalDetailsForm({
       return;
     }
 
-    // If not completed, proceed with submission
     const payload = {
       ...values,
       dob: values.dob ? new Date(values.dob).toISOString() : "",
@@ -140,11 +141,11 @@ export function PersonalDetailsForm({
       {
         onSuccess: (data: any) => {
           console.log("Success Submitted", data);
-
+          
           // Store the applicationId in Zustand
           setApplicationId(data?.application?.id);
 
-          // ALSO update the URL to include the applicationId
+          // Update URL using window.history
           const nextUrl = new URL(window.location.href);
           nextUrl.searchParams.set("applicationId", data?.application?.id);
           window.history.replaceState({}, "", nextUrl.toString());
@@ -152,8 +153,8 @@ export function PersonalDetailsForm({
           onNext();
         },
         onError: (err: any) => {
-          console.log(err?.response?.data?.error);
-          toast.error(err?.response?.data?.error || err?.response?.data?.message || "An error occurred");
+          console.log(err?.response?.data?.message);
+          toast.error(err?.response?.data?.message);
         }
       }
     );

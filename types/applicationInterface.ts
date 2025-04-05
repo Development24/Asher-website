@@ -39,6 +39,7 @@ export interface ApplicationData {
     declaration: Declaration[];
     applicationQuestions: ApplicationQuestions[];
     personalDetails: PersonalDetails;
+    hasApplicationFee: boolean;
 }
 
 export interface Referee {
