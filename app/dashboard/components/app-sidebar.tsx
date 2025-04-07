@@ -82,11 +82,11 @@ export function AppSidebar() {
               {user?.profile?.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full">
             <span className="font-medium capitalize">
               {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
             </span>
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <span className="text-sm text-muted-foreground max-w-[200px] truncate">{user?.email}</span>
           </div>
         </div>
       </SidebarHeader>
