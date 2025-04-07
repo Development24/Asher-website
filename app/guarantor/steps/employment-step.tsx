@@ -453,9 +453,9 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
                 id="monthly-income"
                 placeholder="£"
                 className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                value={formData.monthlyIncome}
+                value={formData.freelanceMonthlyIncome}
                 onChange={(e) =>
-                  handleFormChange("monthlyIncome", e.target.value)
+                  handleFormChange("freelanceMonthlyIncome", e.target.value)
                 }
               />
             </div>
@@ -470,10 +470,10 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
                 id="portfolio-website"
                 placeholder="https://"
                 className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-                value={formData.portfolioWebsite}
+                value={formData.freelancePortfolioWebsite}
                 onChange={(e) =>
                   handleFormChange(
-                    "portfolioWebsite",
+                    "freelancePortfolioWebsite",
                     e.target.value
                   )
                 }
@@ -491,9 +491,9 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <Input
               id="major-clients"
               className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-              value={formData.majorClients}
+              value={formData.freelanceMajorClients}
               onChange={(e) =>
-                handleFormChange("majorClients", e.target.value)
+                handleFormChange("freelanceMajorClients", e.target.value)
               }
             />
           </div>
