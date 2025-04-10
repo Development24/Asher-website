@@ -56,11 +56,11 @@ export function GuarantorDetailsForm({
       email: applicationData?.guarantorInformation?.email || "",
       address: applicationData?.guarantorInformation?.address || "",
       relationship: applicationData?.guarantorInformation?.relationship || "",
-      identificationType:
-        applicationData?.guarantorInformation?.identificationType || "",
-      identificationNo:
-        applicationData?.guarantorInformation?.identificationNo || "",
-      monthlyIncome: applicationData?.guarantorInformation?.monthlyIncome || "",
+      // identificationType:
+      //   applicationData?.guarantorInformation?.identificationType || "",
+      // identificationNo:
+      //   applicationData?.guarantorInformation?.identificationNo || "",
+      // monthlyIncome: applicationData?.guarantorInformation?.monthlyIncome || "",
       employerName: applicationData?.guarantorInformation?.employerName || ""
     }
   });
@@ -99,9 +99,9 @@ export function GuarantorDetailsForm({
           email: values.email,
           address: values.address,
           relationship: values.relationship,
-          identificationType: values.identificationType,
-          identificationNo: values.identificationNo,
-          monthlyIncome: values.monthlyIncome,
+          // identificationType: values.identificationType,
+          // identificationNo: values.identificationNo,
+          // monthlyIncome: values.monthlyIncome,
           employerName: values.employerName
         }
       },
@@ -200,7 +200,7 @@ export function GuarantorDetailsForm({
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="identificationType"
               render={({ field }) => (
@@ -226,9 +226,9 @@ export function GuarantorDetailsForm({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="identificationNo"
               render={({ field }) => (
@@ -240,7 +240,7 @@ export function GuarantorDetailsForm({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={form.control}
@@ -256,7 +256,7 @@ export function GuarantorDetailsForm({
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="monthlyIncome"
               render={({ field }) => (
@@ -268,7 +268,7 @@ export function GuarantorDetailsForm({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
           </div>
         </div>
 

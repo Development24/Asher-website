@@ -6,9 +6,9 @@ export const guarantorDetailsSchema = z.object({
   email: z.string().email("Invalid email address"),
   address: z.string().min(5, "Address must be at least 5 characters"),
   relationship: z.string().min(2, "Relationship is required"),
-  identificationType: z.union([z.enum(["Passport", "Driving Licence", "National ID"]), z.string()]),
-  identificationNo: z.string().min(1, "ID number is required"),
-  monthlyIncome: z.string().min(1, "Monthly income is required"),
+  // identificationType: z.union([z.enum(["Passport", "Driving Licence", "National ID"]), z.string()]),
+  // identificationNo: z.string().min(1, "ID number is required"),
+  // monthlyIncome: z.string().min(1, "Monthly income is required"),
   employerName: z.string().min(2, "Employer name is required"),
 })
 
