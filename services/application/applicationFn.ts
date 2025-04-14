@@ -19,7 +19,8 @@ import {
     getPropertyByInviteId,
     dashboardStats,
     completeApplication,
-    getReferenceDetails
+    getReferenceDetails,
+    signAgreement
 } from "./application"
 
 export const useStartApplication = () => {
@@ -191,5 +192,11 @@ export const useGetReferenceDetails = (applicationId: string) => {
     return useQuery({
         queryKey: ["getReferenceDetails"],
         queryFn: () => getReferenceDetails(applicationId),
+    })
+}
+
+export const useSignAgreement = () => {
+    return useMutation({
+        mutationFn: (payload: { applicationId: string, data: any }) => signAgreement(payload.applicationId, payload.data),
     })
 }

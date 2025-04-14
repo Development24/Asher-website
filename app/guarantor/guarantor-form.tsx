@@ -105,7 +105,7 @@ export default function GuarantorForm({
     businessAddressSole: "",
     businessRegistration: "",
     utrNumberSole: "",
-    guarantorName: "",
+    // guarantorName: "",
     guarantorSignature: "",
     guarantorSignedAt: "",
     tenantName: "",

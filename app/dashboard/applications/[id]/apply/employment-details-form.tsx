@@ -109,10 +109,10 @@ export function EmploymentDetailsForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        <div>
-          <h2 className="text-lg font-semibold mb-4">EMPLOYMENT INFORMATION</h2>
+      <div>
+        <h2 className="text-lg font-semibold mb-4">EMPLOYMENT INFORMATION</h2>
 
-          <div className="space-y-4">
+        <div className="space-y-4">
             <FormField
               control={form.control}
               name="employmentStatus"
@@ -391,21 +391,21 @@ export function EmploymentDetailsForm({
                       <FormMessage />
                     </FormItem>
                   )}
-                />
-              </div>
-            </div>
+            />
           </div>
+            </div>
         </div>
+      </div>
 
-        <div className="flex justify-between pt-6">
+      <div className="flex justify-between pt-6">
           <Button
             type="button"
             variant="outline"
             onClick={onPrevious}
             disabled={isPending}
           >
-            Previous
-          </Button>
+          Previous
+        </Button>
           <Button
             type="submit"
             disabled={isPending}
@@ -414,8 +414,8 @@ export function EmploymentDetailsForm({
           >
             Continue
           </Button>
-        </div>
-      </form>
+      </div>
+    </form>
     </Form>
   );
 }

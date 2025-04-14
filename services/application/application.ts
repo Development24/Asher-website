@@ -21,7 +21,8 @@ const applicationURL = {
     getPropertyByInviteId: "/invities/:id/get",
     dashboardStats: "/applicant/stats",
     completeApplication: "/complete/:applicationId",
-    getReferenceDetails: "/references/:applicationId"
+    getReferenceDetails: "/references/:applicationId",
+    signAgreement: "/sign/:applicationId"
 }
 
 export const startApplication = async (propertyId: string, payload: any) => {
@@ -127,6 +128,10 @@ export const getReferenceDetails = async (applicationId: string) => {
 }
 
 
+export const signAgreement = async (applicationId: string, payload: any) => {
+    const response = await apiFormData.post(URL + applicationURL.signAgreement.replace(":applicationId", applicationId), payload)
+    return response.data
+}
 
 
 

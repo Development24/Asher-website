@@ -99,4 +99,6 @@ export interface InviteResponse {
     pendingInvites: InviteData[];
     feedbackInvites: InviteData[];
     awaitingFeedbackInvites: InviteData[];
+    approvedinvites: InviteData[];
+    otherInvites: InviteData[];
 }

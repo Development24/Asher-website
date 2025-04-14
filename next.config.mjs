@@ -21,6 +21,10 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
+  }
 }
 
 mergeConfig(nextConfig, userConfig)

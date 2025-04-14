@@ -3,7 +3,7 @@
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import {
   useGetPropertyByInviteId,
   useUpdateInvite
@@ -13,20 +13,16 @@ import { Listing } from "@/services/property/types";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import {
-  Calendar,
   Check,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Heart,
-  Mail,
   MapPin,
-  MessageSquare,
   Share2
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { AcceptInviteModal } from "../../components/modals/accept-invite-modal";
 import { CancelViewingModal } from "../../components/modals/cancel-viewing-modal";
@@ -35,6 +31,11 @@ import { RescheduleModal } from "../../components/modals/reschedule-modal";
 import { RescheduleViewingModal } from "../../components/modals/reschedule-viewing-modal";
 import { InviteData, Landlord } from "../type";
 import { PropertyViewingDetailSkeleton } from "./PropertyViewingSkeleton";
+import {
+  ContactAgentSection,
+  ScheduleDisplay,
+  ViewingActions
+} from "./ViewingsComp";
 
 interface Property {
   id: number;
@@ -69,104 +70,15 @@ enum ViewingStatus {
   RESCHEDULED = "RESCHEDULED",
   CANCELLED = "CANCELLED",
   SCHEDULED = "SCHEDULED",
-  AWAITING_FEEDBACK = "AWAITING_FEEDBACK"
+  AWAITING_FEEDBACK = "AWAITING_FEEDBACK",
+  APPROVED = "APPROVED"
 }
-
-interface ScheduleDisplayProps {
-  date: string;
-  time: string;
-  isStrikethrough?: boolean;
-  label?: string;
-  className?: string;
-}
-
-const ScheduleDisplay = ({
-  date,
-  time,
-  isStrikethrough,
-  label,
-  className
-}: ScheduleDisplayProps) => (
-  <div className={cn("space-y-2", className)}>
-    {label && (
-      <h3 className="text-sm font-medium text-gray-500 mb-2">{label}</h3>
-    )}
-    <div className="flex items-center gap-2 text-sm">
-      <Calendar className="w-4 h-4 text-gray-400" />
-      <span className={isStrikethrough ? "line-through" : ""}>{date}</span>
-    </div>
-    <div className="flex items-center gap-2 text-sm">
-      <Clock className="w-4 h-4 text-gray-400" />
-      <span className={isStrikethrough ? "line-through" : ""}>{time}</span>
-    </div>
-  </div>
-);
-
-const ViewingActions = ({
-  onReschedule,
-  onCancel,
-  variant = "secondary"
-}: {
-  onReschedule: () => void;
-  onCancel: () => void;
-  variant?: "primary" | "secondary";
-}) => (
-  <div className="space-y-3">
-    <Button variant="outline" className="w-full" onClick={onReschedule}>
-      {variant === "primary" ? "Reschedule viewing" : "Reschedule"}
-    </Button>
-    <Button
-      variant="outline"
-      className="w-full text-red-600 hover:bg-red-50"
-      onClick={onCancel}
-    >
-      {variant === "primary" ? "Cancel viewing" : "Reject"}
-    </Button>
-  </div>
-);
-
-const ContactAgentSection = ({ landlord }: { landlord: any }) => (
-  <div className="bg-gray-50 p-6 rounded-lg">
-    <h2 className="text-lg font-semibold mb-4">Contact Agent</h2>
-    <div className="flex items-center gap-4 mb-6">
-      <div className="relative w-12 h-12">
-        <Image
-          src={landlord?.user?.profile?.profileUrl || "/placeholder.svg"}
-          alt={landlord?.user?.profile?.fullname || "Agent"}
-          fill
-          className="rounded-full object-cover"
-        />
-      </div>
-      <div>
-        <div className="font-medium">
-          {landlord?.user?.profile?.firstName}{" "}
-          {landlord?.user?.profile?.lastName}
-        </div>
-        <div className="text-sm text-gray-600">{landlord?.user?.email}</div>
-      </div>
-    </div>
-    <div className="space-y-3">
-      <Button className="w-full flex items-center justify-center gap-2">
-        <MessageSquare className="w-4 h-4" />
-        Chat with agent
-      </Button>
-      <Button
-        variant="outline"
-        className="w-full flex items-center justify-center gap-2"
-      >
-        <Mail className="w-4 h-4" />
-        Email agent
-      </Button>
-    </div>
-  </div>
-);
 
 export default function PropertyViewingDetailPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const scheduleDate = searchParams?.get("schedule_date");
   const invitationId = searchParams?.get("invitationId");
-  const [property, setProperty] = useState<Property | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const similarPropertiesRef = useRef<HTMLDivElement>(null);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
@@ -578,6 +490,26 @@ export default function PropertyViewingDetailPage() {
                   </div>
                 )}
 
+                {viewingStatus === ViewingStatus.APPROVED && (
+                  <div className="space-y-4">
+                    <Card className="p-6">
+                      <h2 className="text-lg font-semibold mb-4">
+                        Approved Property Viewing Schedule
+                      </h2>
+                      <ScheduleDisplay
+                        date={scheduledDate}
+                        time={scheduledTime}
+                      />
+                    </Card>
+
+                    {/* <ViewingActions
+                      onReschedule={() => setShowRescheduleModal(true)}
+                      onCancel={() => setShowCancelModal(true)}
+                      variant="primary"
+                    /> */}
+                  </div>
+                )}
+
                 {/* Rescheduled Schedule */}
                 {viewingStatus === ViewingStatus.RESCHEDULED && (
                   <div className="space-y-4">
@@ -630,8 +562,9 @@ export default function PropertyViewingDetailPage() {
                     <Button
                       className="w-full bg-red-600 hover:bg-red-700"
                       onClick={() => {
-                        router.push(`/dashboard/property-viewings/#feedback-section`);
-                        
+                        router.push(
+                          `/dashboard/property-viewings/#feedback-section`
+                        );
                       }}
                     >
                       Leave Feedback

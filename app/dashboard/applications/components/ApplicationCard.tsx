@@ -97,7 +97,7 @@ const ApplicationCard = ({
     }
     
     if (sectionType === "submitted" || sectionType === "completed") {
-      return `/dashboard/applications/${application?.properties?.id}/submitted?applicationId=${application?.id}`;
+      return `/dashboard/applications/${application?.id}/submitted?applicationId=${application?.id}`;
     }
     
     return `/dashboard/applications/${application?.properties?.id}/apply?applicationInviteId=${application?.applicationInviteId || application?.id}`;

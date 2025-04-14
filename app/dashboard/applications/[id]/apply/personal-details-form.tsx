@@ -24,7 +24,12 @@ import { useApplicationFormStore } from "@/store/useApplicationFormStore";
 import { ApplicationData } from "@/types/applicationInterface";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
-import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
+import {
+  useParams,
+  useSearchParams,
+  useRouter,
+  usePathname
+} from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -89,7 +94,7 @@ export function PersonalDetailsForm({
         | "driving licence"
         | "national id"
         | undefined,
-        identificationNo:
+      identificationNo:
         (applicationData?.personalDetails?.identificationNo as string | null) ||
         "",
       issuingAuthority: applicationData?.personalDetails?.issuingAuthority,
@@ -139,17 +144,18 @@ export function PersonalDetailsForm({
         data: payload
       },
       {
-        onSuccess: (data: any) => {
+        onSuccess: async (data: any) => {
           console.log("Success Submitted", data);
-          
+
           // Store the applicationId in Zustand
-          setApplicationId(data?.application?.id);
+          await setApplicationId(data?.application?.id);
 
           // Update URL using window.history
           const nextUrl = new URL(window.location.href);
           nextUrl.searchParams.set("applicationId", data?.application?.id);
           window.history.replaceState({}, "", nextUrl.toString());
-
+          // Wait a tick to ensure state updates are processed
+          await new Promise((resolve) => setTimeout(resolve, 0));
           onNext();
         },
         onError: (err: any) => {
@@ -174,12 +180,12 @@ export function PersonalDetailsForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div>
-          <h2 className="text-lg font-semibold mb-4">BASIC INFORMATION</h2>
+      <div>
+        <h2 className="text-lg font-semibold mb-4">BASIC INFORMATION</h2>
 
-          {/* Full Name Section */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-4">
+        {/* Full Name Section */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-4 gap-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -191,17 +197,17 @@ export function PersonalDetailsForm({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                <SelectTrigger>
                           <SelectValue placeholder="Select title" />
-                        </SelectTrigger>
+                </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                <SelectContent>
                         <SelectItem value="Mr.">Mr.</SelectItem>
                         <SelectItem value="Mrs.">Mrs.</SelectItem>
                         <SelectItem value="Miss">Miss</SelectItem>
                         <SelectItem value="Dr.">Dr.</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </SelectContent>
+              </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -248,11 +254,11 @@ export function PersonalDetailsForm({
                   </FormItem>
                 )}
               />
-            </div>
           </div>
+        </div>
 
-          {/* Date of Birth Section */}
-          <div className="space-y-4 mt-6">
+        {/* Date of Birth Section */}
+        <div className="space-y-4 mt-6">
             <FormField
               control={form.control}
               name="dob"
@@ -288,21 +294,21 @@ export function PersonalDetailsForm({
                 <FormItem>
                   <FormLabel>Identification Details</FormLabel>
                   <FormControl>
-                    <Select
+            <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                    >
-                      <SelectTrigger>
+            >
+              <SelectTrigger>
                         <SelectValue placeholder="ID Type" />
-                      </SelectTrigger>
-                      <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                         <SelectItem value="passport">Passport</SelectItem>
                         <SelectItem value="driving licence">
                           Driving Licence
-                        </SelectItem>
+                  </SelectItem>
                         <SelectItem value="national id">National ID</SelectItem>
-                      </SelectContent>
-                    </Select>
+              </SelectContent>
+            </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -346,10 +352,10 @@ export function PersonalDetailsForm({
                 </FormItem>
               )}
             />
-          </div>
+        </div>
 
-          {/* Contact Information Section */}
-          <div className="space-y-4 mt-6">
+        {/* Contact Information Section */}
+        <div className="space-y-4 mt-6">
             <FormField
               control={form.control}
               name="phoneNumber"
@@ -370,9 +376,9 @@ export function PersonalDetailsForm({
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Email address"
+            <Input
+              type="email"
+              placeholder="Email address"
                       {...field}
                     />
                   </FormControl>
@@ -380,10 +386,10 @@ export function PersonalDetailsForm({
                 </FormItem>
               )}
             />
-          </div>
+        </div>
 
-          {/* Marital Information Section */}
-          <div className="space-y-4 mt-6">
+        {/* Marital Information Section */}
+        <div className="space-y-4 mt-6">
             <FormField
               control={form.control}
               name="maritalStatus"
@@ -391,26 +397,26 @@ export function PersonalDetailsForm({
                 <FormItem>
                   <FormLabel>Marital information</FormLabel>
                   <FormControl>
-                    <Select
+              <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                    >
-                      <SelectTrigger>
+              >
+                <SelectTrigger>
                         <SelectValue placeholder="Select marital status" />
-                      </SelectTrigger>
-                      <SelectContent>
+                </SelectTrigger>
+                <SelectContent>
                         <SelectItem value="Single">Single</SelectItem>
                         <SelectItem value="Married">Married</SelectItem>
                         <SelectItem value="Divorced">Divorced</SelectItem>
                         <SelectItem value="Separated">Separated</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </SelectContent>
+              </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
-            />
-          </div>
+              />
+            </div>
 
           {/* Next of Kin Information Section */}
           <div className="space-y-6 mt-6">
@@ -537,9 +543,9 @@ export function PersonalDetailsForm({
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
-                </div>
-              </div>
+              />
+            </div>
+          </div>
             ))}
           </div>
 
@@ -568,20 +574,20 @@ export function PersonalDetailsForm({
                 </FormItem>
               )}
             />
-          </div>
         </div>
+      </div>
 
-        <div className="flex justify-end pt-6">
-          <Button
+      <div className="flex justify-end pt-6">
+        <Button 
             type="submit"
-            className={continueButtonClass}
+          className={continueButtonClass}
             disabled={isPending}
             loading={isPending}
-          >
-            Continue
-          </Button>
-        </div>
-      </form>
+        >
+          Continue
+        </Button>
+      </div>
+    </form>
     </Form>
   );
 }

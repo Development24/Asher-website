@@ -172,43 +172,43 @@ export function DocumentsForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div>
-          <h2 className="text-lg font-semibold mb-6">REQUIRED DOCUMENTS</h2>
-          <div className="space-y-6">
-            <UploadBox
+      <div>
+        <h2 className="text-lg font-semibold mb-6">REQUIRED DOCUMENTS</h2>
+        <div className="space-y-6">
+          <UploadBox
               name="idDocument"
-              label="Photographic ID (Passport or Driving licence)"
+            label="Photographic ID (Passport or Driving licence)"
               form={form}
-            />
+          />
 
-            <UploadBox
+          <UploadBox
               name="bankStatements"
-              label="Two most recent monthly Bank Statements (These cannot be screenshots)"
+            label="Two most recent monthly Bank Statements (These cannot be screenshots)"
               form={form}
-            />
+          />
 
-            <UploadBox
+          <UploadBox
               name="proofOfIncome"
-              label="Proof of income (e.g. Two months' pay slips, copies of accounts, end of year accounts)"
+            label="Proof of income (e.g. Two months' pay slips, copies of accounts, end of year accounts)"
               form={form}
-            />
+          />
 
-            <UploadBox
+          <UploadBox
               name="proofOfBenefits"
-              label="Proof of benefits (If applicable)"
-              required={false}
+            label="Proof of benefits (If applicable)"
+            required={false}
               form={form}
-            />
-          </div>
+          />
         </div>
+      </div>
 
-        <div className="flex justify-between pt-6">
-          <Button type="button" variant="outline" onClick={onPrevious}>
-            Previous
-          </Button>
+      <div className="flex justify-between pt-6">
+        <Button type="button" variant="outline" onClick={onPrevious}>
+          Previous
+        </Button>
           <Button type="submit" disabled={isPending} loading={isPending} className={continueButtonClass}>Continue</Button>
-        </div>
-      </form>
+      </div>
+    </form>
     </Form>
   );
 }

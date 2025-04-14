@@ -13,7 +13,7 @@ import {
 import { InviteData, InviteResponse, Landlord } from "./type";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "next/navigation";
-
+import { PropertyCardSkeleton, SectionSkeleton } from "./SkeletonLoaders";
 interface Property {
   id: number;
   image: string;
@@ -27,39 +27,6 @@ interface Property {
   landlord?: Landlord;
 }
 
-function PropertyCardSkeleton() {
-  return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <Skeleton className="w-full h-48" /> {/* Image skeleton */}
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-6 w-3/4" /> {/* Title skeleton */}
-        <Skeleton className="h-4 w-1/2" /> {/* Price skeleton */}
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-full" /> {/* Description line 1 */}
-          <Skeleton className="h-4 w-2/3" /> {/* Description line 2 */}
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-full" /> {/* Button skeleton */}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionSkeleton({ count = 3 }) {
-  return (
-    <section className="mb-12">
-      <Skeleton className="h-8 w-48 mb-4" /> {/* Section title skeleton */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {Array(count)
-          .fill(0)
-          .map((_, i) => (
-            <PropertyCardSkeleton key={i} />
-          ))}
-      </div>
-    </section>
-  );
-}
 
 export default function PropertyViewingsPage() {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -81,6 +48,8 @@ export default function PropertyViewingsPage() {
 
   const acceptedInvites = invitesData?.acceptInvites;
   const rejectedInvites = invitesData?.rejectedInvites;
+  const approvedInvites = invitesData?.approvedinvites;
+  const allCompletedInvites = invitesData?.otherInvites;
   const rescheduledInvites = invitesData?.rescheduledInvites;
   const pendingInvites = invitesData?.pendingInvites;
   const feedbackInvites = invitesData?.awaitingFeedbackInvites;
@@ -319,9 +288,9 @@ export default function PropertyViewingsPage() {
 
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Recent Viewings</h2>
-        {rejectedInvites?.length > 0 ? (
+        {allCompletedInvites?.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rejectedInvites.map((property) => (
+            {allCompletedInvites.map((property) => (
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -332,7 +301,7 @@ export default function PropertyViewingsPage() {
                   {...property}
                   property={property as any}
                   viewType="schedule"
-                  viewLink={`/dashboard/property-viewings/${property.id}/accepted`}
+                  viewLink={`/dashboard/property-viewings/${property.id}`}
                   isScheduled
                 />
               </motion.div>

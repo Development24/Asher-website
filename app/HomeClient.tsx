@@ -20,7 +20,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoginModal } from "./components/auth/LoginModal";
 import { SignUpModal } from "./components/auth/SignUpModal";
 import { SuccessModal } from "./components/auth/SuccessModal";
@@ -31,6 +31,7 @@ import { FeaturedProperties } from "./components/FeaturedProperties";
 import SearchBar from "./components/SearchBar";
 import LoginHeaderItems from "./dashboard/components/LoginHeaderItems";
 import { Sidebar } from "./dashboard/components/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function HomeClient() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -39,7 +40,6 @@ export function HomeClient() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const user = userStore((state) => state.user);
@@ -55,6 +55,30 @@ export function HomeClient() {
     setShowLoginModal(true);
     // router.push(`/property/${propertyData?.id}/email`);
   };
+
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  if (!isHydrated) {
+    return (
+      <div className="space-y-5 max-w-8xl mx-auto p-5">
+        <Skeleton className="aspect-video w-full rounded-md min-h-[450px]" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Skeleton className="w-full h-full" />
+          <Skeleton className="w-full h-full" />
+          <Skeleton className="w-full h-full" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="w-full min-h-[300px]" />
+          <Skeleton className="w-full min-h-[300px]" />
+        </div>
+        <Skeleton className="w-full min-h-[300px]" />
+      </div>
+    );
+  }
 
   return (
     <main>
@@ -81,30 +105,34 @@ export function HomeClient() {
         </div>
 
         {/* Auth Buttons */}
-        {user ? (
-          <div className="flex items-center gap-4 absolute top-4 right-4 z-20">
-            <LoginHeaderItems onMenuClick={toggleSidebar} />
-            <Sidebar
-              isOpen={isSidebarOpen}
-              onClose={() => setIsSidebarOpen(false)}
-            />
-          </div>
-        ) : (
-          <div className="absolute top-4 right-4 z-20 flex gap-4">
-            <Button
-              variant="outline"
-              className="border-white text-red-800 hover:bg-white hover:text-red-900"
-              onClick={() => setShowLoginModal(true)}
-            >
-              Log In
-            </Button>
-            <Button
-              className="bg-red-600 text-white hover:bg-red-700"
-              onClick={() => setShowSignUpModal(true)}
-            >
-              Sign Up
-            </Button>
-          </div>
+        {isHydrated && (
+          <>
+            {user ? (
+              <div className="flex items-center gap-4 absolute top-4 right-4 z-20">
+                <LoginHeaderItems onMenuClick={toggleSidebar} />
+                <Sidebar
+                  isOpen={isSidebarOpen}
+                  onClose={() => setIsSidebarOpen(false)}
+                />
+              </div>
+            ) : (
+              <div className="absolute top-4 right-4 z-20 flex gap-4">
+                <Button
+                  variant="outline"
+                  className="border-white text-red-800 hover:bg-white hover:text-red-900"
+                  onClick={() => setShowLoginModal(true)}
+                >
+                  Log In
+                </Button>
+                <Button
+                  className="bg-red-600 text-white hover:bg-red-700"
+                  onClick={() => setShowSignUpModal(true)}
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col items-center justify-center text-white">

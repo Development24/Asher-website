@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice } from "@/lib/utils";
-import { useGetSingleApplication } from "@/services/application/applicationFn";
+import {
+  useGetSingleApplication,
+  useSignAgreement
+} from "@/services/application/applicationFn";
 import { useGetProperties } from "@/services/property/propertyFn";
 import { Listing } from "@/services/property/types";
 import { userStore } from "@/store/userStore";
@@ -60,9 +63,17 @@ export default function SuccessPage() {
   const { data: applicationData, isFetching } = useGetSingleApplication(
     idToUse as string
   );
+  const { mutate: signAgreement, isPending: isSigningAgreement } =
+    useSignAgreement();
   const application = applicationData?.application;
   const router = useRouter();
   const user = userStore((state) => state.user);
+
+  const hasAgreement = application?.agreementDocumentUrl?.length > 0;
+  const lastAgreementUrl =
+    application?.agreementDocumentUrl[
+      application?.agreementDocumentUrl?.length - 1
+    ];
 
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
@@ -107,9 +118,14 @@ export default function SuccessPage() {
     setShowChatModal(true);
   };
 
-  const handleLeaseAgreementSubmit = () => {
+  const handleSignAgreement = (signedPdf: File) => {
+    signAgreement({ applicationId: idToUse as string, data: { signedPdf } });
+  };
+
+  const handleLeaseAgreementSubmit = (signedPdf: File) => {
     setShowLeaseAgreementModal(false);
     setShowPaymentModal(true);
+    handleSignAgreement(signedPdf);
   };
 
   const handlePaymentSuccess = () => {
@@ -401,7 +417,7 @@ export default function SuccessPage() {
             </div>
           </div>
 
-          {/* Right Column - Contact & Actions */}
+          {/* Completed / Submitted */}
           <div className="space-y-6">
             {(status?.toString().toLowerCase() === "submitted" ||
               status?.toString().toLowerCase() === "completed") && (
@@ -474,75 +490,78 @@ export default function SuccessPage() {
               </>
             )}
 
-            {status?.toString()?.toLowerCase() === "approved" && (
-              <>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">
-                    Application Status
-                  </h2>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                      <Check className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        Application Approved
-                      </h3>
-                      <p className="text-gray-600">
-                        Congratulations! Your application has been approved
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Application ID</span>
-                      <span className="font-medium break-all">
-                        APP-{idToUse}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Approval Date</span>
-                      <span className="font-medium">
-                        {format(application?.createdAt, "MMMM d, yyyy")}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Status</span>
-                      <Badge className="bg-green-100 text-green-800 capitalize">
-                        {application?.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </Card>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-blue-600" />
+            {status?.toString()?.toLowerCase() === "completed" &&
+              hasAgreement && (
+                <>
+                  <Card className="p-6 shadow-sm w-full">
+                    <h2 className="text-xl font-semibold mb-4">
+                      Application Status
+                    </h2>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <Check className="w-6 h-6 text-green-600" />
                       </div>
                       <div>
-                        <h3 className="font-medium">Review Lease Agreement</h3>
-                        <p className="text-sm text-gray-600">
-                          Please review and sign your lease agreement
+                        <h3 className="font-semibold text-lg">
+                          Application Approved
+                        </h3>
+                        <p className="text-gray-600">
+                          Congratulations! Your application has been approved
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-4">
-                      <Button
-                        className="flex-1 bg-red-600 hover:bg-red-700"
-                        onClick={() => setShowLeaseAgreementModal(true)}
-                      >
-                        View lease agreement
-                      </Button>
-                      <Button variant="outline" className="flex-1">
-                        Decline lease offer
-                      </Button>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Application ID</span>
+                        <span className="font-medium break-all">
+                          APP-{idToUse}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Approval Date</span>
+                        <span className="font-medium">
+                          {format(application?.createdAt, "MMMM d, yyyy")}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Status</span>
+                        <Badge className="bg-green-100 text-green-800 capitalize">
+                          {application?.status}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              </>
-            )}
+                  </Card>
+                  <Card className="p-6 shadow-sm w-full">
+                    <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">
+                            Review Lease Agreement
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            Please review and sign your lease agreement
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 w-full flex-wrap">
+                        <Button
+                          className="flex-1 bg-red-600 hover:bg-red-700"
+                          onClick={() => setShowLeaseAgreementModal(true)}
+                        >
+                          View lease agreement
+                        </Button>
+                        <Button variant="outline" className="flex-1">
+                          Decline lease offer
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </>
+              )}
 
             {status?.toString()?.toLowerCase() === "rejected" && (
               <>
@@ -780,6 +799,7 @@ export default function SuccessPage() {
         isOpen={showLeaseAgreementModal}
         onClose={() => setShowLeaseAgreementModal(false)}
         onSubmit={handleLeaseAgreementSubmit}
+        agreementDocumentUrl={lastAgreementUrl}
       />
 
       <PaymentModal
