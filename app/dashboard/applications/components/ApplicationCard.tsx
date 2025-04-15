@@ -103,6 +103,21 @@ const ApplicationCard = ({
     return `/dashboard/applications/${application?.properties?.id}/apply?applicationInviteId=${application?.applicationInviteId || application?.id}`;
   }
 
+  // const getNavigationUrl = (application: ApplicationData, sectionType: string) => {
+  //   switch (application.status) {
+  //     case ApplicationStatus.SUBMITTED:
+  //       return `/dashboard/applications/${application.id}/submitted?applicationId=${application.id}`;
+  //     case ApplicationStatus.COMPLETED:
+  //     case ApplicationStatus.APPROVED:
+  //     case ApplicationStatus.AGREEMENTS_SIGNED:
+  //       return `/dashboard/applications/${application.id}/completed?applicationId=${application.id}`;
+  //     case ApplicationStatus.DECLINED:
+  //       return `/dashboard/applications/${application.id}/declined?applicationId=${application.id}`;
+  //     default:
+  //       return `/dashboard/applications/${application.properties?.id}/apply?applicationInviteId=${application.applicationInviteId || application.id}`;
+  //   }
+  // };
+
   return (
     // NOTE: application is the application object
     <Card className="overflow-hidden flex flex-col justify-between min-h-[430px]">

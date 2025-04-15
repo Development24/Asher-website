@@ -93,57 +93,74 @@ export function LeaseAgreementModal({
 
   const createSignedPDF = async () => {
     try {
-      // Show loading toast
-      toast.loading("Creating signed document...");
+      const loadingToast = toast.loading("Creating signed document...");
 
-      // Fetch the original PDF
+      // Optimize: Convert signatures to smaller images before processing
+      const optimizedSignatures = await Promise.all(
+        signatures.map(async (sig) => {
+          // Create a smaller canvas for the signature
+          const canvas = document.createElement('canvas');
+          canvas.width = 600; // Reasonable size for signature
+          canvas.height = 300;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Could not get canvas context');
+
+          // Draw the signature image at the smaller size
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = sig.dataUrl;
+          });
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Convert to more efficient format
+          const optimizedDataUrl = canvas.toDataURL('image/png', 0.7);
+          return {
+            ...sig,
+            dataUrl: optimizedDataUrl
+          };
+        })
+      );
+
+      // Fetch and load PDF only once
       const pdfBytes = await fetch(agreementDocumentUrl).then(res => res.arrayBuffer());
       const pdfDoc = await PDFDocument.load(pdfBytes);
+      const page = pdfDoc.getPages()[0];
+      const { width, height } = page.getSize();
 
-      // For each signature
-      for (const sig of signatures) {
-        // Get the page (assuming all signatures are on first page for now)
-        const page = pdfDoc.getPages()[0];
-        const { width, height } = page.getSize();
+      // Process all signatures in parallel
+      await Promise.all(
+        optimizedSignatures.map(async (sig) => {
+          const signatureBytes = await fetch(sig.dataUrl)
+            .then(res => res.arrayBuffer());
+          const signatureImage = await pdfDoc.embedPng(signatureBytes);
 
-        // Convert signature data URL to bytes
-        const signatureBytes = await fetch(sig.dataUrl)
-          .then(res => res.arrayBuffer());
-        
-        // Embed the signature image
-        const signatureImage = await pdfDoc.embedPng(signatureBytes);
-        
-        // Calculate position (convert from pixels to PDF coordinates)
-        const signatureWidth = 200; // adjust as needed
-        const signatureHeight = 100; // adjust as needed
-        
-        const x = (sig.position.x / width) * width;
-        const y = height - ((sig.position.y / height) * height);
+          const signatureWidth = width * 0.2; // 20% of page width
+          const signatureHeight = height * 0.1; // 10% of page height
 
-        // Draw the signature
-        page.drawImage(signatureImage, {
-          x: x - (signatureWidth / 2),
-          y: y - (signatureHeight / 2),
-          width: signatureWidth,
-          height: signatureHeight,
-        });
-      }
+          const x = (sig.position.x / width) * width;
+          const y = height - ((sig.position.y / height) * height);
 
-      // Save the modified PDF
+          page.drawImage(signatureImage, {
+            x: x - (signatureWidth / 2),
+            y: y - (signatureHeight / 2),
+            width: signatureWidth,
+            height: signatureHeight,
+          });
+        })
+      );
+
       const signedPdfBytes = await pdfDoc.save();
-
-      // Create a File object
       const signedPdfFile = new File([signedPdfBytes], 'signed-agreement.pdf', {
         type: 'application/pdf',
       });
 
-      // Call onSubmit with the signed PDF
+      // Make sure onSubmit is called before any UI updates
       await onSubmit(signedPdfFile);
-
-      // Show success toast
-      toast.success("Document signed successfully!");
       
-      // Close the modal
+      toast.dismiss(loadingToast);
+      toast.success("Document signed successfully!");
       onClose();
     } catch (error) {
       console.error('Error creating signed PDF:', error);

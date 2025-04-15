@@ -27,6 +27,25 @@ interface SavedDraft {
   lastUpdated: string;
   completionStatus: number;
 }
+
+export enum ApplicationStatus {
+  PENDING = 'PENDING',
+  DECLINED = 'DECLINED',
+  SUBMITTED = 'SUBMITTED',
+  COMPLETED = 'COMPLETED',
+  AGREEMENTS = 'AGREEMENTS',
+  AGREEMENTS_SIGNED = 'AGREEMENTS_SIGNED',
+  LANDLORD_REFERENCE = 'LANDLORD_REFERENCE',
+  GUARANTOR_REFERENCE = 'GUARANTOR_REFERENCE',
+  EMPLOYEE_REFERENCE = 'EMPLOYEE_REFERENCE',
+  APPROVED = 'APPROVED',
+  APPLICATION_FEE_PAID = 'APPLICATION_FEE_PAID',
+  MAKEPAYMENT = 'MAKEPAYMENT',
+  PAYMENT_COMPLETED = 'PAYMENT_COMPLETED',
+  PAYMENT_PARTIALLY_COMPLETED = 'PAYMENT_PARTIALLY_COMPLETED',
+  ACCEPTED = 'ACCEPTED',
+  TENANT_CREATED = 'TENANT_CREATED'
+}
 // const ongoingApplicationsData: ApplicationData[] =
 //   allApplicationsData?.ongoingApplications;
 // const applicationInvitesData: ApplicationData[] =
@@ -36,6 +55,12 @@ export default function ApplicationsPage() {
 
   const { data: allApplications, isFetching: allApplicationsFetch } =
     useAllApplications();
+
+    const filterApplicationsByStatus = (statuses: ApplicationStatus[]) => {
+      return allApplications?.applications?.invites?.filter((app: ApplicationData) => 
+        statuses.includes(app.response as ApplicationStatus)
+      ) || [];
+    };
   console.log("allApplications is here",allApplications);
   const allApplicationsData: MainApplicationInterface =
     allApplications?.applications;
@@ -43,20 +68,36 @@ export default function ApplicationsPage() {
   const pendingApplicationsData: ApplicationData[] =
     allApplicationsData?.pendingApplications;
 
-  const completedApplicationsData: ApplicationData[] =
-    allApplicationsData?.completedApplications;
+  // const completedApplicationsData: ApplicationData[] =
+  //   allApplicationsData?.completedApplications;
 
-  const declinedApplicationsData: ApplicationData[] =
-    allApplicationsData?.declinedApplications;
+  // const declinedApplicationsData: ApplicationData[] =
+  //   allApplicationsData?.declinedApplications;
 
-  const makePaymentApplicationsData: ApplicationData[] =
-    allApplicationsData?.makePaymentApplications;
+  // const makePaymentApplicationsData: ApplicationData[] =
+  //   allApplicationsData?.makePaymentApplications;
 
   const submittedApplicationsData: ApplicationData[] =
     allApplicationsData?.submittedApplications;
 
     const applicationInvitesData: ApplicationData[] =
     allApplicationsData?.invites;
+
+    // Get applications for each section
+    const submittedApplications = filterApplicationsByStatus([
+      ApplicationStatus.SUBMITTED
+    ]);
+  
+    const completedApplications = filterApplicationsByStatus([
+      ApplicationStatus.COMPLETED,
+      ApplicationStatus.APPROVED,
+      ApplicationStatus.AGREEMENTS_SIGNED
+    ]);
+  
+    const declinedApplications = filterApplicationsByStatus([
+      ApplicationStatus.DECLINED
+    ]);
+  
   return (
     <div className="layout">
       <div className="flex-1">
@@ -82,7 +123,7 @@ export default function ApplicationsPage() {
         <ApplicationSection
           title="Submitted Applications"
           description="Track the status of your submitted applications and stay updated on their progress."
-          data={submittedApplicationsData}
+          data={submittedApplications}
           isLoading={allApplicationsFetch}
           sectionType="submitted"
           emptyMessage="You haven't submitted any applications yet. Complete your pending applications to see them here."
@@ -100,7 +141,7 @@ export default function ApplicationsPage() {
         <ApplicationSection
           title="Completed Applications"
           description="Properties where you've completed your application. Keep exploring properties to receive invites."
-          data={completedApplicationsData}
+          data={completedApplications}
           isLoading={allApplicationsFetch}
           sectionType="completed"
           emptyMessage="No completed applications at the moment. Keep exploring properties to receive invites."
@@ -109,7 +150,7 @@ export default function ApplicationsPage() {
         <ApplicationSection
           title="Declined Applications"
           description="Properties where you've declined your application. Keep exploring properties to receive invites."
-          data={declinedApplicationsData}
+          data={declinedApplications}
           isLoading={allApplicationsFetch}
           sectionType="declined"
           emptyMessage="No declined applications at the moment. Keep exploring properties to receive invites."

@@ -35,6 +35,7 @@ export interface ApplicationData {
     employmentInfo: EmploymentInfo;
     properties: Properties;
     referee: Referee;
+    response: string;
     Log: any[];
     declaration: Declaration[];
     applicationQuestions: ApplicationQuestions[];

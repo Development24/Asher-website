@@ -40,6 +40,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { LeaseAgreementModal } from "./lease-agreement-modal";
 import { PaymentModal } from "./payment-modal";
+import { toast } from "sonner";
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -63,7 +64,7 @@ export default function SuccessPage() {
   const { data: applicationData, isFetching } = useGetSingleApplication(
     idToUse as string
   );
-  const { mutate: signAgreement, isPending: isSigningAgreement } =
+  const { mutateAsync: signAgreement, isPending: isSigningAgreement } =
     useSignAgreement();
   const application = applicationData?.application;
   const router = useRouter();
@@ -118,16 +119,25 @@ export default function SuccessPage() {
     setShowChatModal(true);
   };
 
-  const handleSignAgreement = (signedPdf: File) => {
-    signAgreement({ applicationId: idToUse as string, data: { signedPdf } });
+  const handleSignAgreement = async (signedPdf: File) => {
+    await signAgreement({
+      applicationId: idToUse as string,
+      data: { signedPdf }
+    });
   };
 
-  const handleLeaseAgreementSubmit = (signedPdf: File) => {
-    setShowLeaseAgreementModal(false);
-    setShowPaymentModal(true);
-    handleSignAgreement(signedPdf);
-  };
+  const handleLeaseAgreementSubmit = async (signedPdf: File) => {
+    try {
+      // First handle the signed agreement
+      await handleSignAgreement(signedPdf);
 
+      setShowLeaseAgreementModal(false);
+      setShowPaymentModal(true);
+    } catch (error) {
+      console.error("Error handling lease agreement:", error);
+      toast.error("Failed to process signed agreement. Please try again.");
+    }
+  };
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
     setPaymentStatus("success");
