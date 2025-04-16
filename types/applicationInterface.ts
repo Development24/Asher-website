@@ -66,6 +66,7 @@ export interface MainApplicationInterface {
     makePaymentApplications: ApplicationData[];
     acceptedApplications: ApplicationData[];
     submittedApplications: ApplicationData[];
+    completedApps: ApplicationData[];
     invites: ApplicationData[];
 }
 

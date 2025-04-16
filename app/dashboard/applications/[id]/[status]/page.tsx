@@ -122,7 +122,7 @@ export default function SuccessPage() {
   const handleSignAgreement = async (signedPdf: File) => {
     await signAgreement({
       applicationId: idToUse as string,
-      data: { signedPdf }
+      data: { files: signedPdf }
     });
   };
 
@@ -430,7 +430,8 @@ export default function SuccessPage() {
           {/* Completed / Submitted */}
           <div className="space-y-6">
             {(status?.toString().toLowerCase() === "submitted" ||
-              status?.toString().toLowerCase() === "completed") && (
+              status?.toString().toLowerCase() === "completed" ||
+              status?.toString().toLowerCase() === "approved") && (
               <>
                 <Card className="p-6 shadow-sm w-full">
                   <h2 className="text-xl font-semibold mb-4">
@@ -500,7 +501,9 @@ export default function SuccessPage() {
               </>
             )}
 
-            {status?.toString()?.toLowerCase() === "completed" &&
+            {(status?.toString()?.toLowerCase() === "agreements" ||
+              status?.toString()?.toLowerCase() === "agreements_signed" ||
+              status?.toString()?.toLowerCase() === "approved") &&
               hasAgreement && (
                 <>
                   <Card className="p-6 shadow-sm w-full">

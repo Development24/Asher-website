@@ -56,11 +56,11 @@ export default function ApplicationsPage() {
   const { data: allApplications, isFetching: allApplicationsFetch } =
     useAllApplications();
 
-    const filterApplicationsByStatus = (statuses: ApplicationStatus[]) => {
-      return allApplications?.applications?.invites?.filter((app: ApplicationData) => 
-        statuses.includes(app.response as ApplicationStatus)
-      ) || [];
-    };
+    // const filterApplicationsByStatus = (statuses: ApplicationStatus[]) => {
+    //   return allApplications?.applications?.invites?.filter((app: ApplicationData) => 
+    //     statuses.includes(app.response as ApplicationStatus)
+    //   ) || [];
+    // };
   console.log("allApplications is here",allApplications);
   const allApplicationsData: MainApplicationInterface =
     allApplications?.applications;
@@ -68,8 +68,8 @@ export default function ApplicationsPage() {
   const pendingApplicationsData: ApplicationData[] =
     allApplicationsData?.pendingApplications;
 
-  // const completedApplicationsData: ApplicationData[] =
-  //   allApplicationsData?.completedApplications;
+  const completedApplicationsData: ApplicationData[] =
+    allApplicationsData?.completedApps;
 
   // const declinedApplicationsData: ApplicationData[] =
   //   allApplicationsData?.declinedApplications;
@@ -83,20 +83,20 @@ export default function ApplicationsPage() {
     const applicationInvitesData: ApplicationData[] =
     allApplicationsData?.invites;
 
-    // Get applications for each section
-    const submittedApplications = filterApplicationsByStatus([
-      ApplicationStatus.SUBMITTED
-    ]);
+    // // Get applications for each section
+    // const submittedApplications = filterApplicationsByStatus([
+    //   ApplicationStatus.SUBMITTED
+    // ]);
   
-    const completedApplications = filterApplicationsByStatus([
-      ApplicationStatus.COMPLETED,
-      ApplicationStatus.APPROVED,
-      ApplicationStatus.AGREEMENTS_SIGNED
-    ]);
+    // const completedApplications = filterApplicationsByStatus([
+    //   ApplicationStatus.COMPLETED,
+    //   ApplicationStatus.APPROVED,
+    //   ApplicationStatus.AGREEMENTS_SIGNED
+    // ]);
   
-    const declinedApplications = filterApplicationsByStatus([
-      ApplicationStatus.DECLINED
-    ]);
+    // const declinedApplications = filterApplicationsByStatus([
+    //   ApplicationStatus.DECLINED
+    // ]);
   
   return (
     <div className="layout">
@@ -123,7 +123,7 @@ export default function ApplicationsPage() {
         <ApplicationSection
           title="Submitted Applications"
           description="Track the status of your submitted applications and stay updated on their progress."
-          data={submittedApplications}
+          data={submittedApplicationsData}
           isLoading={allApplicationsFetch}
           sectionType="submitted"
           emptyMessage="You haven't submitted any applications yet. Complete your pending applications to see them here."
@@ -138,23 +138,24 @@ export default function ApplicationsPage() {
           emptyMessage="No application invites at the moment. Keep exploring properties to receive invites."
         />
 
+
         <ApplicationSection
           title="Completed Applications"
           description="Properties where you've completed your application. Keep exploring properties to receive invites."
-          data={completedApplications}
+          data={completedApplicationsData}
           isLoading={allApplicationsFetch}
           sectionType="completed"
           emptyMessage="No completed applications at the moment. Keep exploring properties to receive invites."
         />
 
-        <ApplicationSection
+        {/* <ApplicationSection
           title="Declined Applications"
           description="Properties where you've declined your application. Keep exploring properties to receive invites."
-          data={declinedApplications}
+          data={declinedApplicationsData}
           isLoading={allApplicationsFetch}
           sectionType="declined"
           emptyMessage="No declined applications at the moment. Keep exploring properties to receive invites."
-        />
+        /> */}
 
     
       </div>

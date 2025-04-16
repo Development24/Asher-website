@@ -8,17 +8,20 @@ import Link from "next/link";
 import { Bed, Bath } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useReuseAbleStore } from "@/store/reuseAble";
+import { ApplicationStatus } from "../page";
 
-const getStatusBadgeColor = (status?: string) => {
+const getStatusBadgeColor = (status: ApplicationStatus) => {
   switch (status) {
-    case "approved":
-      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-    case "submitted":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-    case "rejected":
-      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    case ApplicationStatus.APPROVED:
+    case ApplicationStatus.COMPLETED:
+    case ApplicationStatus.AGREEMENTS_SIGNED:
+      return "bg-green-100 text-green-800";
+    case ApplicationStatus.SUBMITTED:
+      return "bg-blue-100 text-blue-800";
+    case ApplicationStatus.DECLINED:
+      return "bg-red-100 text-red-800";
     default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
+      return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -85,38 +88,47 @@ const ApplicationCard = ({
   //   }
   // }, [application?.id]);
 
-  const getNavigationUrl = () => {
-    if (sectionType === "ongoing") {
-      const status = application?.status?.toLowerCase();
-      
-      return `/dashboard/applications/${application?.id}/${status}?applicationId=${application?.id}`;
-    } 
-    
-    if (sectionType === "continue") {
-      return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
-    }
-    
-    if (sectionType === "submitted" || sectionType === "completed") {
-      return `/dashboard/applications/${application?.id}/submitted?applicationId=${application?.id}`;
-    }
-    
-    return `/dashboard/applications/${application?.properties?.id}/apply?applicationInviteId=${application?.applicationInviteId || application?.id}`;
-  }
+  // const getNavigationUrl = () => {
+  //   if (sectionType === "ongoing") {
+  //     const status = application?.status?.toLowerCase();
 
-  // const getNavigationUrl = (application: ApplicationData, sectionType: string) => {
-  //   switch (application.status) {
-  //     case ApplicationStatus.SUBMITTED:
-  //       return `/dashboard/applications/${application.id}/submitted?applicationId=${application.id}`;
-  //     case ApplicationStatus.COMPLETED:
-  //     case ApplicationStatus.APPROVED:
-  //     case ApplicationStatus.AGREEMENTS_SIGNED:
-  //       return `/dashboard/applications/${application.id}/completed?applicationId=${application.id}`;
-  //     case ApplicationStatus.DECLINED:
-  //       return `/dashboard/applications/${application.id}/declined?applicationId=${application.id}`;
-  //     default:
-  //       return `/dashboard/applications/${application.properties?.id}/apply?applicationInviteId=${application.applicationInviteId || application.id}`;
+  //     return `/dashboard/applications/${application?.id}/${status}?applicationId=${application?.id}`;
   //   }
-  // };
+
+  //   if (sectionType === "continue") {
+  //     return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
+  //   }
+
+  //   if (sectionType === "submitted" || sectionType === "completed") {
+  //     return `/dashboard/applications/${application?.id}/submitted?applicationId=${application?.id}`;
+  //   }
+
+  //   return `/dashboard/applications/${application?.properties?.id}/apply?applicationInviteId=${application?.applicationInviteId || application?.id}`;
+  // }
+
+  const getNavigationUrl = (
+    application: ApplicationData,
+    sectionType: string
+  ) => {
+    switch (application.status) {
+      case ApplicationStatus.SUBMITTED:
+        return `/dashboard/applications/${application.id}/submitted?applicationId=${application.id}`;
+      case ApplicationStatus.COMPLETED:
+      case ApplicationStatus.APPROVED:
+        return `/dashboard/applications/${application.id}/completed?applicationId=${application.id}`;
+      case ApplicationStatus.DECLINED:
+        return `/dashboard/applications/${application.id}/declined?applicationId=${application.id}`;
+      case ApplicationStatus.AGREEMENTS:
+      case ApplicationStatus.AGREEMENTS_SIGNED:
+        return `/dashboard/applications/${application.id}/agreements?applicationId=${application.id}`;
+      default:
+        return `/dashboard/applications/${
+          application.properties?.id
+        }/apply?applicationInviteId=${
+          application.applicationInviteId || application.id
+        }`;
+    }
+  };
 
   return (
     // NOTE: application is the application object
@@ -134,7 +146,7 @@ const ApplicationCard = ({
         {application.status && (
           <Badge
             className={`absolute top-2 right-2 ${getStatusBadgeColor(
-              application.status
+              application.status as ApplicationStatus
             )}`}
           >
             {application.status.charAt(0).toUpperCase() +
@@ -183,7 +195,7 @@ const ApplicationCard = ({
             </div>
           </div>
         )}
-        <Link href={getNavigationUrl()}>
+        <Link href={getNavigationUrl(application, sectionType)}>
           <Button className="w-full bg-red-600 hover:bg-red-700">
             {sectionType === "ongoing"
               ? `View ${application?.status?.toLowerCase()}`
