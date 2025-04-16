@@ -44,7 +44,8 @@ export enum ApplicationStatus {
   PAYMENT_COMPLETED = 'PAYMENT_COMPLETED',
   PAYMENT_PARTIALLY_COMPLETED = 'PAYMENT_PARTIALLY_COMPLETED',
   ACCEPTED = 'ACCEPTED',
-  TENANT_CREATED = 'TENANT_CREATED'
+  TENANT_CREATED = 'TENANT_CREATED',
+  IN_PROGRESS='IN_PROGRESS'
 }
 // const ongoingApplicationsData: ApplicationData[] =
 //   allApplicationsData?.ongoingApplications;
