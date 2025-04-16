@@ -121,6 +121,8 @@ const ApplicationCard = ({
       case ApplicationStatus.AGREEMENTS:
       case ApplicationStatus.AGREEMENTS_SIGNED:
         return `/dashboard/applications/${application.id}/agreements?applicationId=${application.id}`;
+      case ApplicationStatus.IN_PROGRESS:
+          return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
       default:
         return `/dashboard/applications/${
           application.properties?.id
