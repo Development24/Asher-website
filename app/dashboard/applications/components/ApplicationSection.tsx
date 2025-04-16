@@ -14,7 +14,8 @@ interface ApplicationSectionProps {
     | "invite"
     | "completed"
     | "declined"
-    | "payment";
+    | "payment"
+    | "ongoing";
   emptyMessage?: string;
 }
 

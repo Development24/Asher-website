@@ -121,8 +121,10 @@ const ApplicationCard = ({
       case ApplicationStatus.AGREEMENTS:
       case ApplicationStatus.AGREEMENTS_SIGNED:
         return `/dashboard/applications/${application.id}/agreements?applicationId=${application.id}`;
-      case ApplicationStatus.IN_PROGRESS:
+      case ApplicationStatus.PENDING:
+        if (sectionType === "ongoing") {
           return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
+        }
       default:
         return `/dashboard/applications/${
           application.properties?.id
@@ -200,9 +202,9 @@ const ApplicationCard = ({
         <Link href={getNavigationUrl(application, sectionType)}>
           <Button className="w-full bg-red-600 hover:bg-red-700">
             {sectionType === "ongoing"
-              ? `View ${application?.status?.toLowerCase()}`
+              ? `Resume application`
               : sectionType === "continue"
-              ? "Resume application"
+              ? "View application"
               : "View application"}
           </Button>
         </Link>

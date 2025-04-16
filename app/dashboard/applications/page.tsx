@@ -117,7 +117,7 @@ export default function ApplicationsPage() {
           description="Complete your pending applications to take the next step toward securing your new home."
           data={pendingApplicationsData}
           isLoading={allApplicationsFetch}
-          sectionType="continue"
+          sectionType="ongoing"
           emptyMessage="You don't have any pending applications. Start browsing properties to begin your journey."
         />
 
