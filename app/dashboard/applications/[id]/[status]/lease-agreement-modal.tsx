@@ -28,13 +28,15 @@ interface LeaseAgreementModalProps {
   onClose: () => void;
   onSubmit: (signedPdf: File) => void;
   agreementDocumentUrl: string;
+  canSubmit: boolean;
 }
 
 export function LeaseAgreementModal({
   isOpen,
   onClose,
   onSubmit,
-  agreementDocumentUrl
+  agreementDocumentUrl,
+  canSubmit
 }: LeaseAgreementModalProps) {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const [showSignaturePad, setShowSignaturePad] = useState(false);
@@ -290,7 +292,7 @@ export function LeaseAgreementModal({
             </Button>
             <Button
               onClick={createSignedPDF}
-              disabled={signatures.length === 0}
+              disabled={signatures.length === 0 || canSubmit}
             >
               Save & Submit
             </Button>

@@ -16,16 +16,20 @@ import { ApplicationsStats, Enquiry, Property, PropertyInvite } from "./type";
 import { format } from "date-fns";
 import { Calendar, MessageSquare } from "lucide-react";
 import { SavedPropertiesSection } from './components/sections/saved-properties-section';
+import { useGetAllFeedback } from '../../services/property/propertyFn';
 
 export default function DashboardPage() {
   const [userEmail] = useState("simoncaldwell@gmail.com");
   const [userName] = useState("Simon");
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const {data: logs, isFetching: isFetchingLogs} = useGetAllFeedback();
+
+  console.log(logs);
 
   const { data: dashboardStats, isFetching: isFetchingDashboardStats } =
     useDashboardStats();
-  console.log(dashboardStats);
+  // console.log(dashboardStats);
 
   const dashboardData = dashboardStats?.stats;
   const applicationsStats = dashboardData?.applications as ApplicationsStats;

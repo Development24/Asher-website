@@ -502,48 +502,47 @@ export default function SuccessPage() {
             )}
 
             {(status?.toString()?.toLowerCase() === "agreements" ||
-              status?.toString()?.toLowerCase() === "agreements_signed" ||
-              status?.toString()?.toLowerCase() === "approved") &&
-              hasAgreement && (
-                <>
-                  <Card className="p-6 shadow-sm w-full">
-                    <h2 className="text-xl font-semibold mb-4">
-                      Application Status
-                    </h2>
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                        <Check className="w-6 h-6 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">
-                          Application Approved
-                        </h3>
-                        <p className="text-gray-600">
-                          Congratulations! Your application has been approved
-                        </p>
-                      </div>
+              status?.toString()?.toLowerCase() === "agreements_signed") && (
+              <>
+                <Card className="p-6 shadow-sm w-full">
+                  <h2 className="text-xl font-semibold mb-4">
+                    Application Status
+                  </h2>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="w-6 h-6 text-green-600" />
                     </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Application ID</span>
-                        <span className="font-medium break-all">
-                          APP-{idToUse}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Approval Date</span>
-                        <span className="font-medium">
-                          {format(application?.createdAt, "MMMM d, yyyy")}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Status</span>
-                        <Badge className="bg-green-100 text-green-800 capitalize">
-                          {application?.status}
-                        </Badge>
-                      </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        Application Approved
+                      </h3>
+                      <p className="text-gray-600">
+                        Congratulations! Your application has been approved
+                      </p>
                     </div>
-                  </Card>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Application ID</span>
+                      <span className="font-medium break-all">
+                        APP-{idToUse}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Approval Date</span>
+                      <span className="font-medium">
+                        {format(application?.createdAt, "MMMM d, yyyy")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Status</span>
+                      <Badge className="bg-green-100 text-green-800 capitalize">
+                        {application?.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </Card>
+                {hasAgreement && (
                   <Card className="p-6 shadow-sm w-full">
                     <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
                     <div className="space-y-4">
@@ -567,14 +566,18 @@ export default function SuccessPage() {
                         >
                           View lease agreement
                         </Button>
-                        <Button variant="outline" className="flex-1">
-                          Decline lease offer
-                        </Button>
+                        {application?.status?.toLowerCase() !==
+                          "agreements_signed" && (
+                          <Button variant="outline" className="flex-1">
+                            Decline lease offer
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </Card>
-                </>
-              )}
+                )}
+              </>
+            )}
 
             {status?.toString()?.toLowerCase() === "rejected" && (
               <>
@@ -813,6 +816,7 @@ export default function SuccessPage() {
         onClose={() => setShowLeaseAgreementModal(false)}
         onSubmit={handleLeaseAgreementSubmit}
         agreementDocumentUrl={lastAgreementUrl}
+        canSubmit={application?.status?.toLowerCase() !== "agreements_signed"}
       />
 
       <PaymentModal

@@ -66,7 +66,7 @@ const sidebarNavItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-  const user = userStore((state) => state.user);
+  const user: any = userStore((state) => state.user);
 
   return (
     <Sidebar >
@@ -86,7 +86,7 @@ export function AppSidebar() {
             <span className="font-medium capitalize">
               {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
             </span>
-            <span className="text-sm text-muted-foreground max-w-[200px] truncate">{user?.email}</span>
+            <span className="text-sm text-muted-foreground max-w-[200px] truncate">{user?.email ?? user?.users?.email}</span>
           </div>
         </div>
       </SidebarHeader>

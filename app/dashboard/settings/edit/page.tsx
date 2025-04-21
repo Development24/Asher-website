@@ -1,113 +1,127 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ProfileSuccessModal } from '../components/profile-success-modal'
-import { useGetProfile, useUpdateProfile } from '@/services/auth/authFn'
-import { toast } from 'sonner'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { ProfileSuccessModal } from "../components/profile-success-modal";
+import { useGetProfile, useUpdateProfile } from "@/services/auth/authFn";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { IUser } from "@/types/types";
+import { userStore } from "@/store/userStore";
 
 const GENDER_OPTIONS = [
-  { value: 'Male', label: 'Male' },
-  { value: 'Female', label: 'Female' },
-  { value: 'Other', label: 'Other' }
-]
+  { value: "Male", label: "Male" },
+  { value: "Female", label: "Female" },
+  { value: "Other", label: "Other" }
+];
 
 const MARITAL_STATUS_OPTIONS = [
-  { value: 'SINGLE', label: 'Single' },
-  { value: 'MARRIED', label: 'Married' },
-  { value: 'DIVORCED', label: 'Divorced' },
-  { value: 'WIDOWED', label: 'Widowed' }
-]
+  { value: "SINGLE", label: "Single" },
+  { value: "MARRIED", label: "Married" },
+  { value: "DIVORCED", label: "Divorced" },
+  { value: "WIDOWED", label: "Widowed" }
+];
 
 const TITLE_OPTIONS = [
-  { value: 'MR', label: 'Mr.' },
-  { value: 'MRS', label: 'Mrs.' },
-  { value: 'MS', label: 'Ms.' },
-  { value: 'DR', label: 'Dr.' }
-]
+  { value: "MR", label: "Mr." },
+  { value: "MRS", label: "Mrs." },
+  { value: "MS", label: "Ms." },
+  { value: "DR", label: "Dr." }
+];
 
 export default function EditProfilePage() {
-  const router = useRouter()
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const { data: profile, isFetching } = useGetProfile()
-  const { mutate: updateProfile, isPending } = useUpdateProfile()
-  const imageRef = useRef<HTMLInputElement>(null)
+  const router = useRouter();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const { data: profile, refetch, isFetching } = useGetProfile();
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { user, setUser } = userStore();
+  const imageRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
-    title: '',
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    gender: '',
-    maritalStatus: '',
-    dateOfBirth: '',
-    phoneNumber: '',
-    address: '',
-    city: '',
-    state: '',
-    country: '',
-    zip: '',
-    taxType: '',
-    taxPayerId: '',
-    timeZone: '',
-    unit: '',
+    title: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    gender: "",
+    maritalStatus: "",
+    dateOfBirth: "",
+    phoneNumber: "",
+    address: "",
+    city: "",
+    state: "",
+    country: "",
+    zip: "",
+    taxType: "",
+    taxPayerId: "",
+    timeZone: "",
+    unit: "",
     profileUrl: null as File | null
-  })
+  });
 
   useEffect(() => {
     if (profile?.profile) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         ...profile.profile,
-        dateOfBirth: profile.profile.dateOfBirth?.split('T')[0] || ''
-      }))
+        dateOfBirth: profile.profile.dateOfBirth?.split("T")[0] || ""
+      }));
       if (profile.profile.profileUrl) {
-        setImagePreview(profile.profile.profileUrl)
+        setImagePreview(profile.profile.profileUrl);
       }
     }
-  }, [profile])
+  }, [profile]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, profileUrl: file }))
-      const reader = new FileReader()
+      setFormData((prev) => ({ ...prev, profileUrl: file }));
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const formDataToSend = new FormData()
+    e.preventDefault();
+    const formDataToSend = new FormData();
 
     // Append all form fields to FormData
     Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && value !== '') {
-        if (key === 'profileUrl' && value instanceof File) {
-          formDataToSend.append('profileUrl', value)
-        } else if (key !== 'profileUrl') {
-          formDataToSend.append(key, value.toString())
+      if (value !== null && value !== "") {
+        if (key === "profileUrl" && value instanceof File) {
+          formDataToSend.append("files", value);
+        } else if (key !== "profileUrl") {
+          formDataToSend.append(key, value.toString());
         }
       }
-    })
+    });
 
     updateProfile(formDataToSend, {
-      onSuccess: () => {
-        toast.success('Profile updated')
-        setShowSuccessModal(true)
+      onSuccess: (data: any) => {
+        toast.success("Profile updated");
+        setShowSuccessModal(true);
+        refetch();
+        setUser({
+          ...user,
+          profile: data?.user
+        } as IUser);
       }
-    })
-  }
+    });
+  };
 
   if (isFetching) {
     return (
@@ -128,7 +142,7 @@ export default function EditProfilePage() {
           <Skeleton className="h-20" />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -139,7 +153,10 @@ export default function EditProfilePage() {
           Home
         </Link>
         <span className="text-gray-400">/</span>
-        <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900">
+        <Link
+          href="/dashboard/settings"
+          className="text-gray-600 hover:text-gray-900"
+        >
           Settings
         </Link>
         <span className="text-gray-400">/</span>
@@ -149,13 +166,13 @@ export default function EditProfilePage() {
       <div className="max-w-4xl mx-auto">
         {/* Profile Header */}
         <div className="flex items-center gap-6 mb-8">
-          <div className="relative">
+          <div className="relative w-24 h-24">
             <Image
               src={imagePreview || "https://github.com/shadcn.png"}
               alt="Profile"
-              width={96}
-              height={96}
+              fill
               className="rounded-full object-cover"
+              sizes="96px"
             />
             <input
               id="profile-image"
@@ -175,7 +192,6 @@ export default function EditProfilePage() {
                 Edit
               </Button>
             </label>
-            
           </div>
           <div>
             <h1 className="text-2xl font-bold">Edit your profile</h1>
@@ -190,14 +206,16 @@ export default function EditProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Select
-                value={formData.title || ''}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
+                value={formData.title || ""}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, title: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select title" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TITLE_OPTIONS.map(option => (
+                  {TITLE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -213,7 +231,12 @@ export default function EditProfilePage() {
               <Input
                 id="firstName"
                 value={formData.firstName}
-                onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    firstName: e.target.value
+                  }))
+                }
                 placeholder="Enter your first name"
               />
             </div>
@@ -222,7 +245,12 @@ export default function EditProfilePage() {
               <Input
                 id="middleName"
                 value={formData.middleName}
-                onChange={(e) => setFormData(prev => ({ ...prev, middleName: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    middleName: e.target.value
+                  }))
+                }
                 placeholder="Enter your middle name"
               />
             </div>
@@ -231,7 +259,9 @@ export default function EditProfilePage() {
               <Input
                 id="lastName"
                 value={formData.lastName}
-                onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+                }
                 placeholder="Enter your last name"
               />
             </div>
@@ -241,14 +271,16 @@ export default function EditProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select
-                value={formData.gender || ''}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+                value={formData.gender || ""}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, gender: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  {GENDER_OPTIONS.map(option => (
+                  {GENDER_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -259,14 +291,16 @@ export default function EditProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="maritalStatus">Marital Status</Label>
               <Select
-                value={formData.maritalStatus || ''}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, maritalStatus: value }))}
+                value={formData.maritalStatus || ""}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, maritalStatus: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select marital status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MARITAL_STATUS_OPTIONS.map(option => (
+                  {MARITAL_STATUS_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -282,8 +316,13 @@ export default function EditProfilePage() {
               <Label htmlFor="phoneNumber">Phone number</Label>
               <Input
                 id="phoneNumber"
-                value={formData.phoneNumber || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                value={formData.phoneNumber || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    phoneNumber: e.target.value
+                  }))
+                }
                 placeholder="Enter your phone number"
               />
             </div>
@@ -293,7 +332,12 @@ export default function EditProfilePage() {
                 id="dateOfBirth"
                 type="date"
                 value={formData.dateOfBirth}
-                onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    dateOfBirth: e.target.value
+                  }))
+                }
               />
             </div>
           </div>
@@ -303,8 +347,10 @@ export default function EditProfilePage() {
             <Label htmlFor="address">Address</Label>
             <Input
               id="address"
-              value={formData.address || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+              value={formData.address || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, address: e.target.value }))
+              }
               placeholder="Enter your address"
             />
           </div>
@@ -314,8 +360,10 @@ export default function EditProfilePage() {
               <Label htmlFor="city">City</Label>
               <Input
                 id="city"
-                value={formData.city || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                value={formData.city || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, city: e.target.value }))
+                }
                 placeholder="Enter your city"
               />
             </div>
@@ -323,8 +371,10 @@ export default function EditProfilePage() {
               <Label htmlFor="state">State</Label>
               <Input
                 id="state"
-                value={formData.state || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                value={formData.state || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, state: e.target.value }))
+                }
                 placeholder="Enter your state"
               />
             </div>
@@ -332,8 +382,10 @@ export default function EditProfilePage() {
               <Label htmlFor="zip">ZIP Code</Label>
               <Input
                 id="zip"
-                value={formData.zip || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, zip: e.target.value }))}
+                value={formData.zip || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, zip: e.target.value }))
+                }
                 placeholder="Enter ZIP code"
               />
             </div>
@@ -343,8 +395,10 @@ export default function EditProfilePage() {
             <Label htmlFor="country">Country</Label>
             <Input
               id="country"
-              value={formData.country || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+              value={formData.country || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, country: e.target.value }))
+              }
               placeholder="Enter your country"
             />
           </div>
@@ -355,8 +409,10 @@ export default function EditProfilePage() {
               <Label htmlFor="taxType">Tax Type</Label>
               <Input
                 id="taxType"
-                value={formData.taxType || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, taxType: e.target.value }))}
+                value={formData.taxType || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, taxType: e.target.value }))
+                }
                 placeholder="Enter tax type"
               />
             </div>
@@ -364,8 +420,13 @@ export default function EditProfilePage() {
               <Label htmlFor="taxPayerId">Tax Payer ID</Label>
               <Input
                 id="taxPayerId"
-                value={formData.taxPayerId || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, taxPayerId: e.target.value }))}
+                value={formData.taxPayerId || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    taxPayerId: e.target.value
+                  }))
+                }
                 placeholder="Enter tax payer ID"
               />
             </div>
@@ -375,14 +436,14 @@ export default function EditProfilePage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push('/dashboard/settings')}
+              onClick={() => router.push("/dashboard/settings")}
               disabled={isPending}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              className="bg-red-600 hover:bg-red-700" 
+            <Button
+              type="submit"
+              className="bg-red-600 hover:bg-red-700"
               disabled={isPending}
               loading={isPending}
             >
@@ -397,6 +458,5 @@ export default function EditProfilePage() {
         onClose={() => setShowSuccessModal(false)}
       />
     </div>
-  )
+  );
 }
-

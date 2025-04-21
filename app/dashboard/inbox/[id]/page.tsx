@@ -1,23 +1,44 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, Forward, Reply, Star, Trash2, Paperclip, Send, Image, Smile } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useGetEmailById, useSendEmail } from '@/services/email/emailFn'
-import { format } from 'date-fns'
-import { EmailDetailSkeleton } from './email-detail-skeleton'
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Forward,
+  Reply,
+  Star,
+  Trash2,
+  Paperclip,
+  Send,
+  Image,
+  Smile
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useGetEmailById, useSendEmail } from "@/services/email/emailFn";
+import { format } from "date-fns";
+import { EmailDetailSkeleton } from "./email-detail-skeleton";
+import { MessageBody } from "../../../components/email/MessageBody";
+import {
+  getFileTypeIcon,
+  getAttachmentName,
+  handleAttachmentDownload
+} from "../../../services/email/email-helpers";
 
 interface Attachment {
-  name: string
-  size: string
-  type: string
+  name: string;
+  size: string;
+  type: string;
 }
 
 interface SingleEmailMessage {
@@ -36,66 +57,72 @@ interface SingleEmailMessage {
   receiverId: string;
 }
 
-
-
 export default function MessagePage() {
-  const router = useRouter()
-  const { id } = useParams()
-  const [showReplyDialog, setShowReplyDialog] = useState(false)
-  const [showForwardDialog, setShowForwardDialog] = useState(false)
-  const [replyMessage, setReplyMessage] = useState('')
-  const [forwardTo, setForwardTo] = useState('')
-  const [forwardMessage, setForwardMessage] = useState('')
-  const [attachments, setAttachments] = useState<File[]>([])
-  const { data: message, isFetching: isFetchingMessage } = useGetEmailById(id as string)
+  const router = useRouter();
+  const { id } = useParams();
+  const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [showForwardDialog, setShowForwardDialog] = useState(false);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [forwardTo, setForwardTo] = useState("");
+  const [forwardMessage, setForwardMessage] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const { data: message, isFetching: isFetchingMessage } = useGetEmailById(
+    id as string
+  );
   const { mutate: sendEmail, isPending } = useSendEmail();
 
-  console.log(message)
+  console.log(message);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setAttachments(Array.from(e.target.files))
+      setAttachments(Array.from(e.target.files));
     }
-  }
+  };
 
   const handleReply = () => {
     // Handle reply logic here
-    console.log('Reply:', replyMessage)
-    
-    sendEmail({
-      senderEmail: message?.senderEmail,
-      receiverEmail: message?.receiverEmail,
-      subject: message?.subject,
-      body: replyMessage
-    }, {
-      onSuccess: () => {
-        setShowReplyDialog(false)
-        setReplyMessage('')
+    console.log("Reply:", replyMessage);
+
+    sendEmail(
+      {
+        senderEmail: message?.senderEmail,
+        receiverEmail: message?.receiverEmail,
+        subject: message?.subject,
+        body: replyMessage
+      },
+      {
+        onSuccess: () => {
+          setShowReplyDialog(false);
+          setReplyMessage("");
+        }
       }
-    })
-  }
+    );
+  };
 
   const handleForward = () => {
     // Handle forward logic here
-    console.log('Forward to:', forwardTo)
-    console.log('Message:', forwardMessage)
-    setShowForwardDialog(false)
-    setForwardTo('')
-    setForwardMessage('')
-  }
+    console.log("Forward to:", forwardTo);
+    console.log("Message:", forwardMessage);
+    setShowForwardDialog(false);
+    setForwardTo("");
+    setForwardMessage("");
+  };
 
   if (isFetchingMessage) {
     return <EmailDetailSkeleton />;
   }
 
   return (
-    <div className="layout">
+    <div className="p-5">
       <div className="flex items-center gap-2 mb-6 text-sm">
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
           Home
         </Link>
         <span className="text-gray-400">/</span>
-        <Link href="/dashboard/inbox" className="text-gray-600 hover:text-gray-900">
+        <Link
+          href="/dashboard/inbox"
+          className="text-gray-600 hover:text-gray-900"
+        >
           Inbox
         </Link>
         <span className="text-gray-400">/</span>
@@ -127,16 +154,10 @@ export default function MessagePage() {
             >
               <Forward className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-            >
+            <Button variant="outline" size="icon">
               <Star className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-            >
+            <Button variant="outline" size="icon">
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
@@ -152,7 +173,9 @@ export default function MessagePage() {
               </Avatar>
               <div>
                 <div className="font-medium">{`${message?.sender?.profile?.firstName} ${message?.sender?.profile?.lastName}`}</div>
-                <div className="text-sm text-gray-500">{message?.sender?.email}</div>
+                <div className="text-sm text-gray-500">
+                  {message?.sender?.email}
+                </div>
               </div>
               <div className="ml-auto text-sm text-gray-500">
                 {format(new Date(message?.createdAt), "MMM d, yyyy")}
@@ -160,31 +183,41 @@ export default function MessagePage() {
             </div>
           </div>
 
-          <div className="prose prose-gray max-w-none">
-            {message?.body?.split('\n\n')?.map((paragraph: string, index: number) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
+          <MessageBody text={message?.body} />
 
           {message?.attachment && message?.attachment?.length > 0 && (
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="font-medium">Attachments</h3>
               <div className="space-y-2">
-                {message?.attachment?.map((attachment: Attachment) => (
-                  <div
-                    key={attachment?.name}
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"
-                  >
-                    <Paperclip className="h-4 w-4 text-gray-500" />
-                    <div className="flex-1">
-                      <div className="font-medium">{attachment?.name}</div>
-                      <div className="text-sm text-gray-500">{attachment?.size}</div>
+                {message?.attachment?.map(
+                  (attachment: string, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"
+                    >
+                      <span className="text-lg">
+                        {getFileTypeIcon(attachment)}
+                      </span>
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {getAttachmentName(attachment, index)}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleAttachmentDownload(
+                            attachment,
+                            getAttachmentName(attachment, index)
+                          )
+                        }
+                      >
+                        Download
+                      </Button>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Download
-                    </Button>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           )}
@@ -195,7 +228,9 @@ export default function MessagePage() {
       <Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog}>
         <DialogContent className="sm:max-w-[600px] border-white/20 bg-gray-950/70 backdrop-blur-xl text-white">
           <DialogHeader>
-            <DialogTitle>Reply to {message?.sender?.profile?.fullname}</DialogTitle>
+            <DialogTitle>
+              Reply to {message?.sender?.profile?.fullname}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea
@@ -306,6 +341,5 @@ export default function MessagePage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
-

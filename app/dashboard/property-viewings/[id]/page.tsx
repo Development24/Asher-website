@@ -100,7 +100,7 @@ export default function PropertyViewingDetailPage() {
     useGetProperties();
   const similarProperties: Listing[] = propertiesData?.properties;
   const { data, isFetching, refetch } = useGetPropertyByInviteId(id as string);
-  console.log(data);
+  // console.log(data);
   const dataInvite = data?.invite as InviteData;
   const propertyData = dataInvite?.properties;
   const viewingStatus = dataInvite?.response as ViewingStatus;
@@ -628,11 +628,7 @@ export default function PropertyViewingDetailPage() {
                 ?.filter((p) => p.id !== propertyData?.id)
                 ?.map((similarProperty) => (
                   <div key={similarProperty.id}>
-                    <SimilarPropertyCard
-                      {...similarProperty}
-                      showViewProperty
-                      property={similarProperty as any}
-                    />
+                    <SimilarPropertyCard property={similarProperty} />
                   </div>
                 ))}
             </motion.div>

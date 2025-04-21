@@ -19,11 +19,11 @@ export function ApplicationCard({ activeApplications, completedApplications }: A
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Active Applications</span>
-            <span className="font-semibold">{activeApplications}</span>
+            <span className="font-semibold">{activeApplications || 0}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Completed Applications</span>
-            <span className="font-semibold">{completedApplications}</span>
+            <span className="font-semibold">{completedApplications || 0}</span>
           </div>
           <Link href="/dashboard/applications">
             <Button className="w-full bg-red-600 hover:bg-red-700 mt-4">

@@ -12,41 +12,14 @@ import { useLikeProperty } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { userStore } from "@/store/userStore";
 interface SimilarPropertyCard {
-  id?: number;
-  image?: string;
-  title?: string;
-  price?: string;
-  location?: string;
-  beds?: number;
-  baths?: number;
-  date?: string;
-  time?: string;
-  showViewProperty?: boolean;
-  isInvite?: boolean;
-  onAcceptInvite?: () => void;
-  isScheduled?: boolean;
-  isSaved?: boolean;
   className?: string;
   property?: Listing;
 }
 
 export default function SimilarPropertyCard({
-  id,
-  image,
-  title,
-  price,
-  location,
-  beds,
-  baths,
-  showViewProperty,
-  isInvite,
-  onAcceptInvite,
-  isScheduled,
-  isSaved: propIsSaved = false,
   className,
   property
 }: SimilarPropertyCard) {
-  const { toggleSaveProperty } = useSavedProperties();
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
@@ -64,17 +37,6 @@ export default function SimilarPropertyCard({
     e.preventDefault();
     e.stopPropagation();
     likeProperty();
-    // toggleSaveProperty({
-    //   id,
-    //   image,
-    //   title,
-    //   price,
-    //   location,
-    //   // specs: {
-    //   //   bedrooms: beds,
-    //   //   bathrooms: baths,
-    //   // },
-    // })
   };
 
   if (isLikePending) {
@@ -102,13 +64,19 @@ export default function SimilarPropertyCard({
             variant="ghost"
             size="icon"
             className={`absolute top-2 right-2 bg-white/80 hover:bg-white transition-opacity ${
-              propertyLiked || isLikeSuccess ? "opacity-100" : isHovered ? "opacity-100" : "opacity-0"
+              propertyLiked || isLikeSuccess
+                ? "opacity-100"
+                : isHovered
+                ? "opacity-100"
+                : "opacity-0"
             }`}
             onClick={handleSaveClick}
           >
             <Heart
               className={`w-12 h-12 ${
-                propertyLiked || isLikeSuccess ? "fill-red-600 text-red-600" : "text-gray-600"
+                propertyLiked || isLikeSuccess
+                  ? "fill-red-600 text-red-600"
+                  : "text-gray-600"
               }`}
             />
           </Button>

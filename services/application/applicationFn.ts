@@ -23,6 +23,8 @@ import {
     signAgreement
 } from "./application"
 
+const keysToInvalidate = ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"]
+
 export const useStartApplication = () => {
     return useMutation({
         mutationFn: (payload: { propertyId: string, data: any }) => startApplication(payload.propertyId, payload.data),
@@ -54,7 +56,9 @@ export const useEmergencyContactApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => emergencyContactApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -64,7 +68,9 @@ export const useAdditionalDetailsApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => additionalDetailsApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -74,7 +80,9 @@ export const useRefereesApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => refereesApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -84,7 +92,9 @@ export const useGuarantorApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => guarantorApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -95,7 +105,9 @@ export const useDocumentsApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => documentsApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -105,7 +117,9 @@ export const useChecklistApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => checklistApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -115,7 +129,9 @@ export const useDeclarationApplication = () => {
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => declarationApplication(payload.applicationId, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -158,7 +174,13 @@ export const useUpdateInvite = () => {
     return useMutation({
         mutationFn: (payload: { id: string, data: UpdateInvitePayload }) => updateInvite(payload.id, payload.data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allInvites", "feedback", "getPropertyByInviteId", "allApplications", "properties"] });
+            queryClient.invalidateQueries({ queryKey: ["allInvites"] });
+            queryClient.invalidateQueries({ queryKey: ["getPropertyByInviteId"] });
+            queryClient.invalidateQueries({ queryKey: ["allApplications"] });
+            queryClient.invalidateQueries({ queryKey: ["properties"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+            queryClient.invalidateQueries({ queryKey: ["milestonesApplication"] });
+            queryClient.invalidateQueries({ queryKey: ["singleApplication"] });
         }
     })
 }
@@ -183,7 +205,9 @@ export const useCompleteApplication = () => {
     return useMutation({
         mutationFn: (applicationId: string) => completeApplication(applicationId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"] });
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
         }
     })
 }
@@ -196,7 +220,13 @@ export const useGetReferenceDetails = (applicationId: string) => {
 }
 
 export const useSignAgreement = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => signAgreement(payload.applicationId, payload.data),
+        onSuccess: () => {
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
+        }
     })
 }

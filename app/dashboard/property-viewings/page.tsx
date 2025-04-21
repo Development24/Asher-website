@@ -42,9 +42,9 @@ export default function PropertyViewingsPage() {
     noBedRoom: number;
     noBathRoom: number;
   } | null>(null);
-  const { data: invites, isFetching: isFetchingInvites } = useGetAllInvites();
+  const { data: invites, isFetching: isFetchingInvites, refetch: refetchInvites } = useGetAllInvites();
   const invitesData = invites as InviteResponse;
-  console.log(invitesData);
+  // console.log(invitesData);
 
   const acceptedInvites = invitesData?.acceptInvites;
   const rejectedInvites = invitesData?.rejectedInvites;
@@ -69,6 +69,10 @@ export default function PropertyViewingsPage() {
       id: invitationId,
       data: {
         response: "ACCEPTED"
+      }
+    }, {
+      onSettled: () => {
+        refetchInvites();
       }
     });
   };

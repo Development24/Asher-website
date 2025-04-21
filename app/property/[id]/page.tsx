@@ -191,7 +191,8 @@ export default function PropertyDetails() {
 
   const prevSimilar = () => {
     setSimilarIndex(
-      (prev) => (prev - 1 + similarProperties?.length) % similarProperties?.length
+      (prev) =>
+        (prev - 1 + similarProperties?.length) % similarProperties?.length
     );
   };
 
@@ -337,7 +338,11 @@ export default function PropertyDetails() {
 
   return (
     <div className="layout">
-      <Button variant="outline" className="mb-4" onClick={() => router.push("/dashboard/search")}>
+      <Button
+        variant="outline"
+        className="mb-4"
+        onClick={() => router.push("/dashboard/search")}
+      >
         ← Back to search
       </Button>
       {/* Breadcrumb */}
@@ -652,11 +657,7 @@ export default function PropertyDetails() {
               ?.filter((p) => p.id !== propertyData?.id)
               ?.map((similarProperty) => (
                 <div key={similarProperty.id}>
-                  <SimilarPropertyCard
-                    {...similarProperty}
-                    showViewProperty
-                    property={similarProperty}
-                  />
+                  <SimilarPropertyCard property={similarProperty} />
                 </div>
               ))}
           </motion.div>
