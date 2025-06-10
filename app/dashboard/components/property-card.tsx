@@ -13,6 +13,7 @@ import { useLikeProperty } from "@/services/property/propertyFn";
 import { useState } from "react";
 import { userStore } from "@/store/userStore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { displayImages } from '../../property/[id]/utils';
 
 interface PropertyCardProps {
   id?: number | string;
@@ -91,13 +92,12 @@ export function PropertyCard({
   if (isLikePending) {
     return <Skeleton className="h-[400px] w-full rounded-xl" />;
   }
-
   return (
     <Card className="overflow-hidden group min-h-[430px] flex flex-col justify-between">
       <div className="relative">
         <div className="relative h-48 w-full">
           <Image
-            src={propertyData?.images[0] || "/images/property-placeholder.png"}
+            src={displayImages(propertyData?.images)[0] || "/images/property-placeholder.png"}
             alt={propertyData?.name || "Property placeholder"}
             fill
             className="object-cover"

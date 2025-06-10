@@ -35,6 +35,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthRedirectStore } from "@/store/authRedirect";
+import { displayImages, filteredImageUrls, ImageObject } from "./utils";
 
 const propertyImages = [
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_01_0000.jpeg",
@@ -363,7 +364,10 @@ export default function PropertyDetails() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="md:col-span-2 relative rounded-lg overflow-hidden">
           <Image
-            src={propertyData?.images[currentImageIndex] || "/placeholder.svg"}
+            src={
+              displayImages(propertyData?.images)[currentImageIndex] ||
+              "/placeholder.svg"
+            }
             alt="Property main image"
             width={800}
             height={600}
@@ -383,7 +387,7 @@ export default function PropertyDetails() {
           </button>
         </div>
         <div className="grid grid-rows-3 gap-4">
-          {propertyData?.images
+          {displayImages(propertyData?.images)
             .slice(1, 4)
             .map((image: string, index: number) => (
               <div key={index} className="relative rounded-lg overflow-hidden">
@@ -407,7 +411,7 @@ export default function PropertyDetails() {
               <h1 className="text-3xl font-bold mb-2">{propertyData?.name}</h1>
               <div className="flex items-center text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4 mr-1" />
-                {`${propertyData?.city}, ${propertyData?.state} ${propertyData?.country}`}
+                {`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}, ${propertyData?.zipcode}`}
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -429,9 +433,11 @@ export default function PropertyDetails() {
           </div>
 
           <div className="text-3xl font-bold mb-6">
-            {formatPrice(Number(propertyData?.rentalFee))}{" "}
+            {formatPrice(Number(propertyData?.price))}{" "}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
-              per month
+              {propertyData?.priceFrequency === "MONTHLY"
+                ? "per month"
+                : "per year"}
             </span>
           </div>
 
@@ -450,15 +456,15 @@ export default function PropertyDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-primary" />
-                  <span>Bedrooms: {propertyData?.noBedRoom}</span>
+                  <span>Bedrooms: {propertyData?.bedrooms}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-primary" />
-                  <span>Bathrooms: {propertyData?.noBathRoom}</span>
+                  <span>Bathrooms: {propertyData?.bathrooms}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-primary" />
-                  <span>Area: {propertyData?.size}</span>
+                  <span>Area: {propertyData?.totalArea}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-primary" />

@@ -55,7 +55,7 @@ export  interface Property {
     country: string;
     zipcode: string;
     location: string;
-    images: string[];
+    images: any[];
     videourl: string[];
     amenities: string[];
     totalApartments: number;

@@ -225,12 +225,27 @@ export function FeaturedProperties() {
               </div>
               <div className="mt-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold">{property?.property?.name}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {property?.property?.name}
+                  </h3>
                   <span className="text-red-600 font-semibold">
-                    {formatPrice(Number(property?.property?.rentalFee))}
+                    {formatPrice(
+                      Number(
+                        property?.property?.rentalFee ??
+                          property?.property?.price
+                      ) || 0
+                    )}
                   </span>
                 </div>
-                <p className="text-gray-600 text-sm mb-2">{`${property?.property?.city}, ${property?.property?.state} ${property?.property?.country}`}</p>
+                <p className="text-gray-600 text-sm mb-2">{`${
+                  property?.property?.address
+                }, ${
+                  property?.property?.address2 !== ""
+                    ? property?.property?.address2
+                    : ""
+                } ${property?.property?.city}, ${
+                  property?.property?.state?.name
+                } ${property?.property?.country}`}</p>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span className="flex items-center gap-1">
                     <Bed className="w-4 h-4" />

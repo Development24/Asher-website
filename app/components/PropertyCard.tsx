@@ -11,6 +11,7 @@ import { Listing } from "@/services/property/types";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { userStore } from "@/store/userStore";
+import { displayImages } from "../property/[id]/utils";
 interface SimilarPropertyCard {
   className?: string;
   property?: Listing;
@@ -32,6 +33,7 @@ export default function SimilarPropertyCard({
   const propertyLiked = property?.property?.UserLikedProperty.some(
     (likedProperty) => likedProperty.userId === userId
   );
+  // console.log(property, "Coming from similar properties");
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,7 +57,7 @@ export default function SimilarPropertyCard({
       >
         <div className="relative aspect-[4/3] rounded-t-lg overflow-hidden">
           <Image
-            src={property?.property?.images[0] || "/placeholder.svg"}
+            src={displayImages(property?.property?.images)?.[0] || "/placeholder.svg"}
             alt={String(property?.property?.name)}
             fill
             className="object-cover"
@@ -88,12 +90,18 @@ export default function SimilarPropertyCard({
               {property?.property?.name}
             </h3>
             <span className="text-red-600 font-semibold">{`${formatPrice(
-              Number(property?.property?.rentalFee)
+              Number(
+                property?.property?.rentalFee ?? property?.property?.price
+              ) || 0
             )}`}</span>
           </div>
 
           <p className="text-gray-600 text-sm mb-2">
-            {property?.property?.city}, {property?.property?.state?.name},{" "}
+            {property?.property?.address},{" "}
+            {property?.property?.address2 && property?.property?.address2 !== ""
+              ? property?.property?.address2
+              : ""}{" "}
+            {property?.property?.city}, {property?.property?.state?.name}{" "}
             {property?.property?.country}
           </p>
 
