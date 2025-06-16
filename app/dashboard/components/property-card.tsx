@@ -145,18 +145,18 @@ export function PropertyCard({
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold">{propertyData?.name}</h3>
           <span className="text-red-600 font-semibold">
-            {formatPrice(Number(propertyData?.rentalFee))}
+            {formatPrice(Number(propertyData?.price))}
           </span>
         </div>
-        <p className="text-sm text-gray-500 mb-4">{`${propertyData?.city}, ${propertyData?.state} ${propertyData?.country}`}</p>
+        <p className="text-sm text-gray-500 mb-4">{`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}`}</p>
         <div className="flex items-center gap-4 text-sm text-gray-500">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
-            {propertyData?.noBedRoom || "N/A"}
+            {propertyData?.bedrooms || "N/A"}
           </span>
           <span className="flex items-center gap-1">
             <Bath className="h-4 w-4" />
-            {propertyData?.noBathRoom || "N/A"}
+            {propertyData?.bathrooms || "N/A"}
           </span>
         </div>
         {showFeedback && onFeedbackClick && (

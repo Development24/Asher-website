@@ -200,16 +200,16 @@ export default function PropertyDetails() {
   const handleContactClick = (type: "chat" | "email") => {
     if (!user) {
       if (type === "email") {
-        setRedirectUrl(`/property/${propertyData?.id}/email`);
+        setRedirectUrl(`/property/${propertyData?.propertyId}/email`);
       } else {
-        setRedirectUrl(`/property/${propertyData?.id}/chat`);
+        setRedirectUrl(`/property/${propertyData?.propertyId}/chat`);
       }
       setShowAuthPrompt(true);
       return;
     }
 
     if (type === "email") {
-      router.push(`/property/${propertyData?.id}/email`);
+      router.push(`/property/${propertyData?.propertyId}/email`);
     } else {
       setShowPreChatModal(true);
     }

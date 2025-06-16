@@ -171,7 +171,7 @@ export default function SearchPage() {
             <label className="text-sm font-medium mb-1.5 block text-gray-500">
               Bedrooms
             </label>
-            <Select defaultValue="any" value={filters.minBedRoom?.toString()} onValueChange={handleBedroomChange}>
+            <Select defaultValue="any" value={filters?.minBedRoom?.toString()} onValueChange={handleBedroomChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Any beds" />
               </SelectTrigger>
@@ -187,7 +187,7 @@ export default function SearchPage() {
             <label className="text-sm font-medium mb-1.5 block text-gray-500">
               Price
             </label>
-            <Select defaultValue="any" value={filters.minRentalFee?.toString()} onValueChange={handlePriceChange}>
+            <Select defaultValue="any" value={filters?.minRentalFee?.toString()} onValueChange={handlePriceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Any price" />
               </SelectTrigger>

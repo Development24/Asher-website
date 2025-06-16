@@ -26,9 +26,9 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
     fullName: user?.profile?.firstName + " " + user?.profile?.lastName || "",
     email: user?.email || "",
     phone: user?.profile?.phoneNumber || "",
-    // address: "",
+    address: "",
     message: "",
-    propertyId: propertyDetails?.id
+    propertyId: propertyDetails?.propertyId
   });
   const { mutate: createEnquiry, isPending } = useCreateEnquiry();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -44,7 +44,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
       // receiverEmail: propertyDetails?.landlord?.user?.email,
       // subject: "Email from " + formData.fullName,
       message: formData.message,
-      propertyId: propertyDetails?.id
+      propertyListingId: propertyDetails?.listingId
     }, {
       onSuccess: () => {
         setShowSuccessModal(true)
@@ -57,7 +57,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    router.push(`/property/${propertyDetails?.id}`);
+    router.push(`/property/${propertyDetails?.propertyId}`);
   };
 
   return (
@@ -68,7 +68,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         </Link>
         <span className="text-gray-400">/</span>
         <Link
-          href={`/property/${propertyDetails?.id}`}
+          href={`/property/${propertyDetails?.propertyId}`}
           className="text-gray-600 hover:text-gray-900"
         >
           Property information
@@ -85,7 +85,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
               <Label htmlFor="fullName">Full name</Label>
               <Input
                 id="fullName"
-                value={formData.fullName}
+                value={formData?.fullName}
                 onChange={(e) =>
                   setFormData({ ...formData, fullName: e.target.value })
                 }
@@ -99,7 +99,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
                 <Input
                   id="email"
                   type="email"
-                  value={formData.email}
+                  value={formData?.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
@@ -111,7 +111,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
                 <Input
                   id="phone"
                   type="tel"
-                  value={formData.phone}
+                  value={formData?.phone}
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
@@ -123,7 +123,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
               <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
-                value={formData.address}
+                value={formData?.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
@@ -137,7 +137,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
                 id="message"
                 placeholder="Enter your message to the landlord here"
                 className="min-h-[150px]"
-                value={formData.message}
+                value={formData?.message}
                 onChange={(e) =>
                   setFormData({ ...formData, message: e.target.value })
                 }
@@ -164,7 +164,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         <div className="bg-white rounded-lg border overflow-hidden w-full md:w-1/3">
           <div className="relative h-48">
             <Image
-              src={propertyDetails?.images[0] || "/placeholder.svg"}
+              src={propertyDetails?.images[0]?.url || "/placeholder.svg"}
               alt={propertyDetails?.name}
               fill
               className="object-cover"
@@ -174,19 +174,19 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
             <h2 className="text-xl font-semibold mb-2">
               {propertyDetails?.name}
             </h2>
-            <p className="text-gray-600 mb-2">{`${propertyDetails?.city} ${propertyDetails?.state} ${propertyDetails?.country}`}</p>
+            <p className="text-gray-600 mb-2">{`${propertyDetails?.city} ${propertyDetails?.state?.name} ${propertyDetails?.country}`}</p>
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Bed className="w-4 h-4" />
-                {propertyDetails?.noBedRoom} bedrooms
+                {propertyDetails?.bedrooms} bedrooms
               </span>
               <span className="flex items-center gap-1">
                 <Bath className="w-4 h-4" />
-                {propertyDetails?.noBathRoom} bathrooms
+                {propertyDetails?.bathrooms} bathrooms
               </span>
             </div>
             <div className="mt-4 text-xl font-bold text-red-600">{`${formatPrice(
-              Number(propertyDetails?.rentalFee)
+              Number(propertyDetails?.price)
             )}`}</div>
           </div>
         </div>
