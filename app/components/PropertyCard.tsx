@@ -21,10 +21,11 @@ export default function SimilarPropertyCard({
   className,
   property
 }: SimilarPropertyCard) {
+  console.log(property, "Coming from similar properties");
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
-  const propertyId = property?.property?.id;
+  const propertyId = property?.property?.propertyId;
   const {
     mutate: likeProperty,
     isPending: isLikePending,
@@ -33,7 +34,7 @@ export default function SimilarPropertyCard({
   const propertyLiked = property?.property?.UserLikedProperty.some(
     (likedProperty) => likedProperty.userId === userId
   );
-  // console.log(property, "Coming from similar properties");
+
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +47,7 @@ export default function SimilarPropertyCard({
   }
 
   return (
-    <Link href={`/property/${property?.property?.id}`}>
+    <Link href={`/property/${property?.id}`}>
       <div
         className={cn(
           "group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 min-w-[300px]",

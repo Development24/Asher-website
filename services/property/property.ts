@@ -3,9 +3,11 @@ import { IPropertyParams } from "./types"
 
 const URL = "api/properties"
 // /application/milestones/cm284qnxt0003tffzo49gvmfl
+// /properties/property/listing/cmbaqqrh7000114cg600w33uw
 const propertyURL = {
     all: "/property",
     byId: "/property/:id",
+    forListingId: "/property/listing/:id",
     likeProperty: "/property/likes/:id",
     unlikeProperty: "/property/unlike/:id",
     userLikedProperties: "/property/user/likes",
@@ -44,6 +46,11 @@ export const getAllProperties = async (params?: PropertyRentalFilter) => {
 
 export const getPropertyById = async (id: string) => {
     const response = await api.get(URL + propertyURL.byId.replace(":id", id))
+    return response.data
+}
+
+export const getPropertyByIdForListingId = async (id: string) => {
+    const response = await api.get(URL + propertyURL.forListingId.replace(":id", id))
     return response.data
 }
 
@@ -89,8 +96,9 @@ export interface EnquiryPayload {
     isLiked?: boolean;
     review?: string;
     rating?: number;
-    propertyId: string;
+    propertyId?: string;
     message: string;
+    propertyListingId?: string;
 }
 export const createEnquiry = async (data: Partial<EnquiryPayload>) => {
     const response = await api.post(URL + propertyURL.enquiry, data)

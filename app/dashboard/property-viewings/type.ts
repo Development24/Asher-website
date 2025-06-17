@@ -89,7 +89,7 @@ export interface InviteData {
     tenantsId: string | null;
     userInvitedId: string;
     invitationId: string | null;
-    properties: Property;
+    properties: Property | any;
 }
 
 export interface InviteResponse {

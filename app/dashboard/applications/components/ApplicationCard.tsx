@@ -9,6 +9,7 @@ import { Bed, Bath } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useReuseAbleStore } from "@/store/reuseAble";
 import { ApplicationStatus } from "../page";
+import { displayImages } from "@/app/property/[id]/utils";
 
 const getStatusBadgeColor = (status: ApplicationStatus) => {
   switch (status) {
@@ -140,7 +141,7 @@ const ApplicationCard = ({
       <div className="relative h-48">
         <Image
           src={
-            application?.properties?.images[0] ||
+            displayImages(application?.properties?.images)?.[0] ||
             "https://cdn.pixabay.com/photo/2016/06/24/10/47/house-1477041_1280.jpg"
           }
           alt={application?.properties?.name}
@@ -162,22 +163,22 @@ const ApplicationCard = ({
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold">{application?.properties?.name}</h3>
           <span className="text-red-600 font-semibold">
-            {formatPrice(Number(application?.properties?.rentalFee))}
+            {formatPrice(Number(application?.properties?.price))}
           </span>
         </div>
         {/* <p className="text-sm text-gray-500 mb-4">{application.properties.location}</p> */}
         <p className="text-sm text-gray-500 mb-4">
-          {application?.properties?.city}, {application?.properties?.country}{" "}
-          {application?.properties?.zipcode}
+          {application?.properties?.city}, {application?.properties?.state?.name}{" "}
+          {application?.properties?.country}
         </p>
         <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
-            {application?.properties?.noBedRoom}
+            {application?.properties?.bedrooms}
           </span>
           <span className="flex items-center gap-1">
             <Bath className="h-4 w-4" />
-            {application?.properties?.noBathRoom}
+            {application?.properties?.bathrooms}
           </span>
         </div>
         {sectionType === "continue" && (

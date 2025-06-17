@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { EnquiryPayload, FeedBackPayload, createEnquiry, createFeedback, getAllFeedback, getAllProperties, getLandlordProperties, getPropertyById, getUserLikedProperties, likeProperty, unlikeProperty } from "./property"
+import { EnquiryPayload, FeedBackPayload, createEnquiry, createFeedback, getAllFeedback, getAllProperties, getLandlordProperties, getPropertyById, getPropertyByIdForListingId, getUserLikedProperties, likeProperty, unlikeProperty } from "./property"
 import { IPropertyParams } from "./types"
 
 export const useGetProperties = (params?: IPropertyParams) => {
@@ -20,6 +20,16 @@ export const useGetPropertyById = (id: string, enabled: boolean = true) => {
     return useQuery({
         queryKey: ["property", id],
         queryFn: () => getPropertyById(id),
+        retry: false,
+        enabled: enabled,
+    })
+}
+
+export const useGetPropertyByIdForListingId = (id: string, enabled: boolean = true) => {
+
+    return useQuery({
+        queryKey: ["property", id],
+        queryFn: () => getPropertyByIdForListingId(id),
         retry: false,
         enabled: enabled,
     })

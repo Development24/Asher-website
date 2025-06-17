@@ -33,7 +33,7 @@ export interface ApplicationData {
     emergencyInfo: null;
     documents: Document[];
     employmentInfo: EmploymentInfo;
-    properties: Properties;
+    properties: Properties | any;
     referee: Referee;
     response: string;
     Log: any[];

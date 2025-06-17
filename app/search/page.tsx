@@ -349,7 +349,7 @@ export default function SearchPage() {
                   <PropertyCard
                     {...property}
                     showViewProperty
-                    isSaved={isPropertySaved(Number(property.property.id))}
+                    isSaved={isPropertySaved(Number(property?.propertyId))}
                     property={property}
                   />
                 </motion.div>

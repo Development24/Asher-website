@@ -36,6 +36,7 @@ import {
   ScheduleDisplay,
   ViewingActions
 } from "./ViewingsComp";
+import { displayImages } from "@/app/property/[id]/utils";
 
 interface Property {
   id: number;
@@ -265,7 +266,10 @@ export default function PropertyViewingDetailPage() {
       <div className="relative w-full h-[600px] bg-gray-100">
         <div className="">
           <Image
-            src={propertyData?.images[currentImageIndex] || "/placeholder.svg"}
+            src={
+              displayImages(propertyData?.images)[currentImageIndex] ||
+              "/images/property-placeholder.png"
+            }
             alt={propertyData?.name}
             fill
             className="object-cover"
@@ -274,7 +278,7 @@ export default function PropertyViewingDetailPage() {
 
         {/* Gallery Navigation */}
         <div className="absolute inset-x-0 bottom-0 flex gap-2 p-4 overflow-x-auto">
-          {propertyData?.images.map((image, index) => (
+          {propertyData?.images.map((image: any, index: number) => (
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
@@ -283,7 +287,7 @@ export default function PropertyViewingDetailPage() {
               }`}
             >
               <Image
-                src={image || "/placeholder.svg"}
+                src={image?.url || "/placeholder.svg"}
                 alt={`View ${index + 1}`}
                 fill
                 className="object-cover"
@@ -340,10 +344,17 @@ export default function PropertyViewingDetailPage() {
                 </h1>
                 <div className="flex items-center text-gray-600">
                   <MapPin className="w-4 h-4 mr-1" />
-                  {propertyData?.location}
+                  <p className="text-gray-600 text-sm mb-2">
+                    {propertyData?.address},{" "}
+                    {propertyData?.address2 && propertyData?.address2 !== ""
+                      ? propertyData?.address2
+                      : ""}{" "}
+                    {propertyData?.city}, {propertyData?.state?.name}{" "}
+                    {propertyData?.country}
+                  </p>
                 </div>
                 <div className="text-2xl font-bold text-red-600 mt-4">
-                  {formatPrice(Number(propertyData?.rentalFee))}{" "}
+                  {formatPrice(Number(propertyData?.price))}{" "}
                   <span className="text-sm font-normal text-gray-600">
                     per month
                   </span>

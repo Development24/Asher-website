@@ -141,7 +141,7 @@ export function ChecklistForm({
         >
           Previous
         </Button>
-        <Button type="button" onClick={onNext} className={continueButtonClass}>
+        <Button type="button" onClick={onNext} className={continueButtonClass} disabled={loading}>
           {loading ? "Submitting..." : "Complete Application"}
         </Button>
       </div>

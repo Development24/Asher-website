@@ -41,6 +41,7 @@ import { useState } from "react";
 import { LeaseAgreementModal } from "./lease-agreement-modal";
 import { PaymentModal } from "./payment-modal";
 import { toast } from "sonner";
+import { displayImages } from "@/app/property/[id]/utils";
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -284,9 +285,9 @@ export default function SuccessPage() {
           <div className="md:col-span-2 relative rounded-lg overflow-hidden">
             <Image
               src={
-                propertyData?.images[currentImageIndex] || "/placeholder.svg"
+                displayImages(propertyData?.images)[currentImageIndex] || "/placeholder.svg"
               }
-              alt={propertyData?.title}
+              alt={propertyData?.name}
               width={800}
               height={600}
               className="w-full h-[500px] object-cover"
@@ -315,9 +316,9 @@ export default function SuccessPage() {
             </button>
           </div>
           <div className="grid grid-rows-2 gap-4">
-            {propertyData?.images
+            {displayImages(propertyData?.images)
               .slice(1, 3)
-              .map((image: string, index: number) => (
+              .map((image: any, index: number) => (
                 <div
                   key={index}
                   className="relative rounded-lg overflow-hidden"
@@ -344,7 +345,7 @@ export default function SuccessPage() {
                 </h1>
                 <div className="flex items-center text-gray-600">
                   <MapPin className="w-4 h-4 mr-1" />
-                  {`${propertyData?.city}, ${propertyData?.state} ${propertyData?.country}, `}
+                  {`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}, `}
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -358,7 +359,7 @@ export default function SuccessPage() {
             </div>
 
             <div className="text-2xl font-bold mb-6">
-              {`${formatPrice(propertyData?.rentalFee)}`}{" "}
+              {`${formatPrice(propertyData?.price)}`}{" "}
               <span className="text-base font-normal text-gray-600">
                 per month
               </span>
@@ -764,7 +765,7 @@ export default function SuccessPage() {
                       <div className="relative h-48">
                         <Image
                           src={
-                            similarProperty?.property?.images[0] ||
+                            displayImages(similarProperty?.property?.images)[0] ||
                             "/placeholder.svg"
                           }
                           alt={String(similarProperty?.property?.name)}
@@ -777,11 +778,11 @@ export default function SuccessPage() {
                           {similarProperty?.property?.name}
                         </h3>
                         <p className="text-gray-600 text-sm mb-2">
-                          {similarProperty?.property?.location}
+                          {similarProperty?.property?.address}, {similarProperty?.property?.city}, {similarProperty?.property?.state?.name}, {similarProperty?.property?.country}
                         </p>
                         <p className="text-red-600 font-semibold">
                           {formatPrice(
-                            Number(similarProperty?.property?.rentalFee) || 0
+                            Number(similarProperty?.property?.price) || 0
                           )}
                         </p>
                       </div>

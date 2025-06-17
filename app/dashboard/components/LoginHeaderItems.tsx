@@ -49,7 +49,7 @@ const LoginHeaderItems = ({ onMenuClick }: LoginHeaderItemsProps) => {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>Profile</DropdownMenuItem>
+          {/* <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>Profile</DropdownMenuItem> */}
           <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>Settings</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

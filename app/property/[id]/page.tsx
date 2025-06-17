@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import {
   useGetProperties,
-  useGetPropertyById
+  useGetPropertyById,
+  useGetPropertyByIdForListingId
 } from "@/services/property/propertyFn";
 import { Listing, Property } from "@/services/property/types";
 import { userStore } from "@/store/userStore";
@@ -160,9 +161,9 @@ export default function PropertyDetails() {
     useGetProperties();
   const similarProperties: Listing[] = propertiesData?.properties;
 
-  const { data, isFetching } = useGetPropertyById(id as string);
-  console.log(data);
-  const propertyData: Property = data?.property;
+  const { data, isFetching } = useGetPropertyByIdForListingId(id as string);
+  console.log(data, "Property Data for listing id");
+  const propertyData: Property = data?.property?.property;
 
   // useEffect(() => {
   //   // const selectedProperty = properties.find((p) => p.id.toString() === id);
@@ -200,16 +201,16 @@ export default function PropertyDetails() {
   const handleContactClick = (type: "chat" | "email") => {
     if (!user) {
       if (type === "email") {
-        setRedirectUrl(`/property/${propertyData?.propertyId}/email`);
+        setRedirectUrl(`/property/${data?.property?.id}/email`);
       } else {
-        setRedirectUrl(`/property/${propertyData?.propertyId}/chat`);
+        setRedirectUrl(`/property/${propertyData?.id}/chat`);
       }
       setShowAuthPrompt(true);
       return;
     }
 
     if (type === "email") {
-      router.push(`/property/${propertyData?.propertyId}/email`);
+      router.push(`/property/${data?.property?.id}/email`);
     } else {
       setShowPreChatModal(true);
     }
@@ -564,7 +565,7 @@ export default function PropertyDetails() {
                   )}
                 >
                   <Image
-                    src={propertyData?.landlord?.image || "/placeholder.svg"}
+                    src={propertyData?.landlord?.user?.profile?.profileUrl || "/placeholder.svg"}
                     alt={propertyData?.landlord?.name || ""}
                     fill
                     className="rounded-full object-cover"

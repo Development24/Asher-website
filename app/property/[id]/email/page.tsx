@@ -4,7 +4,7 @@ import { LoginModal } from "@/app/components/auth/LoginModal";
 import { SignUpModal } from "@/app/components/auth/SignUpModal";
 import { VerificationModal } from "@/app/components/auth/VerificationModal";
 import { EmailForm } from "@/app/components/email/EmailForm";
-import { useGetPropertyById } from "@/services/property/propertyFn";
+import { useGetPropertyByIdForListingId } from "@/services/property/propertyFn";
 import { userStore } from "@/store/userStore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,8 +20,8 @@ export default function EmailPropertyPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // const [propertyDetails, setPropertyDetails] = useState<any>(null)
   const user = userStore((state) => state.user);
-  const { data: propertyDetails, isFetching } = useGetPropertyById(id as string, !!user);
-  console.log(propertyDetails);
+  const { data: propertyDetails, isFetching } = useGetPropertyByIdForListingId(id as string, !!user);
+  // console.log(propertyDetails);
   useEffect(() => {
     const checkAuth = () => {
       if (user) {

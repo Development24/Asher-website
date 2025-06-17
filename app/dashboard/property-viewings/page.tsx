@@ -14,6 +14,7 @@ import { InviteData, InviteResponse, Landlord } from "./type";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "next/navigation";
 import { PropertyCardSkeleton, SectionSkeleton } from "./SkeletonLoaders";
+import { displayImages } from "@/app/property/[id]/utils";
 interface Property {
   id: number;
   image: string;
@@ -267,13 +268,13 @@ export default function PropertyViewingsPage() {
                         propertyId: property?.properties?.id,
                         applicantInviteId: property?.id,
                         scheduleDate: property?.scheduleDate,
-                        images: property?.properties?.images,
+                        images: displayImages(property?.properties?.images),
                         name: property?.properties?.name,
                         address: property?.properties?.location,
-                        rentalFee: property?.properties?.rentalFee as any,
+                        rentalFee: property?.properties?.rentalFee as any || property?.properties?.price as any,
                         propertysize: property?.properties?.propertysize,
-                        noBedRoom: property?.properties?.noBedRoom,
-                        noBathRoom: property?.properties?.noBathRoom
+                        noBedRoom: property?.properties?.bedrooms,
+                        noBathRoom: property?.properties?.bathrooms
                       })
                     }
                     showViewProperty

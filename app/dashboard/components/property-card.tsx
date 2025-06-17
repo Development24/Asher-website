@@ -64,7 +64,8 @@ export function PropertyCard({
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
-  const propertyId = propertyData?.id;
+  console.log(property, "Coming from property card");
+  const propertyId = property?.propertyId;
   const {
     mutate: likeProperty,
     isPending: isLikePending,
@@ -112,21 +113,21 @@ export function PropertyCard({
               ? "opacity-100"
               : isHovered
               ? "opacity-100"
-              : "opacity-0"
+              : "opacity-100"
           }`}
         >
           <Heart
             className={`w-5 h-5 ${
               propertyLiked || isLikeSuccess
                 ? "fill-red-600 text-red-600"
-                : "text-gray-600"
+                : "text-grey-600"
             }`}
           />
         </motion.button>
         {(showViewProperty ||
           viewType === "invite" ||
           viewType === "schedule") && (
-          <Link href={viewLink || `/property/${propertyData?.id}`}>
+          <Link href={viewLink || `/property/${property?.id}`}>
             <Button
               variant="secondary"
               size="sm"

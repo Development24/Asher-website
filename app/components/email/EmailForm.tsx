@@ -16,10 +16,12 @@ import { formatPrice } from "@/lib/utils";
 import { userStore } from "@/store/userStore";
 import { useCreateEnquiry } from "@/services/property/propertyFn";
 interface EmailFormProps {
-  propertyDetails: Property;
+  propertyDetails: any;
 }
+// propertyDetails?.property = Property
 
 export function EmailForm({ propertyDetails }: EmailFormProps) {
+  console.log(propertyDetails, "propertyDetails EmailForm");
   const router = useRouter();
   const user = userStore((state) => state.user);
   const [formData, setFormData] = useState({
@@ -28,7 +30,9 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
     phone: user?.profile?.phoneNumber || "",
     address: "",
     message: "",
-    propertyId: propertyDetails?.propertyId
+    propertyListingId: propertyDetails?.id,
+    // unitId: propertyDetails?.unit?.id,
+    // roomId: propertyDetails?.room?.id,
   });
   const { mutate: createEnquiry, isPending } = useCreateEnquiry();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -44,7 +48,8 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
       // receiverEmail: propertyDetails?.landlord?.user?.email,
       // subject: "Email from " + formData.fullName,
       message: formData.message,
-      propertyListingId: propertyDetails?.listingId
+      propertyListingId: propertyDetails?.id,
+
     }, {
       onSuccess: () => {
         setShowSuccessModal(true)
@@ -57,7 +62,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    router.push(`/property/${propertyDetails?.propertyId}`);
+    router.push(`/property/${propertyDetails?.id}`);
   };
 
   return (
@@ -68,7 +73,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         </Link>
         <span className="text-gray-400">/</span>
         <Link
-          href={`/property/${propertyDetails?.propertyId}`}
+          href={`/property/${propertyDetails?.property?.propertyId}`}
           className="text-gray-600 hover:text-gray-900"
         >
           Property information
@@ -164,29 +169,29 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         <div className="bg-white rounded-lg border overflow-hidden w-full md:w-1/3">
           <div className="relative h-48">
             <Image
-              src={propertyDetails?.images[0]?.url || "/placeholder.svg"}
-              alt={propertyDetails?.name}
+              src={propertyDetails?.property?.images[0]?.url || "/placeholder.svg"}
+              alt={propertyDetails?.property?.name}
               fill
               className="object-cover"
             />
           </div>
           <div className="p-4">
             <h2 className="text-xl font-semibold mb-2">
-              {propertyDetails?.name}
+              {propertyDetails?.property?.name}
             </h2>
-            <p className="text-gray-600 mb-2">{`${propertyDetails?.city} ${propertyDetails?.state?.name} ${propertyDetails?.country}`}</p>
+            <p className="text-gray-600 mb-2">{`${propertyDetails?.property?.city} ${propertyDetails?.property?.state?.name} ${propertyDetails?.property?.country}`}</p>
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Bed className="w-4 h-4" />
-                {propertyDetails?.bedrooms} bedrooms
+                {propertyDetails?.property?.bedrooms} bedrooms
               </span>
               <span className="flex items-center gap-1">
                 <Bath className="w-4 h-4" />
-                {propertyDetails?.bathrooms} bathrooms
+                {propertyDetails?.property?.bathrooms} bathrooms
               </span>
             </div>
             <div className="mt-4 text-xl font-bold text-red-600">{`${formatPrice(
-              Number(propertyDetails?.price)
+              Number(propertyDetails?.property?.price)
             )}`}</div>
           </div>
         </div>
