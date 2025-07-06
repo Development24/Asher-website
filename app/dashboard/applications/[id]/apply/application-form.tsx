@@ -236,6 +236,7 @@ export function ApplicationForm({
     );
   };
   console.log(applicationData);
+  const hasApplicationFee = applicationData?.applicationFee === "Yes";
 
   // Track which steps have been submitted
   const [submittedSteps, setSubmittedSteps] = useState<number[]>([]);
@@ -268,7 +269,7 @@ export function ApplicationForm({
     // Show payment modal if current step is the last step
     if (
       arrayLastStep.id === currentStep &&
-      applicationData?.hasApplicationFee
+      hasApplicationFee
     ) {
       // TODO: Get these values from the backend response
       // For now, using default values

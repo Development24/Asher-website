@@ -41,6 +41,7 @@ export interface ApplicationData {
     applicationQuestions: ApplicationQuestions[];
     personalDetails: PersonalDetails;
     hasApplicationFee: boolean;
+    applicationFee: string;
 }
 
 export interface Referee {
