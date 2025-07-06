@@ -1,3 +1,4 @@
+
 # PropertyPro - Property Management Platform
 
 PropertyPro is a modern web application that streamlines the property rental process, connecting property seekers with available properties and managing the entire rental journey.
@@ -81,5 +82,3 @@ npm run dev
 ```
 
 5. Open your browser and navigate to `http://localhost:3000`
-
-
