@@ -30,6 +30,9 @@ import { ReferenceForm } from "./reference-form";
 import { ResidentialDetailsForm } from "./residential-details-form";
 import { ApplicationData } from "@/types/applicationInterface";
 import { useCompleteApplication } from "@/services/application/applicationFn";
+import { useCreatePayment } from "@/services/finance/financeFn";
+import DepositComponent from "../../components/stripe-comp/DepositComponent";
+import { loadStripe } from "@stripe/stripe-js";
 
 // PERSONAL_KIN
 //   REFEREE
@@ -131,6 +134,22 @@ const steps: {
     nextStep: null
   }
 ];
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
+);
+interface IntialPaymentResInterface {
+  paymentDetails: {
+    id: string;
+    amount: number;
+    currency: string;
+    customer: string;
+    status: string;
+    client_secret: string;
+  };
+  transactionDetails: {
+    [key: string]: any;
+  };
+}
 
 interface ApplicationFormProps {
   onShowPaymentModal: () => void;
@@ -156,6 +175,7 @@ export function ApplicationForm({
   const nextStepInfo = steps.find(
     (step) => step.lastStep === lastStepInfo?.nextStep
   );
+  const arrayLastStep = steps[steps.length - 1];
   const completedSteps = applicationData?.completedSteps;
   // Initialize with a default value
   const [currentStep, setCurrentStep] = useState(1);
@@ -188,7 +208,33 @@ export function ApplicationForm({
   const router = useRouter();
   const [lastStep, setLastStep] = useState("");
   const { mutate: completeApplication, isPending } = useCompleteApplication();
-
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
+  const { mutate: createPayment, isPending: isCreatePaymentPending } =
+    useCreatePayment();
+  const handleAmountSubmit = (amount: number, currency: string) => {
+    createPayment(
+      {
+        amount,
+        paymentGateway: "STRIPE",
+        payment_method_types: "card",
+        currency
+      },
+      {
+        onSuccess: (data) => {
+          const response = data as IntialPaymentResInterface;
+          const { paymentDetails } = response;
+          setClientSecret(paymentDetails?.client_secret);
+          setShowPaymentModal(true);
+          refetch();
+        },
+        onError: (error) => {
+          console.error("Payment creation failed:", error);
+          // You could show a toast notification here
+        }
+      }
+    );
+  };
   console.log(applicationData);
 
   // Track which steps have been submitted
@@ -220,8 +266,15 @@ export function ApplicationForm({
     }
 
     // Show payment modal if current step is the last step
-    if (applicationData?.hasApplicationFee) {
-      setShowPaymentModal(true);
+    if (
+      arrayLastStep.id === currentStep &&
+      applicationData?.hasApplicationFee
+    ) {
+      // TODO: Get these values from the backend response
+      // For now, using default values
+      const applicationFee = 2000; // $20.00 in cents
+      const currency = applicationData?.properties?.currency || "USD";
+      handleAmountSubmit(applicationFee, currency);
       return;
     }
 
@@ -365,11 +418,26 @@ export function ApplicationForm({
         </motion.div>
       </AnimatePresence>
       {showPaymentModal && (
-        <PaymentModal
-          isOpen={showPaymentModal}
+        <DepositComponent
+          stripePromise={stripePromise}
+          opened={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          propertyId={propertyId}
+          clientSecret={clientSecret}
+          amount={2000}
+          currency={applicationData?.properties?.currency || "USD"}
+          onPaymentSuccess={() => {
+            // Handle successful payment
+            console.log("Payment successful!");
+            // You could show a success message or redirect
+            router.push("/dashboard/applications/payment-success");
+            refetch();
+          }}
+          onPaymentError={(error) => {
+            console.error("Payment failed:", error);
+            // You could show an error message
+          }}
         />
+      
       )}
     </div>
   );
