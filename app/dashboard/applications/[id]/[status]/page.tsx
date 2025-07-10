@@ -2,7 +2,8 @@
 
 import { ChatModal } from "@/app/components/chat/ChatModal";
 import { PreChatModal } from "@/app/components/chat/PreChatModal";
-import { LandlordProfileModal } from "@/app/components/modals/landlord-profile-modal";
+import dynamic from "next/dynamic";
+const LandlordProfileModal = dynamic(() => import("@/app/components/modals/landlord-profile-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { SaveModal } from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

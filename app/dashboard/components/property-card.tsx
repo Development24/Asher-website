@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
 import { Listing } from "@/services/property/types";
@@ -94,7 +93,12 @@ export function PropertyCard({
     return <Skeleton className="h-[400px] w-full rounded-xl" />;
   }
   return (
-    <Card className="overflow-hidden group min-h-[430px] flex flex-col justify-between">
+    <motion.div
+      className="overflow-hidden group min-h-[430px] flex flex-col justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out"
+      whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)' }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
       <div className="relative">
         <div className="relative h-48 w-full">
           <Image
@@ -119,8 +123,8 @@ export function PropertyCard({
           <Heart
             className={`w-5 h-5 ${
               propertyLiked || isLikeSuccess
-                ? "fill-red-600 text-red-600"
-                : "text-grey-600"
+                ? "fill-primary-500 text-primary-500"
+                : "text-neutral-600"
             }`}
           />
         </motion.button>
@@ -144,13 +148,13 @@ export function PropertyCard({
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold">{propertyData?.name}</h3>
-          <span className="text-red-600 font-semibold">
+          <h3 className="font-semibold text-neutral-900">{propertyData?.name}</h3>
+          <span className="text-primary-500 font-semibold">
             {formatPrice(Number(propertyData?.price))}
           </span>
         </div>
-        <p className="text-sm text-gray-500 mb-4">{`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}`}</p>
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+        <p className="text-sm text-neutral-600 mb-4">{`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}`}</p>
+        <div className="flex items-center gap-4 text-sm text-neutral-600">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
             {propertyData?.bedrooms || "N/A"}
@@ -185,6 +189,6 @@ export function PropertyCard({
           </Link>
         )}
       </div>
-    </Card>
+    </motion.div>
   );
 }

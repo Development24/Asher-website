@@ -13,14 +13,14 @@ interface RejectInviteModalProps {
   isLoading: boolean;
 }
 
-export function RejectInviteModal({
+const RejectInviteModal = ({
   isOpen,
   onClose,
   onConfirm,
   showSuccess,
   propertyId,
   isLoading
-}: RejectInviteModalProps) {
+}: RejectInviteModalProps) => {
   if (showSuccess) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -63,4 +63,5 @@ export function RejectInviteModal({
       </DialogContent>
     </Dialog>
   );
-}
+};
+export default RejectInviteModal;

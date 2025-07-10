@@ -161,7 +161,7 @@ export default function InboxPage() {
             <Link
               key={message.id}
               href={`/dashboard/inbox/${message.id}`}
-              className={`block relative rounded-lg border p-4 hover:bg-gray-50 ${
+              className={`block relative rounded-lg border p-4 sm:p-2 hover:bg-gray-50 ${
                 message?.isReadByReceiver ? "bg-white" : "bg-gray-50"
               }`}
             >

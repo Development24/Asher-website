@@ -242,11 +242,11 @@ export const UploadBox = ({
           <FormControl>
             <div
               className={cn(
-                "border-2 border-dashed rounded-lg p-6 hover:bg-gray-50 transition-colors",
+                "border-2 border-dashed rounded-lg p-6 hover:bg-gray-50 transition-colors w-full",
                 fieldState.error ? "border-red-500" : "border-gray-200"
               )}
             >
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 w-full">
                 <input
                   type="file"
                   id={name}

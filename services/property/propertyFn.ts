@@ -7,12 +7,10 @@ export const useGetProperties = (params?: IPropertyParams) => {
         queryKey: ["properties", params],
         queryFn: () => getAllProperties(params),
         retry: false,
-        // staleTime: 1000 * 60 * 60 * 24,
-        // refetchOnWindowFocus: false,
-        // refetchOnMount: false,
-        // refetchOnReconnect: false,
-        // refetchInterval: false,
-        // refetchIntervalInBackground: false,
+        staleTime: 1000 * 60 * 10, // 10 minutes
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
     })
 }
 

@@ -6,15 +6,24 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 
+/**
+ * Zustand state for user information.
+ */
 interface UserState {
     user: IUser | null;
 }
 
+/**
+ * Zustand actions for user state management.
+ */
 interface UserActions {
     setUser: (user: IUser | null) => void;
     clearUser: () => void;
 }
 
+/**
+ * Zustand store type for user state and actions.
+ */
 type UserStore = UserState & UserActions;
 
 const loadUserFromStorage = (): IUser | null => {
@@ -42,7 +51,11 @@ export const userStore = create<UserStore>()(persist(
 )
 );
 
-export const useLoggedOut = () => {
+/**
+ * Hook to log out the user and redirect to home.
+ * @returns {() => void} logout function
+ */
+export const useLoggedOut = (): (() => void) => {
     const router = useRouter()
     const clear = userStore((state) => state.clearUser)
 

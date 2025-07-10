@@ -2,6 +2,9 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { EmploymentDetailsFormValues, FormData, GuarantorDetailsFormValues, SavedDraft } from '@/types/application-form' // We'll create these types
 
+/**
+ * Zustand state and actions for the application form.
+ */
 interface ApplicationFormState {
   formData: FormData
   currentStep: number
@@ -48,6 +51,9 @@ export const initialEmploymentDetails: EmploymentDetailsFormValues = {
 }
 
 
+/**
+ * Initial form data for a new application.
+ */
 const initialFormData: FormData = {
   applicationId: "",
   title: "",
@@ -128,6 +134,9 @@ const initialFormData: FormData = {
   outstandingDebts: "",
 }
 
+/**
+ * Zustand store for application form state and actions.
+ */
 export const useApplicationFormStore = create<ApplicationFormState>()(
   persist(
     (set, get) => ({
@@ -178,8 +187,27 @@ export const useApplicationFormStore = create<ApplicationFormState>()(
   )
 )
 
+/**
+ * Selectors for useApplicationFormStore (for better performance).
+ * Usage: const formData = useApplicationFormStore(selectFormData)
+ */
+export const selectFormData = (state: ApplicationFormState) => state.formData;
+export const selectCurrentStep = (state: ApplicationFormState) => state.currentStep;
+export const selectIsValid = (state: ApplicationFormState) => state.isValid;
+export const selectSavedDrafts = (state: ApplicationFormState) => state.savedDrafts;
+export const selectUpdateFormData = (state: ApplicationFormState) => state.updateFormData;
+export const selectSetCurrentStep = (state: ApplicationFormState) => state.setCurrentStep;
+export const selectSetIsValid = (state: ApplicationFormState) => state.setIsValid;
+export const selectSaveDraft = (state: ApplicationFormState) => state.saveDraft;
+export const selectLoadDraft = (state: ApplicationFormState) => state.loadDraft;
+
 // Helper function
-const calculateCompletionStatus = (data: FormData) => {
+/**
+ * Calculates the completion status of the form as a percentage.
+ * @param data FormData
+ * @returns number (0-100)
+ */
+const calculateCompletionStatus = (data: FormData): number => {
   const totalFields = Object.keys(data).length
   const filledFields = Object.values(data).filter(value => value !== "").length
   return Math.round((filledFields / totalFields) * 100)

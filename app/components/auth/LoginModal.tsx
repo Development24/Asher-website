@@ -16,11 +16,11 @@ interface LoginModalProps {
   onSignUpClick: () => void;
 }
 
-export function LoginModal({
+const LoginModal = ({
   isOpen,
   onClose,
   onSignUpClick
-}: LoginModalProps) {
+}: LoginModalProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -89,6 +89,9 @@ export function LoginModal({
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: "spring", damping: 15, stiffness: 300 }}
             className="fixed inset-0 flex items-center justify-center z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Login dialog"
           >
             <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md">
               <div className="h-full flex flex-col">
@@ -201,4 +204,5 @@ export function LoginModal({
       )}
     </AnimatePresence>
   );
-}
+};
+export default LoginModal;

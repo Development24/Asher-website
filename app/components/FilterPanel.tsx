@@ -123,7 +123,7 @@ export default function FilterPanel({
             <Label className="text-lg font-semibold text-foreground">
               Bedrooms
             </Label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
               <Select
                 value={filters.minBedRoom?.toString() || "0"}
                 onValueChange={(value) =>
@@ -172,7 +172,7 @@ export default function FilterPanel({
             <Label className="text-lg font-semibold text-foreground">
               Bathrooms
             </Label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
               <Select
                 value={filters.minBathRoom?.toString() || "0"}
                 onValueChange={(value) =>

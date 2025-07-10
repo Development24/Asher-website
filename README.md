@@ -82,3 +82,25 @@ npm run dev
 ```
 
 5. Open your browser and navigate to `http://localhost:3000`
+```
+
+## Accessibility (a11y)
+
+This project follows modern accessibility best practices:
+
+- **Modals and dialogs** use `role="dialog"`, `aria-modal="true"`, and descriptive `aria-label` attributes for screen reader support. Keyboard users can close modals with the ESC key, and focus is trapped within open modals.
+- **Forms** use semantic HTML and ensure every input has an associated `<label htmlFor="...">` and matching `id`. Custom form components (FormLabel, FormField, etc.) maintain accessibility.
+- **Error messages** are surfaced to screen readers using ARIA attributes where needed.
+- **General**: Always test new UI components for keyboard and screen reader accessibility. Use ARIA attributes and semantic HTML as appropriate.
+
+**Contributing a11y improvements:**
+- When adding new modals, always include ARIA attributes and keyboard support.
+- When building forms, ensure all fields are labeled and errors are accessible.
+- Test with keyboard navigation and screen readers when possible.
+
+## UI/UX Improvements
+
+- All major user-facing async actions now have consistent loading indicators (spinners, button states, skeletons) for better feedback and accessibility.
+- Property search and property details flows are now mobile-friendly, with improved layouts and spacing for PropertyCard, search grid, and FilterPanel.
+- Application forms (personal details, employment, documents) are now mobile-friendly, with responsive grids and full-width upload boxes.
+- Dashboard modals (feedback, save, share) are now mobile-friendly, with responsive layouts, stacked buttons, and images.

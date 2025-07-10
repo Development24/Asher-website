@@ -48,10 +48,10 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         )}
       </div>
       <CardContent className="p-4">
-        <h3 className="font-semibold mb-2">{title}</h3>
-        <p className="text-red-600 font-semibold mb-2">{price}</p>
-        <p className="text-gray-600 text-sm mb-2">{location}</p>
-        <div className="flex items-center gap-4 text-sm text-gray-600">
+        <h3 className="font-semibold mb-2 text-neutral-900">{title}</h3>
+        <p className="text-primary-500 font-semibold mb-2">{price}</p>
+        <p className="text-neutral-600 text-sm mb-2">{location}</p>
+        <div className="flex items-center gap-4 text-sm text-neutral-600">
           <span className="flex items-center gap-1">
             <Bed className="w-4 h-4" /> {specs.bedrooms}
           </span>

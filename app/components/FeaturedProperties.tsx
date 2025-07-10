@@ -157,10 +157,10 @@ export function FeaturedProperties() {
       <div className=" px-4">
         <div className="flex items-center justify-between mb-8">
           <div className="flex-1">
-            <span className="text-red-600 font-semibold mb-2 block uppercase tracking-wider text-sm">
+            <span className="text-primary-500 font-semibold mb-2 block uppercase tracking-wider text-sm">
               FEATURED PROPERTIES
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900">
               Explore handpicked homes tailored for you.
             </h2>
           </div>
@@ -169,7 +169,7 @@ export function FeaturedProperties() {
               variant="outline"
               size="icon"
               onClick={() => scroll("left")}
-              className="rounded-full w-12 h-12 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+              className="rounded-full w-12 h-12 border-neutral-200 hover:bg-neutral-100 hover:border-neutral-300"
             >
               <ChevronLeft className="w-6 h-6" />
             </Button>
@@ -177,7 +177,7 @@ export function FeaturedProperties() {
               variant="outline"
               size="icon"
               onClick={() => scroll("right")}
-              className="rounded-full w-12 h-12 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+              className="rounded-full w-12 h-12 border-neutral-200 hover:bg-neutral-100 hover:border-neutral-300"
             >
               <ChevronRight className="w-6 h-6" />
             </Button>
@@ -193,71 +193,78 @@ export function FeaturedProperties() {
           onMouseMove={handleMouseMove}
         >
           {properties?.map((property: any) => (
-            <Link
+            <motion.div
               key={property?.property?.id}
-              href={`/property/${property?.property?.id}`}
-              className="flex-none w-[400px] group relative"
+              className="flex-none w-[400px] group relative bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out"
+              whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)' }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
-              <div className="relative aspect-[16/10] rounded-lg overflow-hidden">
-                <img
-                  src={
-                    property?.property?.images?.[0] ||
-                    "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XThvalCn27NjVEYyN5daXfRo5eWDjR.png"
-                  }
-                  alt={property?.property?.name}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-4 right-4 bg-white/90 hover:bg-white z-10 rounded-full shadow-md"
-                  onClick={(e) => handleSaveProperty(e, property)}
-                >
-                  <Heart
-                    className={cn(
-                      "h-5 w-5",
-                      isPropertySaved(Number(property?.property?.id))
-                        ? "fill-red-600 text-red-600"
-                        : "text-gray-600"
-                    )}
+              <Link
+                href={`/property/${property?.property?.id}`}
+                className="block h-full"
+              >
+                <div className="relative aspect-[16/10] rounded-lg overflow-hidden">
+                  <img
+                    src={
+                      property?.property?.images?.[0] ||
+                      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XThvalCn27NjVEYyN5daXfRo5eWDjR.png"
+                    }
+                    alt={property?.property?.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                </Button>
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold">
-                    {property?.property?.name}
-                  </h3>
-                  <span className="text-red-600 font-semibold">
-                    {formatPrice(
-                      Number(
-                        property?.property?.rentalFee ??
-                          property?.property?.price
-                      ) || 0
-                    )}
-                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 bg-white/90 hover:bg-white z-10 rounded-full shadow-md"
+                    onClick={(e) => handleSaveProperty(e, property)}
+                  >
+                    <Heart
+                      className={cn(
+                        "h-5 w-5",
+                        isPropertySaved(Number(property?.property?.id))
+                          ? "fill-red-600 text-red-600"
+                          : "text-gray-600"
+                      )}
+                    />
+                  </Button>
                 </div>
-                <p className="text-gray-600 text-sm mb-2">{`${
-                  property?.property?.address
-                }, ${
-                  property?.property?.address2 !== ""
-                    ? property?.property?.address2
-                    : ""
-                } ${property?.property?.city}, ${
-                  property?.property?.state?.name
-                } ${property?.property?.country}`}</p>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Bed className="w-4 h-4" />
-                    {property?.property?.noBedRoom} bedrooms
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Bath className="w-4 h-4" />
-                    {property?.property?.noBathRoom} bathrooms
-                  </span>
+                <div className="mt-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold text-neutral-900">
+                      {property?.property?.name}
+                    </h3>
+                    <span className="text-primary-500 font-semibold">
+                      {formatPrice(
+                        Number(
+                          property?.property?.rentalFee ??
+                            property?.property?.price
+                        ) || 0
+                      )}
+                    </span>
+                  </div>
+                  <p className="text-neutral-600 text-sm mb-2">{`${
+                    property?.property?.address
+                  }, ${
+                    property?.property?.address2 !== ""
+                      ? property?.property?.address2
+                      : ""
+                  } ${property?.property?.city}, ${
+                    property?.property?.state?.name
+                  } ${property?.property?.country}`}</p>
+                  <div className="flex items-center gap-4 text-sm text-neutral-600">
+                    <span className="flex items-center gap-1">
+                      <Bed className="w-4 h-4" />
+                      {property?.property?.noBedRoom} bedrooms
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Bath className="w-4 h-4" />
+                      {property?.property?.noBathRoom} bathrooms
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </motion.div>
           ))}
         </motion.div>
       </div>

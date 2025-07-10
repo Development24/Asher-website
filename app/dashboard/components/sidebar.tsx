@@ -15,16 +15,20 @@ import {
   Heart,
   Mail,
   MessageSquare,
-  Settings,
-  LogOut,
-  X
+  X,
+  Home,
+  Calendar
 } from "lucide-react";
-import LogoutModal from "./modals/logout-modal";
 import { userStore } from "@/store/userStore";
 
 const sidebarNavItems = [
   {
-    title: "Browse",
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: Home
+  },
+  {
+    title: "Browse Properties",
     href: "/dashboard/search",
     icon: Search
   },
@@ -34,17 +38,12 @@ const sidebarNavItems = [
     icon: FileText
   },
   {
-    title: "Property viewings",
+    title: "Property Viewings",
     href: "/dashboard/property-viewings",
-    icon: Eye
+    icon: Calendar
   },
-  // {
-  //   title: "Tracked properties",
-  //   href: "/dashboard/tracked",
-  //   icon: Bookmark
-  // },
   {
-    title: "Saved properties",
+    title: "Saved Properties",
     href: "/dashboard/saved-properties",
     icon: Heart
   },
@@ -60,18 +59,7 @@ const sidebarNavItems = [
   }
 ];
 
-const bottomNavItems = [
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings
-  },
-  // {
-  //   title: "Sign out",
-  //   href: "/sign-out",
-  //   icon: LogOut
-  // }
-];
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -81,12 +69,11 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
-  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const user = userStore((state) => state.user);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // Changed from 768 to 1024
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -97,42 +84,59 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       {isOpen && isMobile && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={onClose}
         />
       )}
       <div
         className={cn(
-          "fixed top-0 left-0 z-50 flex flex-col h-screen bg-white shadow-lg transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 z-50 flex flex-col h-screen bg-white border-r border-neutral-200 shadow-xl transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          isMobile ? "w-3/4" : "w-64"
+          isMobile ? "w-80" : "w-64"
         )}
       >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-8">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>SC</AvatarFallback>
-            </Avatar>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-6 w-6" />
-            </Button>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="p-6 border-b border-neutral-100">
+            <div className="flex items-center justify-between mb-6">
+              <Avatar className="h-12 w-12 ring-2 ring-primary-100">
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback className="bg-primary-50 text-primary-600 font-semibold">
+                  {user?.profile?.firstName?.[0]}
+                  {user?.profile?.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onClose}
+                className="h-8 w-8 hover:bg-neutral-100"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-neutral-900 capitalize">
+                {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
+              </span>
+              <span className="text-sm text-neutral-500">{user?.email}</span>
+            </div>
           </div>
-          <div className="flex flex-col mb-4">
-            <span className="font-medium capitalize">
-              {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
-            </span>
-            <span className="text-sm text-gray-500">{user?.email}</span>
-          </div>
-          <ScrollArea className="flex-1 -mx-6">
-            <nav className="space-y-2 px-6">
+
+          {/* Navigation */}
+          <ScrollArea className="flex-1 px-4 py-4">
+            <div className="space-y-1">
+              <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
+                Navigation
+              </div>
               {sidebarNavItems.map((item) => (
                 <Button
                   key={item.href}
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3 font-normal",
-                    pathname === item.href && "bg-gray-100 font-medium"
+                    "w-full justify-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 font-medium",
+                    "hover:bg-neutral-50 hover:text-neutral-900",
+                    pathname === item.href && "bg-primary-50 text-primary-600 border-r-2 border-primary-500"
                   )}
                   asChild
                 >
@@ -142,27 +146,32 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </Link>
                 </Button>
               ))}
-            </nav>
+            </div>
           </ScrollArea>
-        </div>
-        <div className="mt-auto p-6 border-t">
-          <nav className="space-y-2">
-            {bottomNavItems.map((item) => (
-              <Button
-                key={item.href}
-                variant="ghost"
-                className="w-full justify-start gap-3 font-normal"
-                asChild
-              >
-                <Link href={item.href}>
-                  <item.icon className="h-5 w-5" />
-                  {item.title}
-                </Link>
-              </Button>
-            ))}
 
-            <LogoutModal open={logoutModalOpen} setOpen={setLogoutModalOpen} />
-          </nav>
+          {/* Footer */}
+          <div className="p-4 border-t border-neutral-100">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-10 w-10 ring-2 ring-primary-100">
+                <AvatarImage
+                  src={user?.profile?.profileUrl || "https://github.com/shadcn.png"}
+                  alt={user?.profile?.firstName || "User"}
+                />
+                <AvatarFallback className="bg-primary-50 text-primary-600 font-semibold text-sm">
+                  {user?.profile?.firstName?.[0]}
+                  {user?.profile?.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-medium text-neutral-900 capitalize truncate text-sm">
+                  {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
+                </span>
+                <span className="text-xs text-neutral-500 truncate">
+                  {user?.email}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

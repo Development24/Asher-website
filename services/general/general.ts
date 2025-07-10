@@ -20,10 +20,18 @@ const getFileBinary = (file: File): Promise<ArrayBuffer> => {
   });
 };
 
+// Response types
+export interface UploadFilesResponse {
+  message?: string;
+  files?: string[];
+  url?: string;
+  [key: string]: any;
+}
+
 export const uploadFiles = async (
   files: File | File[],
   isMultiple: boolean
-) => {
+): Promise<UploadFilesResponse> => {
   const endpoint = isMultiple
     ? fileUpload.multipleBinary
     : fileUpload.singleBinary;
@@ -58,7 +66,7 @@ export const uploadFiles = async (
 export const uploadRawFiles = async (
   files: File | File[],
   isMultiple: boolean
-) => {
+): Promise<UploadFilesResponse> => {
 
   let fileData: File | File[];
 

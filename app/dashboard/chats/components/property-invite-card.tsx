@@ -1,6 +1,7 @@
 // Update the property invite card to be wider
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { motion } from 'framer-motion'
 
 interface PropertyInviteCardProps {
   image: string
@@ -24,7 +25,12 @@ export function PropertyInviteCard({
   onReschedule,
 }: PropertyInviteCardProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-lg border shadow-md p-4 max-w-3xl mx-auto hover:shadow-lg transition-shadow">
+    <motion.div
+      className="bg-white/80 backdrop-blur-sm rounded-lg border shadow-md p-4 max-w-3xl mx-auto transition-shadow"
+      whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)' }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
       <div className="flex gap-4">
         <div className="relative w-32 h-32 rounded-lg overflow-hidden flex-shrink-0">
           <Image src={image || "/placeholder.svg"} alt={title} fill className="object-cover" />
@@ -45,7 +51,7 @@ export function PropertyInviteCard({
               variant="outline"
               size="sm"
               onClick={onReject}
-              className="flex-1 hover:bg-red-50 hover:text-red-600 transition-colors"
+              className="flex-1 hover:bg-primary-50 hover:text-primary-600 transition-colors"
             >
               Reject
             </Button>
@@ -53,21 +59,21 @@ export function PropertyInviteCard({
               variant="outline"
               size="sm"
               onClick={onReschedule}
-              className="flex-1 hover:bg-gray-50 transition-colors"
+              className="flex-1 hover:bg-neutral-50 transition-colors"
             >
               Reschedule
             </Button>
             <Button
               size="sm"
               onClick={onAccept}
-              className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm"
+              className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-sm"
             >
               Accept
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

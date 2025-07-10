@@ -1,13 +1,13 @@
 "use client";
 
 import { AuthPromptModal } from "@/app/components/auth/AuthPromptModal";
-import { LoginModal } from "@/app/components/auth/LoginModal";
-import { SignUpModal } from "@/app/components/auth/SignUpModal";
-import { VerificationModal } from "@/app/components/auth/VerificationModal";
+import LoginModal from "@/app/components/auth/LoginModal";
+import SignUpModal from "@/app/components/auth/SignUpModal";
+import VerificationModal from "@/app/components/auth/VerificationModal";
 import { ChatModal } from "@/app/components/chat/ChatModal";
 import { PreChatModal } from "@/app/components/chat/PreChatModal";
-import { LandlordProfileModal } from "@/app/components/modals/landlord-profile-modal";
-import { SaveModal } from "@/app/components/modals/save-modal";
+import LandlordProfileModal from "@/app/components/modals/landlord-profile-modal";
+import SaveModal from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
@@ -159,7 +159,7 @@ export default function PropertyDetails() {
   const setRedirectUrl = useAuthRedirectStore((state) => state.setRedirectUrl);
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
-  const similarProperties: Listing[] = propertiesData?.properties;
+  const similarProperties: Listing[] = propertiesData?.properties || [];
 
   const { data, isFetching } = useGetPropertyByIdForListingId(id as string);
   console.log(data, "Property Data for listing id");

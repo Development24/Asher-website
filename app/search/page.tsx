@@ -134,7 +134,7 @@ export default function SearchPage() {
 
       <div className="layout">
         {/* Search Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr,1fr,1fr,1fr,auto] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr,1fr,1fr,1fr,auto] gap-4">
           <div>
             <label className="text-sm font-medium mb-1.5 block text-gray-500">
               Enter a location
@@ -338,7 +338,7 @@ export default function SearchPage() {
 
           {/* Results Grid */}
           {!isLoading && !error && propertyResults && propertyResults.length > 0 && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {propertyResults.map((property: any, index: number) => (
                 <motion.div
                   key={property.id}

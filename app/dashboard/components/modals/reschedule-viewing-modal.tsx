@@ -19,7 +19,7 @@ interface RescheduleViewingModalProps {
   newTime?: string;
 }
 
-export function RescheduleViewingModal({
+const RescheduleViewingModal = ({
   isOpen,
   onClose,
   onConfirm,
@@ -29,7 +29,7 @@ export function RescheduleViewingModal({
   newDate,
   newTime,
   isLoading
-}: RescheduleViewingModalProps) {
+}: RescheduleViewingModalProps) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
@@ -179,4 +179,5 @@ export function RescheduleViewingModal({
       </DialogContent>
     </Dialog>
   );
-}
+};
+export default RescheduleViewingModal;

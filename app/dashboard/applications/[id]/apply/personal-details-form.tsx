@@ -185,7 +185,7 @@ export function PersonalDetailsForm({
 
         {/* Full Name Section */}
         <div className="space-y-4">
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-2">
               <FormField
                 control={form.control}
                 name="title"
