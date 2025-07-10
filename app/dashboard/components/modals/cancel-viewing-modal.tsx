@@ -11,12 +11,12 @@ interface CancelViewingModalProps {
   showSuccess?: boolean
 }
 
-export function CancelViewingModal({
+const CancelViewingModal = ({
   isOpen,
   onClose,
   onConfirm,
   showSuccess
-}: CancelViewingModalProps) {
+}: CancelViewingModalProps) => {
   if (showSuccess) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -65,5 +65,6 @@ export function CancelViewingModal({
       </DialogContent>
     </Dialog>
   )
-}
+};
+export default CancelViewingModal;
 

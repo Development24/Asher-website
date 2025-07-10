@@ -53,7 +53,7 @@ export function ShareModal({ isOpen, onClose, propertyTitle, propertyUrl }: Shar
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label>Share via social media</Label>
-            <div className="flex gap-4">
+            <div className="flex gap-4 sm:flex-col sm:gap-2">
               {socialLinks.map((social) => (
                 <Button
                   key={social.name}
@@ -67,7 +67,7 @@ export function ShareModal({ isOpen, onClose, propertyTitle, propertyUrl }: Shar
           </div>
           <div className="space-y-2">
             <Label>Or copy link</Label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:flex-col sm:gap-2">
               <Input value={propertyUrl} readOnly />
               <Button variant="outline" className={copied ? "bg-green-50 text-green-600" : ""} onClick={handleCopyLink}>
                 {copied ? <Check className="w-4 h-4" /> : <LinkIcon className="w-4 h-4" />}

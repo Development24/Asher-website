@@ -19,7 +19,44 @@ export type IRegisterPayload = {
     phone: string;
 }
 
-export const registerUser = async (payload: IRegisterPayload) => {
+export interface AuthResponse {
+  token: string;
+  refreshToken: string;
+  userDetails: import("@/types/types").IUser;
+}
+
+export interface RegisterResponse {
+  message: string;
+  user: import("@/types/types").IUser;
+}
+
+export interface LogoutResponse {
+  message: string;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface ProfileResponse {
+  user: import("@/types/types").IUser;
+}
+
+export interface UpdateProfileResponse {
+  message: string;
+  user: import("@/types/types").IUser;
+}
+
+export interface VerifyEmailResponse {
+  message: string;
+}
+
+export interface ResendOTPResponse {
+  message: string;
+}
+
+export const registerUser = async (payload: IRegisterPayload): Promise<RegisterResponse> => {
     const response = await api.post(URL + authURL.register, payload)
     return response.data
 }
@@ -29,27 +66,27 @@ export type ILoginPayload = {
     password: string;
 }
 
-export const loginUser = async (payload: ILoginPayload) => {
+export const loginUser = async (payload: ILoginPayload): Promise<AuthResponse> => {
     const response = await api.post(URL + authURL.login, payload)
     return response.data
 }
 
-export const logoutUser = async () => {
+export const logoutUser = async (): Promise<LogoutResponse> => {
     const response = await api.post(URL + authURL.logout)
     return response.data
 }
 
-export const refreshToken = async (refreshToken: string) => {
+export const refreshToken = async (refreshToken: string): Promise<RefreshTokenResponse> => {
     const response = await api.post(URL + authURL.refreshToken, { refreshToken })
     return response.data
 }
 
-export const getProfile = async () => {
+export const getProfile = async (): Promise<ProfileResponse> => {
     const response = await api.get(profileURL)
     return response.data
 }
 
-export const updateProfile = async (payload: any) => {
+export const updateProfile = async (payload: any): Promise<UpdateProfileResponse> => {
     const response = await apiFormData.post(profileURL + "/update", payload)
     return response.data
 }
@@ -59,7 +96,7 @@ export type IVerifyEmailPayload = {
     code: string;
 }
 
-export const verifyEmail = async (payload: IVerifyEmailPayload) => {
+export const verifyEmail = async (payload: IVerifyEmailPayload): Promise<VerifyEmailResponse> => {
     const response = await api.post(URL + authURL.verifyEmail, payload)
     return response.data
 }
@@ -68,7 +105,7 @@ export type IResendOTPPayload = {
     email: string;
 }
 
-export const resendOTP = async (payload: IResendOTPPayload) => {
+export const resendOTP = async (payload: IResendOTPPayload): Promise<ResendOTPResponse> => {
     const response = await api.post(URL + authURL.resendOTP, payload)
     return response.data
 }

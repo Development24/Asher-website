@@ -16,12 +16,12 @@ interface VerificationModalProps {
   onVerificationSuccess: () => void;
 }
 
-export function VerificationModal({
+const VerificationModal = ({
   isOpen,
   onClose,
   email,
   onVerificationSuccess
-}: VerificationModalProps) {
+}: VerificationModalProps) => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
@@ -132,6 +132,9 @@ export function VerificationModal({
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: "spring", damping: 15, stiffness: 300 }}
             className="fixed inset-0 flex items-center justify-center z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Email verification dialog"
           >
             <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md">
               <div className="h-full flex flex-col">
@@ -156,7 +159,7 @@ export function VerificationModal({
                         onChange={(e) => handleChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
                         onPaste={handlePaste}
-                        ref={(el) => (inputRefs.current[index] = el)}
+                        ref={(el) => { inputRefs.current[index] = el; }}
                         className="w-12 h-12 text-center text-2xl"
                       />
                     ))}
@@ -164,10 +167,20 @@ export function VerificationModal({
                   <Button
                     onClick={handleVerify}
                     className="w-full bg-primary hover:bg-primary-dark"
-                    disabled={isResendingOTP}
+                    disabled={isVerifyingEmail || isResendingOTP}
                     loading={isVerifyingEmail}
                   >
-                    Verify
+                    {isVerifyingEmail ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        Verifying...
+                      </span>
+                    ) : (
+                      'Verify'
+                    )}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
                     Didn't receive a code?{" "}
@@ -175,9 +188,19 @@ export function VerificationModal({
                       type="button"
                       onClick={handleResend}
                       className="text-primary hover:underline font-semibold"
-                      disabled={isResendingOTP}
+                      disabled={isResendingOTP || isVerifyingEmail}
                     >
-                      {isResendingOTP ? "Loading..." : "Resend code"}
+                      {isResendingOTP ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin h-4 w-4 mr-1 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                          </svg>
+                          Sending...
+                        </span>
+                      ) : (
+                        'Resend code'
+                      )}
                     </button>
                   </p>
                 </div>
@@ -188,4 +211,5 @@ export function VerificationModal({
       )}
     </AnimatePresence>
   );
-}
+};
+export default VerificationModal;

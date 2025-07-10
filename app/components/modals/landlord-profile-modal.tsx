@@ -32,14 +32,7 @@ interface LandlordProfileModalProps {
   onEmailClick: () => void;
 }
 
-export function LandlordProfileModal({
-  isOpen,
-  onClose,
-  landlord,
-
-  onChatClick,
-  onEmailClick
-}: LandlordProfileModalProps) {
+const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailClick }: LandlordProfileModalProps) => {
   const router = useRouter();
   const { isPropertySaved, toggleSaveProperty } = useSavedProperties();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -225,4 +218,5 @@ export function LandlordProfileModal({
       </DialogContent>
     </Dialog>
   );
-}
+};
+export default LandlordProfileModal;

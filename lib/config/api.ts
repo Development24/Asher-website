@@ -75,12 +75,13 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
     const message = data?.message || 'An error occurred';
     const originalRequest: any = error.config;
 
-
+    let userMessage = message;
     switch (status) {
       case 400:
-        console.error('Bad Request: Please check your input.');
+        userMessage = message || 'Bad Request: Please check your input.';
         break;
       case 401:
+        userMessage = 'Your session has expired. Please log in again.';
         if (!originalRequest._retry) {
           if (isRefreshing) {
             return new Promise((resolve, reject) => {
@@ -98,7 +99,6 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
             const storeRefreshToken = localStorage.getItem('refresh_token') as string
             if (!refreshToken) throw new Error('No refresh token found')
             const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await refreshToken(storeRefreshToken)
-            console.log(newAccessToken, newRefreshToken)
             if (!newAccessToken || !newRefreshToken) {
               throw new Error('Missing accessToken or refreshToken in the response');
             }
@@ -112,11 +112,9 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
             return instance(originalRequest)
 
           } catch (refreshError) {
-            console.log(refreshError)
             processQueue(refreshError as AxiosError, null)
             userStore.getState().clearUser()
-
-            toast.error('Your session has expired. Please log in again.')
+            toast.error(userMessage)
             localStorage.setItem('redirect_url', window.location.pathname);
             redirect('/login')
             return Promise.reject(refreshError)
@@ -124,29 +122,25 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
             isRefreshing = false
           }
         }
-        console.error('Unauthorized: Please log in again.');
         localStorage.setItem('redirect_url', window.location.pathname);
         clearUser();
         break;
       case 403:
-        console.error('Forbidden: You do not have access to this resource.');
+        userMessage = message || 'Forbidden: You do not have access to this resource.';
         break;
       case 404:
-        console.error('Not Found: The resource was not found.');
+        userMessage = message || 'Not Found: The resource was not found.';
         break;
       case 500:
-        console.error(
-          'Internal Server Error: Something went wrong on the server.'
-        );
+        userMessage = message || 'Internal Server Error: Something went wrong on the server.';
         break;
       default:
-        console.error(`An unexpected error occurred: ${message}`);
+        userMessage = message || 'An unexpected error occurred. Please try again.';
     }
+    toast.error(userMessage);
   } else {
-    console.error('Network error or server is unreachable.');
-    toast.error('Network error or server is unreachable.')
+    toast.error('Network error or server is unreachable.');
   }
-
   return Promise.reject(error);
 }
 

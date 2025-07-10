@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Bed, Bath } from "lucide-react";
@@ -48,11 +49,14 @@ export default function SimilarPropertyCard({
 
   return (
     <Link href={`/property/${property?.id}`}>
-      <div
+      <motion.div
         className={cn(
-          "group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 min-w-[300px]",
+          "group bg-white rounded-lg shadow-sm transition-shadow duration-200 min-w-[300px] sm:min-w-0 sm:text-base sm:p-2",
           className
         )}
+        whileHover={{ scale: 1.03, boxShadow: "0 8px 30px rgba(0,0,0,0.18)" }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -76,7 +80,7 @@ export default function SimilarPropertyCard({
             onClick={handleSaveClick}
           >
             <Heart
-              className={`w-12 h-12 ${
+              className={`w-12 h-12 sm:w-8 sm:h-8 ${
                 propertyLiked || isLikeSuccess
                   ? "fill-red-600 text-red-600"
                   : "text-gray-600"
@@ -85,39 +89,39 @@ export default function SimilarPropertyCard({
           </Button>
         </div>
 
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="font-semibold text-lg line-clamp-1">
+        <div className="p-4 sm:p-2">
+          <div className="flex justify-between items-start mb-1 sm:mb-0.5">
+            <h3 className="font-semibold text-lg sm:text-base line-clamp-1 text-neutral-900">
               {property?.property?.name}
             </h3>
-            <span className="text-red-600 font-semibold">{`${formatPrice(
+            <span className="text-primary-500 font-semibold sm:text-base">{`${formatPrice(
               Number(
                 property?.property?.rentalFee ?? property?.property?.price
               ) || 0
             )}`}</span>
           </div>
 
-          <p className="text-gray-600 text-sm mb-2">
+          <p className="text-neutral-600 text-sm sm:text-xs mb-2 sm:mb-1">
             {property?.property?.address},{" "}
             {property?.property?.address2 && property?.property?.address2 !== ""
               ? property?.property?.address2
-              : ""}{" "}
+              : ""} {" "}
             {property?.property?.city}, {property?.property?.state?.name}{" "}
             {property?.property?.country}
           </p>
 
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-4 sm:gap-2 text-sm sm:text-xs text-neutral-600">
             <span className="flex items-center gap-1">
-              <Bed className="w-4 h-4" />
+              <Bed className="w-4 h-4 sm:w-3 sm:h-3" />
               {property?.property?.noBedRoom} bedrooms
             </span>
             <span className="flex items-center gap-1">
-              <Bath className="w-4 h-4" />
+              <Bath className="w-4 h-4 sm:w-3 sm:h-3" />
               {property?.property?.noBathRoom} bathrooms
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </Link>
   );
 }

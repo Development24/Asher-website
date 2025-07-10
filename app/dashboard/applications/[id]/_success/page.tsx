@@ -30,7 +30,8 @@ import { useGetProperties } from "@/services/property/propertyFn";
 import { useGetPropertyById } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice } from "@/lib/utils";
-import { LandlordProfileModal } from "@/app/components/modals/landlord-profile-modal";
+import dynamic from "next/dynamic";
+const LandlordProfileModal = dynamic(() => import("@/app/components/modals/landlord-profile-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { userStore } from "@/store/userStore";
 import { useRouter } from "next/navigation";
 import { ChatModal } from "@/app/components/chat/ChatModal";
@@ -38,7 +39,6 @@ import { PreChatModal } from "@/app/components/chat/PreChatModal";
 import { useGetSingleApplication } from "@/services/application/applicationFn";
 import { format } from "date-fns";
 import { ShareModal } from "@/app/components/modals/share-modal";
-import { SaveModal } from "@/app/components/modals/save-modal";
 import { LeaseAgreementModal } from "./lease-agreement-modal";
 import { PaymentModal } from "./payment-modal";
 

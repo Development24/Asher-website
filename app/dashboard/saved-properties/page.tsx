@@ -44,7 +44,7 @@ export default function SavedPropertiesPage() {
   if (isFetchingProperties || !properties) {
     return (
       <div className="layout">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <Skeleton className="h-[300px]" />
           <Skeleton className="h-[300px]" />
           <Skeleton className="h-[300px]" />
@@ -73,7 +73,7 @@ export default function SavedPropertiesPage() {
 
       <AnimatePresence mode="popLayout">
         {properties?.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {properties?.map((property: any, index: number) => (
               <motion.div
                 key={property.id}

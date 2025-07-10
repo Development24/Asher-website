@@ -9,10 +9,7 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import dynamic from 'next/dynamic';
 import SignatureCanvas from 'react-signature-canvas';
 import { X, Trash2, Move } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
@@ -38,13 +35,14 @@ export function LeaseAgreementModal({
   agreementDocumentUrl,
   canSubmit
 }: LeaseAgreementModalProps) {
-  const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
   const [signatures, setSignatures] = useState<Array<{ position: SignaturePosition; dataUrl: string }>>([]);
   const signatureRef = useRef<SignatureCanvas>(null);
   const [tempPosition, setTempPosition] = useState<SignaturePosition | null>(null);
   const [activeSignature, setActiveSignature] = useState<number | null>(null);
+
+  const PDFViewer = dynamic(() => import('./pdf-viewer-lazy'), { ssr: false, loading: () => <div>Loading PDF viewer...</div> });
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeSignature !== null) return;
@@ -182,13 +180,7 @@ export function LeaseAgreementModal({
         
         <div className="flex flex-col min-h-full">
           <div className="flex-1 relative">
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-              <Viewer
-                fileUrl={agreementDocumentUrl}
-                plugins={[defaultLayoutPluginInstance]}
-              />
-            </Worker>
-
+            <PDFViewer agreementDocumentUrl={agreementDocumentUrl} />
             <div 
               className="absolute inset-0 z-10"
               onClick={handleOverlayClick}

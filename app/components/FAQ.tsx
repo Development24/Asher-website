@@ -34,13 +34,15 @@ export function FAQ() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: index * 0.1 }}
-          className="border dark:border-gray-700 rounded-lg overflow-hidden"
+          whileHover={{ scale: 1.03, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+          whileTap={{ scale: 0.97 }}
+          className="border dark:border-gray-700 rounded-lg overflow-hidden transition-all duration-300 ease-in-out"
         >
           <button
             onClick={() => setOpenIndex(openIndex === index ? null : index)}
-            className="w-full flex items-center justify-between p-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="w-full flex items-center justify-between p-4 text-left bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700"
           >
-            <span className="font-medium">{faq.question}</span>
+            <span className="font-medium text-neutral-900 dark:text-neutral-100">{faq.question}</span>
             <ChevronDown
               className={`w-5 h-5 transition-transform ${
                 openIndex === index ? 'transform rotate-180' : ''
@@ -56,7 +58,7 @@ export function FAQ() {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="p-4 bg-gray-50 dark:bg-gray-700">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
                   {faq.answer}
                 </div>
               </motion.div>

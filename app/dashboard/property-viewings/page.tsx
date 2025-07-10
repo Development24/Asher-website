@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PropertyCard } from "../components/property-card";
-import { FeedbackModal } from "../components/modals/feedback-modal";
+import dynamic from "next/dynamic";
+const FeedbackModal = dynamic(() => import("../components/modals/feedback-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { motion } from "framer-motion";
 import {
   useGetAllInvites,
@@ -44,7 +45,7 @@ export default function PropertyViewingsPage() {
     noBathRoom: number;
   } | null>(null);
   const { data: invites, isFetching: isFetchingInvites, refetch: refetchInvites } = useGetAllInvites();
-  const invitesData = invites as InviteResponse;
+  const invitesData = invites?.invites as any;
   // console.log(invitesData);
 
   const acceptedInvites = invitesData?.acceptInvites;
@@ -180,7 +181,7 @@ export default function PropertyViewingsPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Pending Invites</h2>
         {pendingInvites?.length > 0 ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {pendingInvites?.map((property) => (
               <motion.div
                 key={property.id}
@@ -216,7 +217,7 @@ export default function PropertyViewingsPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Scheduled viewings</h2>
         {acceptedInvites?.length > 0 ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {acceptedInvites.map((property) => (
               <motion.div
                 key={property.id}
@@ -248,7 +249,7 @@ export default function PropertyViewingsPage() {
           Leave feedback on your recently viewed properties.
         </p>
         {feedbackInvites?.length > 0 ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {feedbackInvites.map((property) => {
               // console.log(property);
               return (
@@ -294,7 +295,7 @@ export default function PropertyViewingsPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Recent Viewings</h2>
         {allCompletedInvites?.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {allCompletedInvites.map((property) => (
               <motion.div
                 key={property.id}

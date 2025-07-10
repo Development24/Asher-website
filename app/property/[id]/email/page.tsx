@@ -1,8 +1,9 @@
 "use client";
 
-import { LoginModal } from "@/app/components/auth/LoginModal";
-import { SignUpModal } from "@/app/components/auth/SignUpModal";
-import { VerificationModal } from "@/app/components/auth/VerificationModal";
+import dynamic from "next/dynamic";
+const LoginModal = dynamic(() => import("@/app/components/auth/LoginModal").then(mod => mod.default), { ssr: false, loading: () => null });
+const SignUpModal = dynamic(() => import("@/app/components/auth/SignUpModal").then(mod => mod.default), { ssr: false, loading: () => null });
+const VerificationModal = dynamic(() => import("@/app/components/auth/VerificationModal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { EmailForm } from "@/app/components/email/EmailForm";
 import { useGetPropertyByIdForListingId } from "@/services/property/propertyFn";
 import { userStore } from "@/store/userStore";

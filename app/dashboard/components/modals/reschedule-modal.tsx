@@ -17,7 +17,7 @@ interface RescheduleModalProps {
   propertyId?: string
 }
 
-export function RescheduleModal({ 
+const RescheduleModal = ({ 
   isOpen, 
   onClose, 
   onConfirm, 
@@ -25,7 +25,7 @@ export function RescheduleModal({
   showSuccess,
   propertyName = "the property",
   propertyId
-}: RescheduleModalProps) {
+}: RescheduleModalProps) => {
   const [date, setDate] = useState("")
   const [time, setTime] = useState("")
   const [reason, setReason] = useState("")
@@ -128,5 +128,6 @@ export function RescheduleModal({
       </DialogContent>
     </Dialog>
   )
-}
+};
+export default RescheduleModal;
 

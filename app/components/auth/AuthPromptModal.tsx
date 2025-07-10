@@ -29,6 +29,9 @@ export function AuthPromptModal({ isOpen, onClose, onSignIn, onSignUp }: AuthPro
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
             className="fixed inset-0 flex items-center justify-center z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Authentication prompt dialog"
           >
             <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md">
               <div className="flex justify-end">

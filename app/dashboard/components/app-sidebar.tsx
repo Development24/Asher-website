@@ -22,17 +22,22 @@ import {
   Heart,
   Mail,
   MessageSquare,
-  Settings,
-  LogOut
+  Home,
+  Calendar,
+  User
 } from "lucide-react";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
-import LogoutModal from "./modals/logout-modal";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const sidebarNavItems = [
   {
-    title: "Browse",
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: Home
+  },
+  {
+    title: "Browse Properties",
     href: "/dashboard/search",
     icon: Search
   },
@@ -42,12 +47,12 @@ const sidebarNavItems = [
     icon: FileText
   },
   {
-    title: "Property viewings",
+    title: "Property Viewings",
     href: "/dashboard/property-viewings",
-    icon: Eye
+    icon: Calendar
   },
   {
-    title: "Saved properties",
+    title: "Saved Properties",
     href: "/dashboard/saved-properties",
     icon: Heart
   },
@@ -65,43 +70,55 @@ const sidebarNavItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const user: any = userStore((state) => state.user);
 
   return (
-    <Sidebar >
-      <SidebarHeader className="p-4 mx-auto">
-        <div className="flex items-center gap-3">
-          <Avatar>
+    <Sidebar className="border-r border-neutral-200 bg-white">
+      <SidebarHeader className="p-6 border-b border-neutral-100">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12 ring-2 ring-primary-100">
             <AvatarImage
               src={user?.profile?.profileUrl || "https://github.com/shadcn.png"}
               alt={user?.profile?.firstName || "User"}
             />
-            <AvatarFallback>
+            <AvatarFallback className="bg-primary-50 text-primary-600 font-semibold">
               {user?.profile?.firstName?.[0]}
               {user?.profile?.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col w-full">
-            <span className="font-medium capitalize">
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="font-semibold text-neutral-900 capitalize truncate">
               {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
             </span>
-            <span className="text-sm text-muted-foreground max-w-[200px] truncate">{user?.email ?? user?.users?.email}</span>
+            <span className="text-sm text-neutral-500 truncate">
+              {user?.email ?? user?.users?.email}
+            </span>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="p-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1">
               {sidebarNavItems.map((item) => (
-                <SidebarMenuItem key={item.href} className="space-y-5">
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={pathname === item.href}
+                    className={cn(
+                      "w-full justify-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                      "hover:bg-neutral-50 hover:text-neutral-900",
+                      "data-[state=active]:bg-primary-50 data-[state=active]:text-primary-600 data-[state=active]:font-medium",
+                      "data-[state=active]:border-r-2 data-[state=active]:border-primary-500"
+                    )}
+                  >
                     <Link href={item.href}>
-                      <item.icon className="h-6 w-6" />
-                      <span className="text-[16px]">{item.title}</span>
+                      <item.icon className="h-5 w-5" />
+                      <span className="text-sm font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -111,32 +128,30 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === "/dashboard/settings"}
-            >
-              <Link href="/dashboard/settings">
-                <Settings className="h-6 w-6" />
-                <span className="text-[16px]">Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-          
-            <SidebarMenuButton onClick={() => setLogoutModalOpen(true)}>
-              <LogOut className="h-6 w-6" />
-              <span className="text-[16px]">Sign out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="p-4 border-t border-neutral-100">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-10 w-10 ring-2 ring-primary-100">
+            <AvatarImage
+              src={user?.profile?.profileUrl || "https://github.com/shadcn.png"}
+              alt={user?.profile?.firstName || "User"}
+            />
+            <AvatarFallback className="bg-primary-50 text-primary-600 font-semibold text-sm">
+              {user?.profile?.firstName?.[0]}
+              {user?.profile?.lastName?.[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="font-medium text-neutral-900 capitalize truncate text-sm">
+              {`${user?.profile?.firstName} ${user?.profile?.lastName}`}
+            </span>
+            <span className="text-xs text-neutral-500 truncate">
+              {user?.email ?? user?.users?.email}
+            </span>
+          </div>
+        </div>
       </SidebarFooter>
 
       <SidebarRail />
-
-      <LogoutModal className="hidden sr-only" open={logoutModalOpen} setOpen={setLogoutModalOpen} />
     </Sidebar>
   );
 }

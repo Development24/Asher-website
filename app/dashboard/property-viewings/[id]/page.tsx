@@ -24,11 +24,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
-import { AcceptInviteModal } from "../../components/modals/accept-invite-modal";
-import { CancelViewingModal } from "../../components/modals/cancel-viewing-modal";
-import { RejectInviteModal } from "../../components/modals/reject-invite-modal";
-import { RescheduleModal } from "../../components/modals/reschedule-modal";
-import { RescheduleViewingModal } from "../../components/modals/reschedule-viewing-modal";
+import dynamic from "next/dynamic";
+const AcceptInviteModal = dynamic(() => import("@/app/dashboard/components/modals/accept-invite-modal").then(mod => mod.default), { ssr: false, loading: () => null });
+const RejectInviteModal = dynamic(() => import("@/app/dashboard/components/modals/reject-invite-modal").then(mod => mod.default), { ssr: false, loading: () => null });
+const RescheduleModal = dynamic(() => import("@/app/dashboard/components/modals/reschedule-modal").then(mod => mod.default), { ssr: false, loading: () => null });
+const RescheduleViewingModal = dynamic(() => import("@/app/dashboard/components/modals/reschedule-viewing-modal").then(mod => mod.default), { ssr: false, loading: () => null });
+const CancelViewingModal = dynamic(() => import("@/app/dashboard/components/modals/cancel-viewing-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { InviteData, Landlord } from "../type";
 import { PropertyViewingDetailSkeleton } from "./PropertyViewingSkeleton";
 import {

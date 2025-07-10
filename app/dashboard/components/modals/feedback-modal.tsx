@@ -30,13 +30,13 @@ interface FeedbackModalProps {
   onComplete?: () => void;
 }
 
-export function FeedbackModal({
+const FeedbackModal = ({
   isOpen,
   onClose,
   property,
   data,
   onComplete
-}: FeedbackModalProps) {
+}: FeedbackModalProps) => {
   console.log(data);
   const [feedback, setFeedback] = useState("");
   const [rentAnswer, setRentAnswer] = useState<boolean | null>(null);
@@ -102,11 +102,14 @@ export function FeedbackModal({
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: "spring", damping: 15, stiffness: 300 }}
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Property feedback dialog"
           >
-            <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-2xl">
+            <div className="bg-background/50 backdrop-blur-md p-6 sm:p-2 rounded-lg shadow-lg w-full max-w-2xl">
               <div className="max-h-[90vh] overflow-y-auto">
-                <div className="flex gap-6 mb-8">
-                  <div className="relative w-48 h-32 rounded-lg overflow-hidden">
+                <div className="flex gap-6 mb-8 sm:flex-col sm:gap-2">
+                  <div className="relative w-48 h-32 sm:w-24 sm:h-20 rounded-lg overflow-hidden mx-auto">
                     <Image
                       src={data?.images[0] || "/placeholder.jpg"}
                       alt={data?.name || "property image"}
@@ -139,12 +142,12 @@ export function FeedbackModal({
                       className="min-h-[120px] resize-none"
                     />
                   </div>
-                  <div className="flex items-center gap-4 justify-between">
+                  <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
                     <div className="space-y-4">
                       <h3 className="text-lg">
                         Would you consider renting this property?
                       </h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 sm:gap-2">
                         <Button
                           variant={rentAnswer === true ? "default" : "outline"}
                           onClick={() => {
@@ -171,7 +174,7 @@ export function FeedbackModal({
                       <h3 className="text-lg">
                         Would you like to view this property again?
                       </h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 sm:gap-2">
                         <Button
                           variant={viewAnswer === true ? "default" : "outline"}
                           onClick={() => {
@@ -225,4 +228,5 @@ export function FeedbackModal({
       )}
     </AnimatePresence>
   );
-}
+};
+export default FeedbackModal;

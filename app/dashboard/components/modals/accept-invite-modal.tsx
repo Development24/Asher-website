@@ -14,7 +14,7 @@ interface AcceptInviteModalProps {
   isLoading: boolean
 }
 
-export function AcceptInviteModal({ isOpen, onClose, onConfirm, showSuccess, propertyId, isLoading }: AcceptInviteModalProps) {
+const AcceptInviteModal = ({ isOpen, onClose, onConfirm, showSuccess, propertyId, isLoading }: AcceptInviteModalProps) => {
   const router = useRouter()
 
   const handleConfirm = () => {
@@ -72,5 +72,6 @@ export function AcceptInviteModal({ isOpen, onClose, onConfirm, showSuccess, pro
       </DialogContent>
     </Dialog>
   )
-}
+};
+export default AcceptInviteModal;
 

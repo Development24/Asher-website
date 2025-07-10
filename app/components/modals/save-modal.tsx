@@ -12,7 +12,7 @@ interface SaveModalProps {
   propertyTitle: string
 }
 
-export function SaveModal({ isOpen, onClose, propertyTitle }: SaveModalProps) {
+const SaveModal = ({ isOpen, onClose, propertyTitle }: SaveModalProps) => {
   const [saved, setSaved] = useState(false)
 
   const handleSave = () => {
@@ -37,7 +37,7 @@ export function SaveModal({ isOpen, onClose, propertyTitle }: SaveModalProps) {
               </div>
               <h2 className="text-xl font-semibold text-center">Save {propertyTitle}</h2>
               <p className="text-center text-gray-500">Save this property to your favorites to easily find it later.</p>
-              <div className="flex gap-4 mt-4">
+              <div className="flex gap-4 mt-4 sm:flex-col sm:gap-2">
                 <Button variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
@@ -59,5 +59,6 @@ export function SaveModal({ isOpen, onClose, propertyTitle }: SaveModalProps) {
       </DialogContent>
     </Dialog>
   )
-}
+};
+export default SaveModal;
 

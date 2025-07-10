@@ -143,7 +143,7 @@ export function EmploymentDetailsForm({
               )}
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 sm:gap-4">
               <FormField
                 control={form.control}
                 name="employerCompany"
