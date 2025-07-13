@@ -13,6 +13,7 @@ import { useState } from "react";
 import { userStore } from "@/store/userStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { displayImages } from '../../property/[id]/utils';
+import { animations, animationClasses } from "@/lib/animations";
 
 interface PropertyCardProps {
   id?: number | string;
@@ -94,10 +95,10 @@ export function PropertyCard({
   }
   return (
     <motion.div
-      className="overflow-hidden group min-h-[430px] flex flex-col justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out"
-      whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)' }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="overflow-hidden group min-h-[430px] flex flex-col justify-between bg-white rounded-xl border border-neutral-200 shadow-sm p-6"
+      whileHover={animations.card.hover}
+      whileTap={animations.card.tap}
+      transition={animations.card.transition}
     >
       <div className="relative">
         <div className="relative h-48 w-full">

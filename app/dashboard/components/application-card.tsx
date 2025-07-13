@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { animations, animationClasses } from '@/lib/animations'
 
 interface ApplicationCardProps {
   activeApplications: number
@@ -10,10 +11,10 @@ interface ApplicationCardProps {
 export function ApplicationCard({ activeApplications, completedApplications }: ApplicationCardProps) {
   return (
     <motion.div
-      className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 transition-all duration-300 ease-in-out"
-      whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)' }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6"
+      whileHover={animations.card.hover}
+      whileTap={animations.card.tap}
+      transition={animations.card.transition}
     >
       <div className="space-y-4">
         <div className="flex justify-between items-center">
