@@ -3,19 +3,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useCreateFeedback } from "@/services/property/propertyFn";
-import { Property } from "@/services/property/types";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
+import { useCreateFeedback } from "@/services/property/propertyFn";
+import { toast } from "sonner";
 
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  property?: Property;
   data?: {
     propertyId: string;
     applicantInviteId: string;
@@ -33,18 +29,25 @@ interface FeedbackModalProps {
 const FeedbackModal = ({
   isOpen,
   onClose,
-  property,
   data,
   onComplete
 }: FeedbackModalProps) => {
-  console.log(data);
   const [feedback, setFeedback] = useState("");
   const [rentAnswer, setRentAnswer] = useState<boolean | null>(null);
   const [viewAnswer, setViewAnswer] = useState<boolean | null>(null);
-
-  const { mutate: createFeedback, isPending  } = useCreateFeedback();
+  const [error, setError] = useState<string>("");
+  const { mutate: createFeedback, isPending } = useCreateFeedback();
 
   const handleSubmit = () => {
+    setError("");
+    if (!feedback.trim()) {
+      setError("Please provide your feedback.");
+      return;
+    }
+    if (rentAnswer === null && viewAnswer === null) {
+      setError("Please answer at least one of the questions below.");
+      return;
+    }
     const basePayload = {
       propertyId: data?.propertyId,
       applicationInvitedId: data?.applicantInviteId || null,
@@ -52,38 +55,48 @@ const FeedbackModal = ({
       type: "FEEDBACK",
       response: "FEEDBACK"
     };
-    let payload = null;
+    let payload = basePayload;
     if (rentAnswer !== null) {
       payload = {
-        ...basePayload,
+        ...payload,
         considerRenting: rentAnswer ? "YES" : "NO"
       };
     }
     if (viewAnswer !== null) {
       payload = {
-        ...basePayload,
+        ...payload,
         viewAgain: viewAnswer ? "YES" : "NO"
       };
     }
-    if (feedback && (rentAnswer !== null || viewAnswer !== null)) {
-      createFeedback(
-        { ...basePayload, ...payload },
-        {
-          onSuccess: () => {
-            setFeedback("");
-            setRentAnswer(null);
-            setViewAnswer(null);
-            onClose();
-            onComplete?.();
-          },
-          onError: (error: any) => {
-            toast.error("Error submitting feedback:", error);
-            console.error("Error submitting feedback:", error);
-          }
+    createFeedback(
+      { ...payload } as any,
+      {
+        onSuccess: () => {
+          setFeedback("");
+          setRentAnswer(null);
+          setViewAnswer(null);
+          onClose();
+          onComplete?.();
+        },
+        onError: (error: any) => {
+          toast.error("Error submitting feedback:", error);
+          setError("Something went wrong. Please try again.");
         }
-      );
-    }
+      }
+    );
   };
+
+  // Fallbacks for missing data
+  const propertyImage = data?.images?.[0] || "/placeholder.jpg";
+  const propertyName = data?.name || "Property";
+  const propertyAddress = data?.address || "N/A";
+  const propertyPrice =
+    typeof data?.rentalFee === "number" && !isNaN(data.rentalFee)
+      ? formatPrice(data.rentalFee)
+      : "—";
+  const bedrooms = data?.noBedRoom ?? "—";
+  const bathrooms = data?.noBathRoom ?? "—";
+  const propertySize = data?.propertysize ? `${data.propertysize} sqft` : null;
 
   return (
     <AnimatePresence>
@@ -106,122 +119,141 @@ const FeedbackModal = ({
             aria-modal="true"
             aria-label="Property feedback dialog"
           >
-            <div className="bg-background/50 backdrop-blur-md p-6 sm:p-2 rounded-lg shadow-lg w-full max-w-2xl">
-              <div className="max-h-[90vh] overflow-y-auto">
-                <div className="flex gap-6 mb-8 sm:flex-col sm:gap-2">
-                  <div className="relative w-48 h-32 sm:w-24 sm:h-20 rounded-lg overflow-hidden mx-auto">
+            <div className="bg-white p-0 sm:p-0 rounded-2xl shadow-2xl w-full max-w-lg">
+              {/* Property Info */}
+              <div className="flex flex-col sm:flex-row gap-0 sm:gap-6 border-b border-neutral-100 p-6 pb-4">
+                <div className="flex-shrink-0 mx-auto sm:mx-0">
+                  <div className="relative w-32 h-24 rounded-lg overflow-hidden bg-neutral-100 border">
                     <Image
-                      src={data?.images[0] || "/placeholder.jpg"}
-                      alt={data?.name || "property image"}
+                      src={propertyImage}
+                      alt={propertyName}
                       fill
                       className="object-cover"
                     />
                   </div>
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-semibold">{data?.name}</h2>
-                    <p className="text-muted-foreground">{data?.address}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <span>{data?.propertysize}</span>
-                      <span>•</span>
-                      <span>{data?.noBedRoom} bedrooms</span>
-                      <span>•</span>
-                      <span>{data?.noBathRoom} bathrooms</span>
-                    </div>
-                    <div className="mt-2 text-xl font-semibold">
-                      {formatPrice(data?.rentalFee as number)}
-                    </div>
-                  </div>
                 </div>
-                <div className="space-y-8">
+                <div className="flex-1 mt-4 sm:mt-0">
+                  <h2 className="text-xl font-bold text-neutral-900 mb-1 truncate">{propertyName}</h2>
+                  <p className="text-sm text-neutral-500 mb-2 truncate">{propertyAddress}</p>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500 mb-1">
+                    {propertySize && <span>{propertySize}</span>}
+                    {propertySize && <span>•</span>}
+                    <span>{bedrooms} bedrooms</span>
+                    <span>•</span>
+                    <span>{bathrooms} bathrooms</span>
+                  </div>
+                  <div className="text-lg font-semibold text-primary-600">{propertyPrice}</div>
+                </div>
+              </div>
+
+              {/* Feedback Form */}
+              <form
+                className="space-y-6 p-6"
+                onSubmit={e => {
+                  e.preventDefault();
+                  handleSubmit();
+                }}
+              >
+                <div>
+                  <label className="block text-sm font-medium text-neutral-900 mb-2">
+                    Add your feedback
+                  </label>
+                  <Textarea
+                    value={feedback}
+                    onChange={e => setFeedback(e.target.value)}
+                    placeholder="What did you like/dislike about the property?"
+                    className={`min-h-[100px] resize-none ${error && !feedback.trim() ? "border-red-500" : ""}`}
+                    maxLength={500}
+                  />
+                  {error && !feedback.trim() && (
+                    <p className="text-xs text-red-600 mt-1">{error}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-lg mb-4">Add your feedback</h3>
-                    <Textarea
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
-                      placeholder="What did you like/dislike about the property?"
-                      className="min-h-[120px] resize-none"
-                    />
-                  </div>
-                  <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
-                    <div className="space-y-4">
-                      <h3 className="text-lg">
-                        Would you consider renting this property?
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 sm:gap-2">
-                        <Button
-                          variant={rentAnswer === true ? "default" : "outline"}
-                          onClick={() => {
-                            setRentAnswer(true);
-                            if (viewAnswer !== null) setViewAnswer(null);
-                          }}
-                          className="h-12"
-                        >
-                          Yes
-                        </Button>
-                        <Button
-                          variant={rentAnswer === false ? "default" : "outline"}
-                          onClick={() => {
-                            setRentAnswer(false);
-                            if (viewAnswer !== null) setViewAnswer(null);
-                          }}
-                          className="h-12"
-                        >
-                          No
-                        </Button>
-                      </div>
+                    <label className="block text-sm font-medium text-neutral-900 mb-2">
+                      Would you consider renting this property?
+                    </label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant={rentAnswer === true ? "default" : "outline"}
+                        className={`flex-1 h-10 ${rentAnswer === true ? "ring-2 ring-primary-500" : ""}`}
+                        onClick={() => setRentAnswer(true)}
+                        tabIndex={0}
+                      >
+                        Yes
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={rentAnswer === false ? "default" : "outline"}
+                        className={`flex-1 h-10 ${rentAnswer === false ? "ring-2 ring-primary-500" : ""}`}
+                        onClick={() => setRentAnswer(false)}
+                        tabIndex={0}
+                      >
+                        No
+                      </Button>
                     </div>
-                    <div className="space-y-4">
-                      <h3 className="text-lg">
-                        Would you like to view this property again?
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 sm:gap-2">
-                        <Button
-                          variant={viewAnswer === true ? "default" : "outline"}
-                          onClick={() => {
-                            setViewAnswer(true);
-                            if (rentAnswer !== null) setRentAnswer(null);
-                          }}
-                          className="h-12"
-                        >
-                          Yes
-                        </Button>
-                        <Button
-                          variant={viewAnswer === false ? "default" : "outline"}
-                          onClick={() => {
-                            setViewAnswer(false);
-                            if (rentAnswer !== null) setRentAnswer(null);
-                          }}
-                          className="h-12"
-                        >
-                          No
-                        </Button>
-                      </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-900 mb-2">
+                      Would you like to view this property again?
+                    </label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant={viewAnswer === true ? "default" : "outline"}
+                        className={`flex-1 h-10 ${viewAnswer === true ? "ring-2 ring-primary-500" : ""}`}
+                        onClick={() => setViewAnswer(true)}
+                        tabIndex={0}
+                      >
+                        Yes
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={viewAnswer === false ? "default" : "outline"}
+                        className={`flex-1 h-10 ${viewAnswer === false ? "ring-2 ring-primary-500" : ""}`}
+                        onClick={() => setViewAnswer(false)}
+                        tabIndex={0}
+                      >
+                        No
+                      </Button>
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-4 mt-8">
+                {error && feedback.trim() && (rentAnswer === null && viewAnswer === null) && (
+                  <p className="text-xs text-red-600 mt-1">{error}</p>
+                )}
+                <div className="flex justify-end gap-3 pt-4">
                   <Button
+                    type="button"
                     variant="secondary"
                     onClick={onClose}
                     disabled={isPending}
-                    className="w-32"
+                    className="w-28"
                   >
                     Cancel
                   </Button>
                   <Button
-                    onClick={handleSubmit}
+                    type="submit"
                     disabled={
-                      !feedback ||
+                      !feedback.trim() ||
                       (rentAnswer === null && viewAnswer === null) ||
                       isPending
                     }
-                    loading={isPending}
-                    className="w-40 bg-red-600 hover:bg-red-700"
+                    className="w-40 bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center"
                   >
+                    {isPending && (
+                      <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                    )}
                     Submit feedback
                   </Button>
                 </div>
-              </div>
+              </form>
             </div>
           </motion.div>
         </>
@@ -229,4 +261,5 @@ const FeedbackModal = ({
     </AnimatePresence>
   );
 };
+
 export default FeedbackModal;

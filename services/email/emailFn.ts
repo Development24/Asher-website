@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { getEmails, getSentEmails, getUnreadEmails, getEmailById, sendEmail, SendEmailI } from "./email"
+import { getEmails, getSentEmails, getUnreadEmails, getEmailById, sendEmail, SendEmailI, forwardEmail, ForwardEmailPayload, ForwardEmailResponse, sendOrDraftEmail, SendOrDraftEmailPayload, SendOrDraftEmailResponse, replyToEmail, ReplyToEmailPayload, ReplyToEmailResponse, updateEmailState, UpdateEmailStatePayload, UpdateEmailStateResponse, getDraftEmails } from "./email"
 import { toast } from "sonner"
 
-export const useGetEmails = (email: string) => {
+export const useGetEmails = () => {
     return useQuery({
-        queryKey: ["emails", email],
-        queryFn: () => getEmails(email),
+        queryKey: ["emails"],
+        queryFn: getEmails,
         retry: false,
     })
 }
@@ -19,12 +19,12 @@ export const useGetSentEmails = () => {
 }
 
 export const useGetUnreadEmails = () => {
-    return useQuery({
-        queryKey: ["unreadEmails"],
-        queryFn: () => getUnreadEmails(),
-        retry: false,
-    })
-}
+  return useQuery({
+    queryKey: ["unreadEmails"],
+    queryFn: getUnreadEmails,
+    retry: false,
+  });
+};
 
 export const useGetEmailById = (id: string) => {
     return useQuery({
@@ -47,4 +47,70 @@ export const useSendEmail = () => {
         }
     })
 }
+
+export const useForwardEmail = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ForwardEmailResponse, unknown, ForwardEmailPayload>({
+    mutationFn: forwardEmail,
+    onSuccess: () => {
+      toast.success("Email forwarded successfully");
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+    },
+    onError: () => {
+      toast.error("Failed to forward email");
+    },
+  });
+};
+
+export const useSendOrDraftEmail = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SendOrDraftEmailResponse, unknown, SendOrDraftEmailPayload>({
+    mutationFn: sendOrDraftEmail,
+    onSuccess: () => {
+      toast.success("Email sent successfully");
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+    },
+    onError: () => {
+      toast.error("Failed to send email");
+    },
+  });
+};
+
+export const useReplyToEmail = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ReplyToEmailResponse, unknown, ReplyToEmailPayload>({
+    mutationFn: replyToEmail,
+    onSuccess: () => {
+      toast.success("Reply sent successfully");
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+    },
+    onError: () => {
+      toast.error("Failed to send reply");
+    },
+  });
+};
+
+export const useUpdateEmailState = () => {
+  const queryClient = useQueryClient();
+  return useMutation<UpdateEmailStateResponse, unknown, UpdateEmailStatePayload>({
+    mutationFn: updateEmailState,
+    onSuccess: (data) => {
+      if (data && (data.message || data.email)) {
+        toast.success("Email deleted successfully");
+      }
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+    },
+    onError: () => {
+      toast.error("Failed to delete email");
+    },
+  });
+};
+
+export const useGetDraftEmails = () => {
+  return useQuery({
+    queryKey: ["draftEmails"],
+    queryFn: getDraftEmails,
+    retry: false,
+  });
+};
 
