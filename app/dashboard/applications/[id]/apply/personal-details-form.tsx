@@ -1,7 +1,7 @@
 "use client";
 
 import DatePicker from "@/app/components/DatePicker";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -176,6 +176,8 @@ export function PersonalDetailsForm({
       }
     }
   });
+
+  const { isValid } = form.formState;
 
   return (
     <Form {...form}>
@@ -578,14 +580,14 @@ export function PersonalDetailsForm({
       </div>
 
       <div className="flex justify-end pt-6">
-        <Button 
-            type="submit"
+        <LoadingButton
+          type="submit"
+          disabled={!isValid}
+          loading={isPending}
           className={continueButtonClass}
-            disabled={isPending}
-            loading={isPending}
         >
           Continue
-        </Button>
+        </LoadingButton>
       </div>
     </form>
     </Form>

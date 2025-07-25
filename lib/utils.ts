@@ -35,7 +35,19 @@ const currencyMap: { [key: string]: string } = {
   'it-IT': 'EUR', 
 };
 
-export const formatPrice = (value: number): string => {
+export const formatPrice = (value: number | string | null | undefined): string => {
+  // Handle invalid or zero values
+  if (!value || value === '0' || value === 0 || isNaN(Number(value))) {
+    return 'Price on request';
+  }
+
+  const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  // Handle NaN or zero after conversion
+  if (isNaN(numericValue) || numericValue === 0) {
+    return 'Price on request';
+  }
+
   const userLocale = navigator.language || 'en-US'; 
   
   // Get the currency for the detected locale
@@ -49,7 +61,66 @@ export const formatPrice = (value: number): string => {
     maximumFractionDigits: 2,
   });
 
-  return numberFormat.format(value);
+  return numberFormat.format(numericValue);
+};
+
+// Helper function to safely format names
+export const formatName = (firstName?: string | null, lastName?: string | null, fullName?: string | null): string => {
+  if (fullName && fullName.trim()) {
+    return fullName.trim();
+  }
+  
+  const first = firstName?.trim() || '';
+  const last = lastName?.trim() || '';
+  
+  if (!first && !last) {
+    return 'Name not available';
+  }
+  
+  return `${first} ${last}`.trim();
+};
+
+// Helper function to get property price with fallbacks
+export const getPropertyPrice = (property: any): string => {
+  // Try different price fields in order of preference
+  const price = property?.price || property?.rentalFee || property?.marketValue || property?.rentalPrice;
+  
+  // If we have a valid price, format it
+  if (price && price !== '0' && price !== 0) {
+    return formatPrice(price);
+  }
+  
+  // Check for nested property structure
+  if (property?.property) {
+    return getPropertyPrice(property.property);
+  }
+  
+  return 'Price on request';
+};
+
+// Helper function to safely get bedroom count
+export const getBedroomCount = (property: any): string => {
+  const bedrooms = property?.bedrooms || property?.noBedRoom || property?.bedRooms;
+  return bedrooms ? String(bedrooms) : 'N/A';
+};
+
+// Helper function to safely get bathroom count
+export const getBathroomCount = (property: any): string => {
+  const bathrooms = property?.bathrooms || property?.noBathRoom || property?.bathRooms;
+  return bathrooms ? String(bathrooms) : 'N/A';
+};
+
+// Helper function to get property location
+export const getPropertyLocation = (property: any): string => {
+  const parts = [
+    property?.address,
+    property?.address2,
+    property?.city,
+    property?.state?.name,
+    property?.country
+  ].filter(Boolean);
+  
+  return parts.length > 0 ? parts.join(', ') : 'Location not specified';
 };
 
       // Generate days, months, and years for dropdowns

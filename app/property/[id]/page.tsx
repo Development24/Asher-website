@@ -11,7 +11,7 @@ import SaveModal from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatName } from "@/lib/utils";
 import {
   useGetProperties,
   useGetPropertyById,
@@ -37,6 +37,25 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthRedirectStore } from "@/store/authRedirect";
 import { displayImages, filteredImageUrls, ImageObject } from "./utils";
+import dynamic from "next/dynamic";
+
+// Dynamically import the map to avoid SSR issues
+const DynamicMap = dynamic(
+  () => import("./MapComponent"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <div className="text-gray-500">Loading map...</div>
+      </div>
+    ),
+  }
+) as React.ComponentType<{
+  latitude: number;
+  longitude: number;
+  address: string;
+  propertyName: string;
+}>;
 
 const propertyImages = [
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_01_0000.jpeg",
@@ -442,88 +461,168 @@ export default function PropertyDetails() {
             </span>
           </div>
 
+          {/* Property Type and Basic Info */}
+          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
+            <div className="grid grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                  Property Type
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="font-medium">
+                    {data?.property?.propertySubType?.replace(/_/g, ' ')?.toLowerCase()?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || "House"}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                  Bedrooms
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="font-medium text-2xl">
+                    {data?.property?.bedrooms || 0}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                  Bathrooms
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="font-medium text-2xl">
+                    {data?.property?.bathrooms || 0}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                  Size
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="font-medium">
+                    {data?.property?.totalArea} {data?.property?.areaUnit?.toLowerCase()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-6">
-            <div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-semibold mb-4">Description</h2>
               <p className="text-gray-600 dark:text-gray-400">
-                {propertyData?.description}
+                {data?.property?.description}
               </p>
             </div>
 
-            <div>
-              <h2 className="text-xl font-semibold mb-4">
-                About this property
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Bedrooms: {propertyData?.bedrooms}</span>
+            {/* Letting Details */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700 mb-6">
+              <h2 className="text-xl font-semibold mb-4">Letting details</h2>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Let available date:
+                  </div>
+                  <div className="font-medium">
+                    {data?.property?.availability || "Available now"}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Bathrooms: {propertyData?.bathrooms}</span>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Deposit:
+                  </div>
+                  <div className="font-medium">
+                    {data?.property?.securityDeposit && data.property.securityDeposit !== "0" 
+                      ? formatPrice(Number(data.property.securityDeposit)) 
+                      : "Ask agent"}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Area: {propertyData?.totalArea}</span>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Min. Tenancy:
+                  </div>
+                  <div className="font-medium">
+                    {data?.property?.rentalTerms ? `${data.property.rentalTerms} months` : "Ask agent"}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>
-                    Pets Allowed: {propertyData?.petsAllowed ? "Yes" : "No"}
-                  </span>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Let type:
+                  </div>
+                  <div className="font-medium">
+                    {data?.property?.rentalPeriod === "MONTHLY" ? "Long term" : "Ask agent"}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>
-                    Communal garden:{" "}
-                    {propertyData?.communalGarden ? "Yes" : "No"}
-                  </span>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Furnish type:
+                  </div>
+                  <div className="font-medium">
+                    {data?.property?.furnished ? "Furnished" : "Unfurnished"}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Balcony: {propertyData?.balcony ? "Yes" : "No"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>
-                    Parking space/Garage:{" "}
-                    {propertyData?.parkingSpace ? "Yes" : "No"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>
-                    Open-concept living and dining area:{" "}
-                    {propertyData?.openConcept ? "Yes" : "No"}
-                  </span>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Council Tax:
+                  </div>
+                  <div className="font-medium">
+                    Band {data?.property?.councilTaxBand || "Ask agent"}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Location on map</h2>
-              <div className="h-[300px] rounded-lg mb-4 bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
-                  <MapPin className="w-8 h-8 text-gray-400" />
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {propertyData?.location || "Property location"}
-                  </div>
-                  <button
-                    className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                    onClick={() =>
-                      window.open(
-                        `https://www.openstreetmap.org/search?query=${encodeURIComponent(
-                          propertyData?.location || ""
-                        )}`,
-                        "_blank"
-                      )
-                    }
-                  >
-                    View on OpenStreetMap
-                  </button>
+
+
+            {/* Key Features */}
+            {data?.property?.keyFeatures?.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
+                <h2 className="text-xl font-semibold mb-4">Key features</h2>
+                <div className="grid grid-cols-2 gap-2">
+                  {data?.property?.keyFeatures?.map((feature: string, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="text-sm">
+                        {feature.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
+
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
+              <h2 className="text-xl font-semibold mb-4">Location on map</h2>
+              {data?.property?.latitude && data?.property?.longitude ? (
+                <DynamicMap
+                  latitude={Number(data.property.latitude)}
+                  longitude={Number(data.property.longitude)}
+                  address={`${data?.property?.address || data?.property?.city}, ${data?.property?.state?.name} ${data?.property?.country}`}
+                  propertyName={data?.property?.name || 'Property'}
+                />
+              ) : (
+                <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden border border-gray-200 dark:border-gray-700">
+                  <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
+                    <MapPin className="w-8 h-8 text-gray-400" />
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Location not available
+                    </div>
+                    <button
+                      className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      onClick={() =>
+                        window.open(
+                          `https://www.openstreetmap.org/search?query=${encodeURIComponent(
+                            `${data?.property?.city}, ${data?.property?.country}` || ""
+                          )}`,
+                          "_blank"
+                        )
+                      }
+                    >
+                      View on OpenStreetMap
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <h3 className="font-semibold mb-2">Nearest stations</h3>
@@ -569,6 +668,7 @@ export default function PropertyDetails() {
                     alt={propertyData?.landlord?.name || ""}
                     fill
                     className="rounded-full object-cover"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
                   />
                 </div>
                 {true && (
@@ -577,7 +677,11 @@ export default function PropertyDetails() {
               </div>
               <div>
                 <div className="font-semibold max-w-[150px] line-clamp-1">
-                  {`${propertyData?.landlord?.user?.profile?.firstName} ${propertyData?.landlord?.user?.profile?.lastName}`}
+                  {formatName(
+                    propertyData?.landlord?.user?.profile?.firstName,
+                    propertyData?.landlord?.user?.profile?.lastName,
+                    propertyData?.landlord?.user?.profile?.fullname
+                  )}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Landlord
@@ -610,9 +714,13 @@ export default function PropertyDetails() {
               isOpen={showLandlordProfile}
               onClose={() => setShowLandlordProfile(false)}
               landlord={{
-                name: `${propertyData?.landlord?.user?.profile?.firstName} ${propertyData?.landlord?.user?.profile?.lastName}`,
-                email: propertyData?.landlord?.user?.email,
-                image: propertyData?.landlord?.image,
+                name: formatName(
+                  propertyData?.landlord?.user?.profile?.firstName,
+                  propertyData?.landlord?.user?.profile?.lastName,
+                  propertyData?.landlord?.user?.profile?.fullname
+                ),
+                email: (propertyData?.landlord?.user?.email || undefined) as string | undefined,
+                image: propertyData?.landlord?.user?.profile?.profileUrl,
                 id: propertyData?.landlord?.id,
                 isActive: propertyData?.landlord?.isActive
               }}

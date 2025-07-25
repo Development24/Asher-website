@@ -1,4 +1,3 @@
-\`\`\`typescript
 import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Moon, Sun } from "lucide-react"
@@ -13,5 +12,4 @@ export const ThemeToggle: React.FC = () => {
     </Button>
   )
 }
-\`\`\`
 

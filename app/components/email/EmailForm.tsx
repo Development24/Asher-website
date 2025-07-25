@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -159,7 +159,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
               >
                 Cancel
               </Button>
-              <Button loading={isPending} type="submit" className="bg-red-600 hover:bg-red-700" disabled={isPending}>
+              <LoadingButton loading={isPending} type="submit" className="bg-red-600 hover:bg-red-700" disabled={isPending}>
                 {isPending ? (
                   <span className="flex items-center justify-center">
                     <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -171,7 +171,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
                 ) : (
                   'Send Enquiry'
                 )}
-              </Button>
+              </LoadingButton>
             </div>
           </form>
         </div>

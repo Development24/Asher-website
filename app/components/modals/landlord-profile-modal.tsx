@@ -3,10 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Heart, Home } from "lucide-react";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount } from "@/lib/utils";
+import { displayImages } from "@/app/property/[id]/utils";
+import { animations } from "@/lib/animations";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
 import { Landlord, Property } from "@/services/property/types";
 import { useGetLandlordProperties } from "@/services/property/propertyFn";
@@ -43,7 +46,7 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
   console.log(properties);
 
   const nextProperty = () => {
-    if (currentIndex < properties?.length - 1) {
+    if (currentIndex < (properties?.length || 0) - 1) {
       setCurrentIndex((prev) => prev + 1);
     }
   };
@@ -90,6 +93,7 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                     alt={landlord?.name || ""}
                     fill
                     className="rounded-full object-cover"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
                   />
                 </div>
                 {landlord?.isActive && (
@@ -134,7 +138,7 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                   variant="outline"
                   size="icon"
                   onClick={nextProperty}
-                  disabled={currentIndex === properties?.length - 1}
+                  disabled={currentIndex === (properties?.length || 0) - 1}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -146,15 +150,29 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                 properties
                   ?.slice(currentIndex, currentIndex + 2)
                   .map((property: any) => (
-                    <div key={property?.property.id} className="relative group">
-                      <div className="relative h-48 rounded-lg overflow-hidden">
+                    <motion.div 
+                      key={property?.property.id} 
+                      className="relative group bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden transition-shadow duration-200"
+                      whileHover={{ 
+                        scale: 1.02, 
+                        boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                        y: -2
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      <div className="relative h-48 overflow-hidden">
                         <Image
                           src={
-                            property?.property?.images[0] || "/placeholder.svg"
+                            displayImages(property?.property?.images)[0] || "/placeholder.svg"
                           }
                           alt={property?.property?.name}
                           fill
                           className="object-cover"
+                          onError={(e) => { 
+                            e.currentTarget.onerror = null; 
+                            e.currentTarget.src = "/placeholder.svg"; 
+                          }}
                         />
                         <Button
                           variant="ghost"
@@ -172,9 +190,9 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                             )}
                           />
                         </Button>
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                         <Button
-                          className="absolute bottom-2 right-2 bg-white hover:bg-gray-100 text-gray-900"
+                          className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-gray-900 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
                           size="sm"
                           onClick={() =>
                             handleViewProperty(Number(property?.property?.id))
@@ -183,23 +201,28 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                           View property
                         </Button>
                       </div>
-                      <div className="mt-2">
-                        <h4 className="font-semibold">
+                      <div className="p-4">
+                        <h4 className="font-semibold text-neutral-900 mb-1 line-clamp-1">
                           {property?.property?.name}
                         </h4>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-neutral-600 mb-2 line-clamp-1">
                           {property?.property?.city}
                         </p>
-                        <p className="text-red-600 font-semibold mt-1">{`${formatPrice(
-                          Number(property?.property?.rentalFee)
-                        )}`}</p>
-                        <div className="text-sm text-gray-500 mt-1">
-                          {property?.property?.noBedRoom} bedrooms •{" "}
-                          {property?.property?.noBathRoom} bathrooms •{" "}
-                          {property?.property?.propertysize}
+                        <p className="text-primary-500 font-semibold mb-2">
+                          {formatPrice(property?.property?.price) || 'Price on request'}
+                        </p>
+                        <div className="flex items-center gap-3 text-sm text-neutral-600">
+                          <span className="flex items-center gap-1">
+                            <span className="w-1 h-1 bg-neutral-400 rounded-full"></span>
+                            {property?.bedrooms || property?.property?.bedrooms || 1} bed{(property?.bedrooms || property?.property?.bedrooms || 1) !== 1 ? 's' : ''}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-1 h-1 bg-neutral-400 rounded-full"></span>
+                            {property?.bathrooms || property?.property?.bathrooms || 1} bath{(property?.bathrooms || property?.property?.bathrooms || 1) !== 1 ? 's' : ''}
+                          </span>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))
               ) : (
                 <div className="col-span-2 flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg">

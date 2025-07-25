@@ -14,7 +14,7 @@ export const MessageBody: React.FC<MessageBodyProps> = ({ text }) => {
   const parts = text.split(urlPattern);
   
   return (
-    <div className="prose prose-gray max-w-none">
+    <div className="prose prose-gray max-w-none whitespace-pre-line break-words">
       {parts.map((part, index) => {
         if (part.match(urlPattern)) {
           // If it's a URL, create a clickable link
@@ -30,7 +30,7 @@ export const MessageBody: React.FC<MessageBodyProps> = ({ text }) => {
             </a>
           );
         }
-        // If it's not a URL, return the text as is
+        // If it's not a URL, return the text as is, preserving line breaks
         return <span key={index}>{part}</span>;
       })}
     </div>

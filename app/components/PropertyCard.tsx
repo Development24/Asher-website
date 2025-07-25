@@ -7,12 +7,13 @@ import Link from "next/link";
 import { Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
 import { Listing } from "@/services/property/types";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { userStore } from "@/store/userStore";
 import { displayImages } from "../property/[id]/utils";
+
 interface SimilarPropertyCard {
   className?: string;
   property?: Listing;
@@ -32,10 +33,9 @@ export default function SimilarPropertyCard({
     isPending: isLikePending,
     isSuccess: isLikeSuccess
   } = useLikeProperty(String(propertyId));
-  const propertyLiked = property?.property?.UserLikedProperty.some(
+  const propertyLiked = property?.property?.UserLikedProperty?.some(
     (likedProperty) => likedProperty.userId === userId
   );
-
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -63,9 +63,13 @@ export default function SimilarPropertyCard({
         <div className="relative aspect-[4/3] rounded-t-lg overflow-hidden">
           <Image
             src={displayImages(property?.property?.images)?.[0] || "/placeholder.svg"}
-            alt={String(property?.property?.name)}
+            alt={String(property?.property?.name || 'Property')}
             fill
             className="object-cover"
+            onError={(e) => { 
+              e.currentTarget.onerror = null; 
+              e.currentTarget.src = "/placeholder.svg"; 
+            }}
           />
           <Button
             variant="ghost"
@@ -92,32 +96,25 @@ export default function SimilarPropertyCard({
         <div className="p-4 sm:p-2">
           <div className="flex justify-between items-start mb-1 sm:mb-0.5">
             <h3 className="font-semibold text-lg sm:text-base line-clamp-1 text-neutral-900">
-              {property?.property?.name}
+              {property?.property?.name || 'Property name not available'}
             </h3>
-            <span className="text-primary-500 font-semibold sm:text-base">{`${formatPrice(
-              Number(
-                property?.property?.rentalFee ?? property?.property?.price
-              ) || 0
-            )}`}</span>
+            <span className="text-primary-500 font-semibold sm:text-base ml-2 whitespace-nowrap">
+              {getPropertyPrice(property?.property)}
+            </span>
           </div>
 
-          <p className="text-neutral-600 text-sm sm:text-xs mb-2 sm:mb-1">
-            {property?.property?.address},{" "}
-            {property?.property?.address2 && property?.property?.address2 !== ""
-              ? property?.property?.address2
-              : ""} {" "}
-            {property?.property?.city}, {property?.property?.state?.name}{" "}
-            {property?.property?.country}
+          <p className="text-neutral-600 text-sm sm:text-xs mb-2 sm:mb-1 line-clamp-2">
+            {getPropertyLocation(property?.property)}
           </p>
 
           <div className="flex items-center gap-4 sm:gap-2 text-sm sm:text-xs text-neutral-600">
             <span className="flex items-center gap-1">
               <Bed className="w-4 h-4 sm:w-3 sm:h-3" />
-              {property?.property?.noBedRoom} bedrooms
+              {getBedroomCount(property?.property)} bedroom{getBedroomCount(property?.property) !== '1' ? 's' : ''}
             </span>
             <span className="flex items-center gap-1">
               <Bath className="w-4 h-4 sm:w-3 sm:h-3" />
-              {property?.property?.noBathRoom} bathrooms
+              {getBathroomCount(property?.property)} bathroom{getBathroomCount(property?.property) !== '1' ? 's' : ''}
             </span>
           </div>
         </div>

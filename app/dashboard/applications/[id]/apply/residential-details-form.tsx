@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
-import { Button } from "@/components/ui/button"
+import { Button, LoadingButton } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Form,
@@ -326,14 +326,14 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
           <Button type="button" variant="outline" onClick={onPrevious} disabled={isPending}>
             Previous
           </Button>
-          <Button
+          <LoadingButton
             type="submit"
-            className={continueButtonClass}
-            disabled={isPending}
+            disabled={!form.formState.isValid}
             loading={isPending}
+            className={continueButtonClass}
           >
             Continue
-          </Button>
+          </LoadingButton>
         </div>
       </form>
     </Form>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, X } from "lucide-react";
@@ -228,14 +228,14 @@ const SignUpModal = ({
                         I agree to terms & conditions
                       </label>
                     </div>
-                    <Button
+                    <LoadingButton
                       type="submit"
                       disabled={!acceptedTerms}
                       className="w-full bg-primary hover:bg-primary-dark"
                       loading={isPending}
                     >
                       Sign up
-                    </Button>
+                    </LoadingButton>
                   </form>
                   <div className="mt-6">
                     <div className="relative">

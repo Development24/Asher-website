@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Button, LoadingButton } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Check, Calendar, Clock } from 'lucide-react'
@@ -116,13 +116,13 @@ const RescheduleModal = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
+            <LoadingButton 
+              type="submit" 
               loading={isLoading}
-              className="flex-1 bg-red-600 hover:bg-red-700"
+              className="w-full bg-primary text-white hover:bg-primary-dark"
             >
               Reschedule
-            </Button>
+            </LoadingButton>
           </div>
         </form>
       </DialogContent>

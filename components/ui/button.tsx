@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -9,15 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary-500 text-white hover:bg-primary-600 focus:bg-primary-600 active:bg-primary-700",
-        destructive:
-          "bg-primary-500 text-white hover:bg-primary-600 focus:bg-primary-600 active:bg-primary-700",
-        outline:
-          "border border-primary-500 text-primary-500 bg-background hover:bg-primary-50 hover:text-primary-600 focus:bg-primary-50 focus:text-primary-600",
-        secondary:
-          "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:bg-neutral-200 active:bg-neutral-300",
-        ghost: "hover:bg-neutral-100 hover:text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900",
-        link: "text-primary-500 underline-offset-4 hover:underline focus:underline",
+        default: "bg-primary-700 text-white hover:bg-primary-600 active:bg-primary-800",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border-2 border-primary-700 text-primary-700 bg-background hover:bg-primary-50 hover:text-primary-800",
+        secondary: "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 active:bg-neutral-300",
+        ghost: "hover:bg-neutral-100 hover:text-neutral-900",
+        link: "text-primary-700 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -31,26 +28,49 @@ const buttonVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+  asChild?: boolean;
+}
+
+export interface LoadingButtonProps extends ButtonProps {
+  loading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+    const Comp = asChild ? Slot : "button";
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       />
-    )
+    );
   }
-)
-Button.displayName = "Button"
+);
+Button.displayName = "Button";
 
-export { Button, buttonVariants }
+const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(
+  ({ className, children, loading = false, disabled, ...props }, ref) => {
+    return (
+      <Button
+        ref={ref}
+        className={cn("relative", className)}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading && (
+          <Loader2 className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+        )}
+        <span className={cn(loading && "invisible")}>{children}</span>
+      </Button>
+    );
+  }
+);
+LoadingButton.displayName = "LoadingButton";
+
+export { Button, LoadingButton, buttonVariants };

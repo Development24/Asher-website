@@ -64,6 +64,7 @@ export default function SettingsPage() {
                 alt="Profile"
                 fill
                 className="rounded-full object-cover"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
               />
             </div>
             <div className="flex-1">
