@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useController, UseFormReturn } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -206,7 +206,7 @@ export function DocumentsForm({
         <Button type="button" variant="outline" onClick={onPrevious}>
           Previous
         </Button>
-          <Button type="submit" disabled={isPending} loading={isPending} className={continueButtonClass}>Continue</Button>
+          <LoadingButton type="submit" disabled={isPending} loading={isPending} className={continueButtonClass}>Continue</LoadingButton>
       </div>
     </form>
     </Form>

@@ -485,12 +485,11 @@ export default function SuccessPage() {
                         )}
                       >
                         <Image
-                          src={
-                            propertyData?.landlord?.image || "/placeholder.svg"
-                          }
+                          src={propertyData?.landlord?.image || "/placeholder.svg"}
                           alt={propertyData?.landlord?.name}
                           fill
                           className="rounded-full object-cover"
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
                         />
                       </div>
                       {true && (

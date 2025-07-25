@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingButton } from '@/components/ui/button';
 import { uploadSingleFile } from "@/services/general/general";
 import { useCreateGuarantorReference } from "@/services/refrences/referenceFn";
 import { AnimatePresence, motion } from "framer-motion";
@@ -15,6 +16,22 @@ import { EmploymentStep } from "./steps/employment-step";
 import { PersonalInfoStep } from "./steps/personal-info-step";
 import TenantInfo from "./steps/tenant-info";
 import SkeletonLoader from "./SkeletonLoader";
+import { LoadingStates } from '@/components/ui/loading-states';
+import { UploadFilesResponse } from '@/services/general/general';
+
+interface DocumentState {
+  file: File | null;
+  url: string | null;
+  type: string | null;
+  size: string | null;
+}
+
+interface DocumentsState {
+  id: DocumentState;
+  addressProof: DocumentState;
+  incomeProof: DocumentState;
+  additionalDocs: DocumentState[];
+}
 
 interface GuarantorFormProps {
   applicationData: any;
@@ -35,10 +52,10 @@ export default function GuarantorForm({
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
   const [employmentType, setEmploymentType] = useState("");
-  const [documents, setDocuments] = useState({
-    id: null,
-    addressProof: null,
-    incomeProof: null,
+  const [documents, setDocuments] = useState<DocumentsState>({
+    id: { file: null, url: null, type: null, size: null },
+    addressProof: { file: null, url: null, type: null, size: null },
+    incomeProof: { file: null, url: null, type: null, size: null },
     additionalDocs: []
   });
   const applicationId = applicationData?.id;
@@ -147,14 +164,41 @@ export default function GuarantorForm({
   ];
 
   // Handle file upload
-  const handleFileUpload = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    docType: string
-  ) => {
-    event.preventDefault();
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, docType: string) => {
     const file = event.target.files?.[0];
-    if (file) {
-      handleFile(file, docType);
+    if (!file) return;
+
+    try {
+      const response = await uploadFile(file) as UploadFilesResponse;
+      if (response.url) {
+        const docState: DocumentState = {
+          file,
+          url: response.url,
+          type: file.type,
+          size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+        };
+
+        setDocuments(prev => {
+          const newState = { ...prev };
+          switch (docType) {
+            case "id":
+              newState.id = docState;
+              break;
+            case "addressProof":
+              newState.addressProof = docState;
+              break;
+            case "incomeProof":
+              newState.incomeProof = docState;
+              break;
+            case "additionalDocs":
+              newState.additionalDocs = [...prev.additionalDocs, docState];
+              break;
+          }
+          return newState;
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -187,16 +231,45 @@ export default function GuarantorForm({
   };
 
   // Handle drop event
-  const handleDrop = (
-    event: React.DragEvent<HTMLDivElement>,
-    docType: string
-  ) => {
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>, docType: string) => {
     event.preventDefault();
     event.stopPropagation();
     setDragActive("");
 
-    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      handleFile(event.dataTransfer.files[0], docType);
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+
+    try {
+      const response = await uploadFile(file) as UploadFilesResponse;
+      if (response.url) {
+        const docState: DocumentState = {
+          file,
+          url: response.url,
+          type: file.type,
+          size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+        };
+
+        setDocuments(prev => {
+          const newState = { ...prev };
+          switch (docType) {
+            case "id":
+              newState.id = docState;
+              break;
+            case "addressProof":
+              newState.addressProof = docState;
+              break;
+            case "incomeProof":
+              newState.incomeProof = docState;
+              break;
+            case "additionalDocs":
+              newState.additionalDocs = [...prev.additionalDocs, docState];
+              break;
+          }
+          return newState;
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -517,7 +590,7 @@ export default function GuarantorForm({
         </div>
 
         {loading ? (
-          <SkeletonLoader />
+          <LoadingStates.Form />
         ) : (
           <AnimatePresence mode="wait">
             <motion.div

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useResendOTP, useVerifyEmail } from "@/services/auth/authFn";
 import { AnimatePresence, motion } from "framer-motion";
@@ -164,7 +164,7 @@ const VerificationModal = ({
                       />
                     ))}
                   </div>
-                  <Button
+                  <LoadingButton
                     onClick={handleVerify}
                     className="w-full bg-primary hover:bg-primary-dark"
                     disabled={isVerifyingEmail || isResendingOTP}
@@ -181,7 +181,7 @@ const VerificationModal = ({
                     ) : (
                       'Verify'
                     )}
-                  </Button>
+                  </LoadingButton>
                   <p className="text-center text-sm text-muted-foreground">
                     Didn't receive a code?{" "}
                     <button

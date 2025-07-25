@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -197,14 +197,14 @@ export function DeclarationForm({
           >
             Previous
           </Button>
-          <Button
+          <LoadingButton
             type="submit"
-            disabled={isPending || !form.getValues("declaration")}
+            disabled={!form.formState.isValid}
             loading={isPending}
             className={continueButtonClass}
           >
             Continue
-          </Button>
+          </LoadingButton>
         </div>
       </form>
     </Form>

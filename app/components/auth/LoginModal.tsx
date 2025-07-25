@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, X } from "lucide-react";
 import { useLoginUser } from "@/services/auth/authFn";
@@ -150,14 +150,14 @@ const LoginModal = ({
                         Forgot password?
                       </button>
                     </div>
-                    <Button
+                    <LoadingButton
                       type="submit"
                       className="w-full bg-primary hover:bg-primary-dark"
                       disabled={!email || !password}
                       loading={isLoading}
                     >
                       Sign in
-                    </Button>
+                    </LoadingButton>
                   </form>
                   <div className="mt-6">
                     <div className="relative">

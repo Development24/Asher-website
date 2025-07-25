@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Check } from 'lucide-react'
 
 interface AcceptInviteModalProps {
@@ -61,13 +61,13 @@ const AcceptInviteModal = ({ isOpen, onClose, onConfirm, showSuccess, propertyId
           >
             No, cancel
           </Button>
-          <Button
-            className="flex-1 bg-green-600 hover:bg-green-700"
+          <LoadingButton
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
             onClick={handleConfirm}
             loading={isLoading}
           >
-            Yes, accept
-          </Button>
+            Accept Invite
+          </LoadingButton>
         </div>
       </DialogContent>
     </Dialog>

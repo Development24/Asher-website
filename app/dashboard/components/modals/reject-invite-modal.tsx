@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 interface RejectInviteModalProps {
@@ -52,13 +52,13 @@ const RejectInviteModal = ({
           <Button variant="outline" className="flex-1" onClick={onClose}>
             No, cancel
           </Button>
-          <Button
-            className="flex-1 bg-red-600 hover:bg-red-700"
+          <LoadingButton
+            className="w-full bg-red-600 hover:bg-red-700 text-white"
             onClick={onConfirm}
             loading={isLoading}
           >
-            Yes, reject
-          </Button>
+            Reject Invite
+          </LoadingButton>
         </div>
       </DialogContent>
     </Dialog>

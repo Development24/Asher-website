@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, formatName } from "@/lib/utils";
 import {
   useGetSingleApplication,
   useSignAgreement
@@ -706,12 +706,13 @@ export default function SuccessPage() {
                 onClose={() => setShowLandlordProfile(false)}
                 landlord={{
                   id: propertyData?.landlord?.id,
-                  name: propertyData?.landlord?.user?.profile?.firstName,
-                  image: propertyData?.landlord?.user?.profile?.image
-                  // address: `${propertyData?.landlord?.location}, ${propertyData?.landlord?.city},${propertyData?.landlord?.country}`,
-                  // isOnline: true
+                  name: formatName(
+                    propertyData?.landlord?.user?.profile?.firstName,
+                    propertyData?.landlord?.user?.profile?.lastName,
+                    propertyData?.landlord?.user?.profile?.fullname
+                  ),
+                  image: propertyData?.landlord?.user?.profile?.profileUrl
                 }}
-                // properties={landlordProperties}
                 onChatClick={() => handleContactClick("chat")}
                 onEmailClick={() => handleContactClick("email")}
               />

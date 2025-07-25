@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, getPropertyPrice } from "@/lib/utils";
 import Link from "next/link";
 import type React from "react";
 import { useGetProperties } from "@/services/property/propertyFn";
@@ -235,12 +235,7 @@ export function FeaturedProperties() {
                       {property?.property?.name}
                     </h3>
                     <span className="text-primary-500 font-semibold">
-                      {formatPrice(
-                        Number(
-                          property?.property?.rentalFee ??
-                            property?.property?.price
-                        ) || 0
-                      )}
+                      {getPropertyPrice(property?.property)}
                     </span>
                   </div>
                   <p className="text-neutral-600 text-sm mb-2">{`${

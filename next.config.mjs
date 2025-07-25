@@ -21,8 +21,20 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias.canvas = false;
+    
+    // Add fallbacks for Node.js modules used by leaflet (client-side only)
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        buffer: 'buffer',
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
     return config;
   }
 }

@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useLogout } from "@/services/auth/authFn";
 import { useRouter } from "next/navigation";
@@ -55,13 +55,13 @@ const LogoutModal = ({
           <Button variant="outline" onClick={() => setOpen(false)}>
             No, Cancel
           </Button>
-          <Button
+          <LoadingButton
             variant="destructive"
             onClick={handleLogout}
             loading={logout.isPending}
           >
-            Yes, Logout
-          </Button>
+            Log out
+          </LoadingButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

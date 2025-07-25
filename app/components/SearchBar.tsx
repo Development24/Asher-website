@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button, LoadingButton } from '@/components/ui/button'
 
 export default function SearchBar() {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function SearchBar() {
           onChange={(e) => setLocation(e.target.value)}
           className="flex-1 h-14 px-4 rounded-md bg-white/20 backdrop-blur-md text-white placeholder-white/70 text-lg"
         />
-        <Button 
+        <LoadingButton 
           type="submit"
           disabled={!location}
           loading={isLoading}
@@ -37,7 +37,7 @@ export default function SearchBar() {
         >
           <Search className="w-5 h-5 mr-2" />
           Search
-        </Button>
+        </LoadingButton>
       </div>
     </form>
   )

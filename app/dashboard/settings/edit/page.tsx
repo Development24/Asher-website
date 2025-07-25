@@ -173,6 +173,7 @@ export default function EditProfilePage() {
               fill
               className="rounded-full object-cover"
               sizes="96px"
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
             />
             <input
               id="profile-image"

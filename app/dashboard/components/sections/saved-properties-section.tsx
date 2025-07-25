@@ -1,6 +1,6 @@
 import EmptyState from "@/app/components/EmptyState";
 import { PropertyCard } from "../property-card";
-import { PropertyCardSkeleton } from "../property-card-skeleton";
+import PropertyCardSkeleton from "../property-card-skeleton";
 import { Heart } from "lucide-react";
 import Link from "next/link";
 
@@ -19,7 +19,7 @@ export function SavedPropertiesSection({
         <h2 className="text-xl font-semibold">Saved properties</h2>
         <Link
           href="/dashboard/saved-properties"
-          className="text-sm text-red-600 hover:text-red-700"
+          className="text-sm text-primary-700 hover:text-primary-800"
         >
           View all
         </Link>

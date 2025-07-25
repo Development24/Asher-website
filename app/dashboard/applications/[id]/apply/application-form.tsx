@@ -33,6 +33,7 @@ import { useCompleteApplication } from "@/services/application/applicationFn";
 import { useCreatePayment } from "@/services/finance/financeFn";
 import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { loadStripe } from "@stripe/stripe-js";
+import { LoadingStates } from '@/components/ui/loading-states';
 
 // PERSONAL_KIN
 //   REFEREE
@@ -134,25 +135,41 @@ const steps: {
     nextStep: null
   }
 ];
+
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
 );
+
+interface PaymentResponse {
+  id: string;
+  amount: number;
+  currency: string;
+  customer: string;
+  status: string;
+  client_secret: string;
+  transactionDetails?: Record<string, any>;
+}
+
+interface PaymentDetails {
+  id: string;
+  amount: number;
+  currency: string;
+  customer: string;
+  status: string;
+  client_secret: string;
+}
+
+interface TransactionDetails {
+  [key: string]: any;
+}
+
 interface IntialPaymentResInterface {
-  paymentDetails: {
-    id: string;
-    amount: number;
-    currency: string;
-    customer: string;
-    status: string;
-    client_secret: string;
-  };
-  transactionDetails: {
-    [key: string]: any;
-  };
+  paymentDetails: PaymentDetails;
+  transactionDetails: TransactionDetails;
 }
 
 interface ApplicationFormProps {
-  onShowPaymentModal: () => void;
+  onShowPaymentModal: (paymentResponse: IntialPaymentResInterface) => void;
   propertyId: string;
   applicationData: ApplicationData;
   isApplicationFetching: boolean;
@@ -344,7 +361,7 @@ export function ApplicationForm({
             ))}
           </div>
         </div>
-        <Skeleton className="w-full h-[600px]" />
+        <LoadingStates.Form />
       </div>
     );
   }

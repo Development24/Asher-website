@@ -120,13 +120,13 @@ export function HomeClient() {
               <div className="absolute top-4 right-4 z-20 flex gap-4">
                 <Button
                   variant="outline"
-                  className="border-white text-red-800 hover:bg-white hover:text-red-900"
+                  className="border-white text-primary-800 hover:bg-white hover:text-primary-900"
                   onClick={() => setShowLoginModal(true)}
                 >
                   Log In
                 </Button>
                 <Button
-                  className="bg-red-600 text-white hover:bg-red-700"
+                  className="bg-primary-700 text-white hover:bg-primary-800"
                   onClick={() => setShowSignUpModal(true)}
                 >
                   Sign Up
@@ -186,49 +186,49 @@ export function HomeClient() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <HomeIcon className="w-8 h-8 text-red-600" />,
+                icon: <HomeIcon className="w-8 h-8 text-primary-700" />,
                 title: "Wide Range of Properties",
                 description:
                   "Browse through our extensive collection of handpicked properties suited to your needs."
               },
               {
-                icon: <Calendar className="w-8 h-8 text-red-600" />,
+                icon: <Calendar className="w-8 h-8 text-primary-700" />,
                 title: "Seamless Booking Process",
                 description:
                   "Book viewings and manage appointments with just a few clicks."
               },
               {
-                icon: <Users className="w-8 h-8 text-red-600" />,
+                icon: <Users className="w-8 h-8 text-primary-700" />,
                 title: "Expert Guidance",
                 description:
                   "Get professional advice and support throughout your journey."
               },
               {
-                icon: <Shield className="w-8 h-8 text-red-600" />,
+                icon: <Shield className="w-8 h-8 text-primary-700" />,
                 title: "Secure Transactions",
                 description:
                   "Our platform ensures safe and secure property transactions."
               },
               {
-                icon: <Star className="w-8 h-8 text-red-600" />,
+                icon: <Star className="w-8 h-8 text-primary-700" />,
                 title: "Premium Listings",
                 description:
                   "Access exclusive, high-quality properties not available elsewhere."
               },
               {
-                icon: <Zap className="w-8 h-8 text-red-600" />,
+                icon: <Zap className="w-8 h-8 text-primary-700" />,
                 title: "Fast Response Times",
                 description:
                   "Quick replies from property owners and our support team."
               },
               {
-                icon: <Headphones className="w-8 h-8 text-red-600" />,
+                icon: <Headphones className="w-8 h-8 text-primary-700" />,
                 title: "24/7 Customer Support",
                 description:
                   "Round-the-clock assistance for all your queries and concerns."
               },
               {
-                icon: <DollarSign className="w-8 h-8 text-red-600" />,
+                icon: <DollarSign className="w-8 h-8 text-primary-700" />,
                 title: "Competitive Pricing",
                 description:
                   "Find the best deals and offers on properties in your desired location."
@@ -269,7 +269,7 @@ export function HomeClient() {
                 {/* White bar with building icon */}
                 <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
                   <div className="flex items-center gap-4">
-                    <div className="bg-red-600 rounded-full p-2">
+                    <div className="bg-primary-700 rounded-full p-2">
                       <svg
                         className="w-5 h-5 text-white"
                         fill="none"
@@ -307,7 +307,7 @@ export function HomeClient() {
             </div>
 
             <div className="space-y-6">
-              <span className="text-red-600 font-semibold text-sm uppercase tracking-wider">
+              <span className="text-primary-700 font-semibold text-sm uppercase tracking-wider">
                 SIMPLIFY PROPERTY MANAGEMENT
               </span>
               <h2 className="text-3xl md:text-4xl font-bold">
@@ -318,7 +318,7 @@ export function HomeClient() {
                 Effortlessly list properties, manage tenants, and track
                 finances—all from one place.
               </p>
-              <Button className="bg-red-600 hover:bg-red-700 text-white px-8">
+              <Button className="bg-primary-700 hover:bg-primary-800 text-white px-8">
                 Learn more
               </Button>
             </div>
@@ -408,7 +408,7 @@ export function HomeClient() {
                 <li>
                   <Link
                     href="/about"
-                    className="text-gray-600 hover:text-red-600"
+                    className="text-gray-600 hover:text-primary-700"
                   >
                     About us
                   </Link>

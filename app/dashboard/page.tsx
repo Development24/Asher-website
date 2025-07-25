@@ -76,7 +76,7 @@ export default function DashboardPage() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Viewing invites</h2>
-              <Link href="/dashboard/property-viewings" className="text-sm text-red-600 hover:text-red-700">
+              <Link href="/dashboard/property-viewings" className="text-sm text-primary-700 hover:text-primary-800">
                 View all
               </Link>
             </div>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Leave feedback on these properties</h2>
-              <Link href="/dashboard/property-viewings" className="text-sm text-red-600 hover:text-red-700">
+              <Link href="/dashboard/property-viewings" className="text-sm text-primary-700 hover:text-primary-800">
                 View all
               </Link>
             </div>

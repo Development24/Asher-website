@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -406,14 +406,14 @@ export function EmploymentDetailsForm({
           >
           Previous
         </Button>
-          <Button
+          <LoadingButton
             type="submit"
-            disabled={isPending}
+            disabled={!form.formState.isValid}
             loading={isPending}
             className={continueButtonClass}
           >
             Continue
-          </Button>
+          </LoadingButton>
       </div>
     </form>
     </Form>

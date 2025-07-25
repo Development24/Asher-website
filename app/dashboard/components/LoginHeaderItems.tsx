@@ -54,6 +54,7 @@ const LoginHeaderItems = ({ onMenuClick }: LoginHeaderItemsProps) => {
               <AvatarImage 
                 src={user?.profile?.profileUrl || "https://github.com/shadcn.png"} 
                 alt={user?.profile?.firstName || "User"}
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
               />
               <AvatarFallback className="bg-primary-50 text-primary-600 font-semibold text-sm">
                 {user?.profile?.firstName?.[0]}

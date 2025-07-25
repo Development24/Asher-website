@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
 import { Listing } from "@/services/property/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { useState } from "react";
 import { userStore } from "@/store/userStore";
@@ -79,20 +79,12 @@ export function PropertyCard({
     e.preventDefault();
     e.stopPropagation();
     likeProperty();
-    //     toggleSaveProperty({
-    //       id,
-    //       image,
-    //       title,
-    //       price,
-    //       location,
-    //  specs
-    //     })
-    // console.log(property)
   };
 
   if (isLikePending) {
     return <Skeleton className="h-[400px] w-full rounded-xl" />;
   }
+  
   return (
     <motion.div
       className="overflow-hidden group min-h-[430px] flex flex-col justify-between bg-white rounded-xl border border-neutral-200 shadow-sm p-6"
@@ -103,10 +95,14 @@ export function PropertyCard({
       <div className="relative">
         <div className="relative h-48 w-full">
           <Image
-            src={displayImages(propertyData?.images)[0] || "/images/property-placeholder.png"}
+            src={displayImages(propertyData?.images)[0] || "/placeholder.svg"}
             alt={propertyData?.name || "Property placeholder"}
             fill
-            className="object-cover"
+            className="object-cover rounded-lg"
+            onError={(e) => { 
+              e.currentTarget.onerror = null; 
+              e.currentTarget.src = "/placeholder.svg"; 
+            }}
           />
         </div>
         <motion.button
@@ -149,20 +145,24 @@ export function PropertyCard({
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-neutral-900">{propertyData?.name}</h3>
-          <span className="text-primary-500 font-semibold">
-            {formatPrice(Number(propertyData?.price))}
+          <h3 className="font-semibold text-neutral-900 flex-1 line-clamp-2">
+            {propertyData?.name || 'Property name not available'}
+          </h3>
+          <span className="text-primary-500 font-semibold ml-2 whitespace-nowrap">
+            {getPropertyPrice(propertyData)}
           </span>
         </div>
-        <p className="text-sm text-neutral-600 mb-4">{`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}`}</p>
+        <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
+          {getPropertyLocation(propertyData)}
+        </p>
         <div className="flex items-center gap-4 text-sm text-neutral-600">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
-            {propertyData?.bedrooms || "N/A"}
+            {getBedroomCount(propertyData)} bed{propertyData?.bedrooms !== 1 ? 's' : ''}
           </span>
           <span className="flex items-center gap-1">
             <Bath className="h-4 w-4" />
-            {propertyData?.bathrooms || "N/A"}
+            {getBathroomCount(propertyData)} bath{propertyData?.bathrooms !== 1 ? 's' : ''}
           </span>
         </div>
         {showFeedback && onFeedbackClick && (
