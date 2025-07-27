@@ -201,7 +201,7 @@ export function FeaturedProperties() {
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               <Link
-                href={`/property/${property?.property?.id}`}
+                href={`/property/${property?.id}`}
                 className="block h-full"
               >
                 <div className="relative aspect-[16/10] rounded-lg overflow-hidden">
