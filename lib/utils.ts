@@ -48,7 +48,7 @@ export const formatPrice = (value: number | string | null | undefined): string =
     return 'Price on request';
   }
 
-  const userLocale = navigator.language || 'en-US'; 
+  const userLocale = typeof navigator !== 'undefined' ? navigator.language || 'en-US' : 'en-US'; 
   
   // Get the currency for the detected locale
   const currency = currencyMap[userLocale] || 'USD';

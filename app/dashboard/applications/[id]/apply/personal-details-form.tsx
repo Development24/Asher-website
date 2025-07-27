@@ -151,9 +151,11 @@ export function PersonalDetailsForm({
           await setApplicationId(data?.application?.id);
 
           // Update URL using window.history
-          const nextUrl = new URL(window.location.href);
-          nextUrl.searchParams.set("applicationId", data?.application?.id);
-          window.history.replaceState({}, "", nextUrl.toString());
+          if (typeof window !== 'undefined') {
+            const nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.set("applicationId", data?.application?.id);
+            window.history.replaceState({}, "", nextUrl.toString());
+          }
           // Wait a tick to ensure state updates are processed
           await new Promise((resolve) => setTimeout(resolve, 0));
           onNext();

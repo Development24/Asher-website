@@ -60,7 +60,7 @@ export default function PropertyViewingsPage() {
     useUpdateInvite();
 
   useEffect(() => {
-    if (searchParams.get("#feedback")) {
+    if (typeof document !== 'undefined' && searchParams.get("#feedback")) {
       const feedbackSection = document.getElementById("feedback-section");
       feedbackSection?.scrollIntoView({ behavior: "smooth" });
     }

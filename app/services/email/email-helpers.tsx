@@ -81,12 +81,14 @@ export const formatFileSize = (bytes: number) => {
 
 // Helper function to handle attachment download
 export const handleAttachmentDownload = (url: string, name?: string) => {
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = name || `attachment-${Date.now()}`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  if (typeof document !== 'undefined') {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name || `attachment-${Date.now()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 
 // Helper function to get attachment name

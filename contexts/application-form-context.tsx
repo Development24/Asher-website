@@ -162,9 +162,11 @@ export function ApplicationFormProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Load saved drafts from localStorage on mount
-    const savedDraftsData = localStorage.getItem("savedDrafts")
-    if (savedDraftsData) {
-      setSavedDrafts(JSON.parse(savedDraftsData))
+    if (typeof window !== 'undefined') {
+      const savedDraftsData = localStorage.getItem("savedDrafts")
+      if (savedDraftsData) {
+        setSavedDrafts(JSON.parse(savedDraftsData))
+      }
     }
   }, [])
 
@@ -182,16 +184,20 @@ export function ApplicationFormProvider({ children }: { children: ReactNode }) {
 
     const updatedDrafts = [...savedDrafts, newDraft]
     setSavedDrafts(updatedDrafts)
-    localStorage.setItem("savedDrafts", JSON.stringify(updatedDrafts))
-    localStorage.setItem(`draft_${newDraft.id}`, JSON.stringify(formData))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("savedDrafts", JSON.stringify(updatedDrafts))
+      localStorage.setItem(`draft_${newDraft.id}`, JSON.stringify(formData))
+    }
   }
 
   const loadDraft = (draftId: number) => {
-    const draftData = localStorage.getItem(`draft_${draftId}`)
-    if (draftData) {
-      setFormData(JSON.parse(draftData))
-      // You might want to set the current step based on the loaded data
-      setCurrentStep(0) // or calculate the appropriate step
+    if (typeof window !== 'undefined') {
+      const draftData = localStorage.getItem(`draft_${draftId}`)
+      if (draftData) {
+        setFormData(JSON.parse(draftData))
+        // You might want to set the current step based on the loaded data
+        setCurrentStep(0) // or calculate the appropriate step
+      }
     }
   }
 

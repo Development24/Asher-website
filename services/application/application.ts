@@ -145,7 +145,7 @@ export const milestonesApplication = async (propertyId: string, applicationId?: 
     return response.data
 }
 
-export const singleApplication = async (applicationId: string): Promise<SingleApplicationResponse> => {
+export const singleApplication = async (applicationId: string) => {
     const response = await api.get(URL + applicationURL.singleApplication.replace(":applicationId", applicationId))
     return response.data
 }

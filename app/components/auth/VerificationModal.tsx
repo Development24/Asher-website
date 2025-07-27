@@ -28,14 +28,16 @@ const VerificationModal = ({
   const { mutate: verifyEmail, isPending: isVerifyingEmail } = useVerifyEmail();
   const { mutate: resendOTP, isPending: isResendingOTP } = useResendOTP();
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+    if (typeof document !== 'undefined') {
+      if (isOpen) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "unset";
+      }
+      return () => {
+        document.body.style.overflow = "unset";
+      };
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
   }, [isOpen]);
 
   const handleChange = (index: number, value: string) => {

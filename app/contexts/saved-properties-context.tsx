@@ -27,15 +27,19 @@ export function SavedPropertiesProvider({ children }: { children: ReactNode }) {
 
   // Load saved properties from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('savedProperties')
-    if (saved) {
-      setSavedProperties(JSON.parse(saved))
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('savedProperties')
+      if (saved) {
+        setSavedProperties(JSON.parse(saved))
+      }
     }
   }, [])
 
   // Save to localStorage whenever savedProperties changes
   useEffect(() => {
-    localStorage.setItem('savedProperties', JSON.stringify(savedProperties))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('savedProperties', JSON.stringify(savedProperties))
+    }
   }, [savedProperties])
 
   const toggleSaveProperty = (property: Property) => {

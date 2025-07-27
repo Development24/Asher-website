@@ -13,7 +13,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, ariaLab
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || typeof document === 'undefined') return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();

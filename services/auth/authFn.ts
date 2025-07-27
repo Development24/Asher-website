@@ -13,8 +13,10 @@ export const useLoginUser = () => {
         mutationFn: loginUser,
         onSuccess: (data) => {
             // console.log(data)
-            localStorage.setItem('access_token', data?.token);
-            localStorage.setItem('refresh_token', data?.refreshToken);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('access_token', data?.token);
+                localStorage.setItem('refresh_token', data?.refreshToken);
+            }
             setUser(data?.userDetails)
         }
     })
@@ -25,8 +27,10 @@ export const useLogout = () => {
     return useMutation({
         mutationFn: logoutUser,
         onSettled: () => {
-            logout()
-            toast.success('Logout Success')
+            if (typeof window !== 'undefined') {
+                logout()
+                toast.success('Logout Success')
+            }
         }
     })
 }

@@ -115,14 +115,18 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
             processQueue(refreshError as AxiosError, null)
             userStore.getState().clearUser()
             toast.error(userMessage)
-            localStorage.setItem('redirect_url', window.location.pathname);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('redirect_url', window.location.pathname);
+            }
             redirect('/login')
             return Promise.reject(refreshError)
           } finally {
             isRefreshing = false
           }
         }
-        localStorage.setItem('redirect_url', window.location.pathname);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('redirect_url', window.location.pathname);
+        }
         clearUser();
         break;
       case 403:

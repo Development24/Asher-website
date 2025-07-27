@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { RescheduleViewingModal } from '../../../components/modals/reschedule-viewing-modal'
-import { CancelViewingModal } from '../../../components/modals/cancel-viewing-modal'
+
 import { Calendar, Clock, MapPin, Share2, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
+import RescheduleViewingModal from '../../../components/modals/reschedule-viewing-modal';
+import CancelViewingModal from '../../../components/modals/cancel-viewing-modal';
 
 interface Property {
   id: number

@@ -1,3 +1,5 @@
+'use client'
+
 import { userStore } from "@/store/userStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

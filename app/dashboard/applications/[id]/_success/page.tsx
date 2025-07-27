@@ -41,6 +41,7 @@ import { format } from "date-fns";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import { LeaseAgreementModal } from "./lease-agreement-modal";
 import { PaymentModal } from "./payment-modal";
+import SaveModal from '../../../../components/modals/save-modal';
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -69,7 +70,7 @@ export default function SuccessPage() {
 
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
-  const similarProperties: Listing[] = propertiesData?.properties;
+  const similarProperties: Listing[] = propertiesData?.properties || [];
 
   // const { data, isFetching } = useGetPropertyById(id as string);
   // console.log(data);
@@ -865,7 +866,7 @@ export default function SuccessPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={`${window.location.origin}/property/${propertyData?.id}`}
+        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyData?.id}` : `/property/${propertyData?.id}`}
       />
       {paymentStatus === "success" && (
         <motion.div

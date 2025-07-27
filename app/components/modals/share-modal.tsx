@@ -18,9 +18,11 @@ export function ShareModal({ isOpen, onClose, propertyTitle, propertyUrl }: Shar
   const [copied, setCopied] = useState(false)
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(propertyUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(propertyUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   const socialLinks = [

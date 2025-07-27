@@ -52,10 +52,12 @@ export default function SearchPage() {
   const { isPropertySaved } = useSavedProperties();
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const location = searchParams.get("state");
-    if (location) {
-      setCurrentLocation(location);
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const location = searchParams.get("state");
+      if (location) {
+        setCurrentLocation(location);
+      }
     }
   }, []);
 
@@ -290,7 +292,11 @@ export default function SearchPage() {
                 There was an error loading the properties. Please try again.
               </p>
               <Button 
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.location.reload();
+                  }
+                }}
                 variant="outline"
                 className="gap-2"
               >
@@ -325,7 +331,11 @@ export default function SearchPage() {
                   Clear filters
                 </Button>
                 <Button 
-                  onClick={() => window.location.reload()}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.location.reload();
+                    }
+                  }}
                   variant="default"
                   className="gap-2"
                 >

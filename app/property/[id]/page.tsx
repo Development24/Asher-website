@@ -844,7 +844,7 @@ export default function PropertyDetails() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={`${window.location.origin}/property/${id}`}
+        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${id}` : `/property/${id}`}
       />
     </div>
   );

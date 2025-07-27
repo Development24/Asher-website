@@ -34,7 +34,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           </p>
           <button
             className="bg-primary text-white px-4 py-2 rounded"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.location.reload();
+              }
+            }}
           >
             Refresh Page
           </button>

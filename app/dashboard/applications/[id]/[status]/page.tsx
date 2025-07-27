@@ -4,7 +4,6 @@ import { ChatModal } from "@/app/components/chat/ChatModal";
 import { PreChatModal } from "@/app/components/chat/PreChatModal";
 import dynamic from "next/dynamic";
 const LandlordProfileModal = dynamic(() => import("@/app/components/modals/landlord-profile-modal").then(mod => mod.default), { ssr: false, loading: () => null });
-import { SaveModal } from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +42,7 @@ import { LeaseAgreementModal } from "./lease-agreement-modal";
 import { PaymentModal } from "./payment-modal";
 import { toast } from "sonner";
 import { displayImages } from "@/app/property/[id]/utils";
+import SaveModal from '../../../../components/modals/save-modal';
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -72,15 +72,13 @@ export default function SuccessPage() {
   const router = useRouter();
   const user = userStore((state) => state.user);
 
-  const hasAgreement = application?.agreementDocumentUrl?.length > 0;
+  const hasAgreement = application?.agreementDocument?.length > 0;
   const lastAgreementUrl =
-    application?.agreementDocumentUrl[
-      application?.agreementDocumentUrl?.length - 1
-    ];
+    application?.agreementDocument[application?.agreementDocument?.length - 1];
 
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
-  const similarProperties: Listing[] = propertiesData?.properties;
+  const similarProperties: Listing[] = propertiesData?.properties || [];
 
   // const { data, isFetching } = useGetPropertyById(id as string);
   // console.log(data);
@@ -837,7 +835,7 @@ export default function SuccessPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={`${window.location.origin}/property/${propertyData?.id}`}
+        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyData?.id}` : `/property/${propertyData?.id}`}
       />
       {paymentStatus === "success" && (
         <motion.div

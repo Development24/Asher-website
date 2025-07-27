@@ -61,8 +61,10 @@ export const useLoggedOut = (): (() => void) => {
 
     const logout = () => {
         clear()
-        localStorage.removeItem('access_token')
-        router.push('/')
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('access_token')
+            router.push('/')
+        }
     }
 
     return logout
