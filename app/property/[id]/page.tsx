@@ -40,17 +40,14 @@ import { displayImages, filteredImageUrls, ImageObject } from "./utils";
 import dynamic from "next/dynamic";
 
 // Dynamically import the map to avoid SSR issues
-const DynamicMap = dynamic(
-  () => import("./MapComponent"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-        <div className="text-gray-500">Loading map...</div>
-      </div>
-    ),
-  }
-) as React.ComponentType<{
+const DynamicMap = dynamic(() => import("./MapComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+      <div className="text-gray-500">Loading map...</div>
+    </div>
+  )
+}) as React.ComponentType<{
   latitude: number;
   longitude: number;
   address: string;
@@ -62,99 +59,6 @@ const propertyImages = [
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_02_0000.jpeg",
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_03_0000.jpeg",
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_05_0000.jpeg"
-];
-
-const properties = [
-  {
-    id: 1,
-    image:
-      "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_01_0000.jpeg",
-    title: "Rosewood Apartments",
-    price: "250,000",
-    location: "12 Oak Lane, Lagos, Nigeria",
-    specs: {
-      size: "6x8 m²",
-      bedrooms: 3,
-      bathrooms: 2
-    },
-    description:
-      "This modern 3-bedroom apartment blends style and comfort, offering an ideal urban retreat. With a spacious open-plan design, it boasts a sleek, fully equipped kitchen perfect for cooking enthusiasts, and a bright living area that opens onto a private balcony. The master suite includes an en-suite bathroom. Situated near top restaurants, schools, and transport, the property provides a balanced mix of convenience and sophistication.",
-    agent: {
-      name: "Adam Alekind",
-      image: "/placeholder.svg",
-      isOnline: false
-    }
-  },
-  {
-    id: 2,
-    image:
-      "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_02_0000.jpeg",
-    title: "Maple Ridge Homes",
-    price: "280,000",
-    location: "15 Elm Street, Lagos, Nigeria",
-    specs: {
-      size: "7x9 m²",
-      bedrooms: 4,
-      bathrooms: 3
-    },
-    description:
-      "Maple Ridge Homes offers a luxurious 4-bedroom residence perfect for families. This spacious home features a gourmet kitchen, formal dining room, and a cozy family room with a fireplace. The master suite boasts a walk-in closet and a spa-like bathroom. With a large backyard and a two-car garage, this property provides ample space for both relaxation and entertainment.",
-    agent: {
-      name: "Adam Alekind",
-      image: "/placeholder.svg",
-      isOnline: true
-    }
-  },
-  {
-    id: 3,
-    image:
-      "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_03_0000.jpeg",
-    title: "Sunflower Residences",
-    price: "220,000",
-    location: "8 Sunflower Avenue, Lagos, Nigeria",
-    specs: {
-      size: "5x7 m²",
-      bedrooms: 2,
-      bathrooms: 2
-    },
-    description:
-      "Sunflower Residences presents a charming 2-bedroom apartment ideal for young professionals or small families. This modern unit features an open-concept living and dining area, a well-appointed kitchen, and a private balcony offering city views. The complex includes amenities such as a fitness center and a communal garden, providing a perfect balance of comfort and community living.",
-    agent: {
-      name: "Adam Alekind",
-      image: "/placeholder.svg",
-      isOnline: false
-    }
-  }
-];
-
-const landlordProperties = [
-  {
-    id: 1,
-    title: "Rosewood Apartments",
-    image:
-      "https://cdn.pixabay.com/photo/2016/11/18/17/46/house-1836070_1280.jpg",
-    price: "280,000",
-    location: "12 Oak Lane, Lagos, Nigeria",
-    specs: {
-      size: "120 sq. ft",
-      bedrooms: 3,
-      bathrooms: 2
-    }
-  },
-  {
-    id: 2,
-    title: "Maple Ridge Homes",
-    image:
-      "https://cdn.pixabay.com/photo/2017/07/08/02/16/house-2483336_1280.jpg",
-    price: "320,000",
-    location: "15 Elm Street, Lagos, Nigeria",
-    specs: {
-      size: "150 sq. ft",
-      bedrooms: 4,
-      bathrooms: 3
-    }
-  }
-  // Add more properties as needed...
 ];
 
 export default function PropertyDetails() {
@@ -183,7 +87,10 @@ export default function PropertyDetails() {
   const { data, isFetching } = useGetPropertyByIdForListingId(id as string);
   console.log(data, "Property Data for listing id");
   const propertyData: Property = data?.property?.property;
-
+  const type = data?.property?.type;
+  const propertyInfo =
+    type === "SINGLE_UNIT" ? data?.property?.unit : data?.property;
+  const [showAllDescription, setShowAllDescription] = useState(false);
   // useEffect(() => {
   //   // const selectedProperty = properties.find((p) => p.id.toString() === id);
   //   // setProperty(selectedProperty || null);
@@ -453,7 +360,13 @@ export default function PropertyDetails() {
           </div>
 
           <div className="text-3xl font-bold mb-6">
-            {formatPrice(Number(propertyData?.price))}{" "}
+            {formatPrice(
+              Number(
+                type === "ENTIRE_PROPERTY"
+                  ? propertyData?.price
+                  : propertyInfo?.price
+              )
+            )}{" "}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
               {propertyData?.priceFrequency === "MONTHLY"
                 ? "per month"
@@ -470,7 +383,11 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex items-center justify-center">
                   <span className="font-medium">
-                    {data?.property?.propertySubType?.replace(/_/g, ' ')?.toLowerCase()?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || "House"}
+                    {type
+                      ?.replace(/_/g, " ")
+                      ?.toLowerCase()
+                      ?.replace(/\b\w/g, (l: string) => l.toUpperCase()) ||
+                      "House"}
                   </span>
                 </div>
               </div>
@@ -480,7 +397,7 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex items-center justify-center">
                   <span className="font-medium text-2xl">
-                    {data?.property?.bedrooms || 0}
+                    {propertyInfo?.bedrooms || 0}
                   </span>
                 </div>
               </div>
@@ -490,7 +407,7 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex items-center justify-center">
                   <span className="font-medium text-2xl">
-                    {data?.property?.bathrooms || 0}
+                    {propertyInfo?.bathrooms || 0}
                   </span>
                 </div>
               </div>
@@ -500,7 +417,7 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex items-center justify-center">
                   <span className="font-medium">
-                    {data?.property?.totalArea} {data?.property?.areaUnit?.toLowerCase()}
+                    {propertyInfo?.area || "N/A"} sqm
                   </span>
                 </div>
               </div>
@@ -510,9 +427,19 @@ export default function PropertyDetails() {
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-semibold mb-4">Description</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                {data?.property?.description}
+              <p
+                className={`text-gray-600 dark:text-gray-400 ${
+                  showAllDescription ? "line-clamp-none" : "line-clamp-3"
+                }`}
+              >
+                {propertyData?.description}{" "}
               </p>
+              <span
+                className="text-blue-500 cursor-pointer"
+                onClick={() => setShowAllDescription(!showAllDescription)}
+              >
+                {showAllDescription ? "Read less" : "Read more"}
+              </span>
             </div>
 
             {/* Letting Details */}
@@ -532,8 +459,9 @@ export default function PropertyDetails() {
                     Deposit:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.securityDeposit && data.property.securityDeposit !== "0" 
-                      ? formatPrice(Number(data.property.securityDeposit)) 
+                    {data?.property?.securityDeposit &&
+                    data.property.securityDeposit !== "0"
+                      ? formatPrice(Number(data.property.securityDeposit))
                       : "Ask agent"}
                   </div>
                 </div>
@@ -542,7 +470,9 @@ export default function PropertyDetails() {
                     Min. Tenancy:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.rentalTerms ? `${data.property.rentalTerms} months` : "Ask agent"}
+                    {data?.property?.rentalTerms
+                      ? `${data.property.rentalTerms} months`
+                      : "Ask agent"}
                   </div>
                 </div>
                 <div>
@@ -550,7 +480,9 @@ export default function PropertyDetails() {
                     Let type:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.rentalPeriod === "MONTHLY" ? "Long term" : "Ask agent"}
+                    {data?.property?.rentalPeriod === "MONTHLY"
+                      ? "Long term"
+                      : "Ask agent"}
                   </div>
                 </div>
                 <div>
@@ -572,33 +504,37 @@ export default function PropertyDetails() {
               </div>
             </div>
 
-
-
             {/* Key Features */}
             {data?.property?.keyFeatures?.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
                 <h2 className="text-xl font-semibold mb-4">Key features</h2>
                 <div className="grid grid-cols-2 gap-2">
-                  {data?.property?.keyFeatures?.map((feature: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-sm">
-                        {feature.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                      </span>
-                    </div>
-                  ))}
+                  {data?.property?.keyFeatures?.map(
+                    (feature: string, index: number) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-sm">
+                          {feature
+                            .replace(/-/g, " ")
+                            .replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                        </span>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-5">
               <h2 className="text-xl font-semibold mb-4">Location on map</h2>
               {data?.property?.latitude && data?.property?.longitude ? (
                 <DynamicMap
                   latitude={Number(data.property.latitude)}
                   longitude={Number(data.property.longitude)}
-                  address={`${data?.property?.address || data?.property?.city}, ${data?.property?.state?.name} ${data?.property?.country}`}
-                  propertyName={data?.property?.name || 'Property'}
+                  address={`${
+                    data?.property?.address || data?.property?.city
+                  }, ${data?.property?.state?.name} ${data?.property?.country}`}
+                  propertyName={data?.property?.name || "Property"}
                 />
               ) : (
                 <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden border border-gray-200 dark:border-gray-700">
@@ -612,7 +548,8 @@ export default function PropertyDetails() {
                       onClick={() =>
                         window.open(
                           `https://www.openstreetmap.org/search?query=${encodeURIComponent(
-                            `${data?.property?.city}, ${data?.property?.country}` || ""
+                            `${data?.property?.city}, ${data?.property?.country}` ||
+                              ""
                           )}`,
                           "_blank"
                         )
@@ -623,7 +560,7 @@ export default function PropertyDetails() {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-3">
                 <div>
                   <h3 className="font-semibold mb-2">Nearest stations</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -664,11 +601,17 @@ export default function PropertyDetails() {
                   )}
                 >
                   <Image
-                    src={propertyData?.landlord?.user?.profile?.profileUrl || "/placeholder.svg"}
+                    src={
+                      propertyData?.landlord?.user?.profile?.profileUrl ||
+                      "/placeholder.svg"
+                    }
                     alt={propertyData?.landlord?.name || ""}
                     fill
                     className="rounded-full object-cover"
-                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/placeholder-user.jpg";
+                    }}
                   />
                 </div>
                 {true && (
@@ -719,8 +662,10 @@ export default function PropertyDetails() {
                   propertyData?.landlord?.user?.profile?.lastName,
                   propertyData?.landlord?.user?.profile?.fullname
                 ),
-                email: (propertyData?.landlord?.user?.email || undefined) as string | undefined,
-                image: propertyData?.landlord?.user?.profile?.profileUrl,
+                email: (propertyData?.landlord?.user?.email || undefined) as
+                  | string
+                  | undefined,
+                image: propertyData?.landlord?.user?.profile?.profileUrl || "",
                 id: propertyData?.landlord?.id,
                 isActive: propertyData?.landlord?.isActive
               }}
@@ -844,7 +789,11 @@ export default function PropertyDetails() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${id}` : `/property/${id}`}
+        propertyUrl={
+          typeof window !== "undefined"
+            ? `${window.location.origin}/property/${id}`
+            : `/property/${id}`
+        }
       />
     </div>
   );

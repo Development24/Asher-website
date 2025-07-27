@@ -46,14 +46,14 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
   console.log(properties);
 
   const nextProperty = () => {
-    if (currentIndex < (properties?.length || 0) - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    if (currentIndex < (properties?.length || 0) - 2) {
+      setCurrentIndex((prev) => prev + 2);
     }
   };
 
   const previousProperty = () => {
     if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+      setCurrentIndex((prev) => prev - 2);
     }
   };
 
@@ -76,8 +76,8 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] p-0">
-        <div className="p-6">
+      <DialogContent className="sm:max-w-[830px] p-0">
+        <div className="p-3">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -125,34 +125,48 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Listed properties</h3>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={previousProperty}
-                  disabled={currentIndex === 0}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={nextProperty}
-                  disabled={currentIndex === (properties?.length || 0) - 1}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={previousProperty}
+                    disabled={currentIndex === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={nextProperty}
+                    disabled={currentIndex >= (properties?.length || 0) - 2}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                {properties && properties.length > 1 && (
+                  <div className="flex gap-1">
+                    {properties.map((_, index) => (
+                      <div
+                        key={index}
+                        className={cn(
+                          "w-2 h-2 rounded-full transition-colors duration-200",
+                          index === currentIndex ? "bg-red-600" : "bg-gray-300"
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative overflow-hidden">
               {properties && properties.length > 0 ? (
-                properties
-                  ?.slice(currentIndex, currentIndex + 2)
-                  .map((property: any) => (
+                <div className="flex gap-3 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentIndex * 50}%)` }}>
+                  {properties.map((property: any, index: number) => (
                     <motion.div 
                       key={property?.property.id} 
-                      className="relative group bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden transition-shadow duration-200"
+                      className="relative group bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden transition-shadow duration-200 w-[calc(50%-10px)] flex-shrink-0"
                       whileHover={{ 
                         scale: 1.02, 
                         boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
@@ -223,9 +237,10 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                         </div>
                       </div>
                     </motion.div>
-                  ))
+                  ))}
+                </div>
               ) : (
-                <div className="col-span-2 flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg">
+                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg">
                   <Home className="h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-1">
                     No Properties Listed

@@ -88,7 +88,7 @@ export function FeaturedProperties() {
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
 
-  const properties = propertiesData?.properties;
+  const properties = propertiesData?.properties || [];
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -117,7 +117,7 @@ export function FeaturedProperties() {
 
   const handleSaveProperty = (
     e: React.MouseEvent,
-    property: (typeof properties)[0]
+    property: (typeof properties)
   ) => {
     e.preventDefault();
     e.stopPropagation();
@@ -207,7 +207,7 @@ export function FeaturedProperties() {
                 <div className="relative aspect-[16/10] rounded-lg overflow-hidden">
                   <img
                     src={
-                      property?.property?.images?.[0] ||
+                      property?.property?.images?.[0]?.url ||
                       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XThvalCn27NjVEYyN5daXfRo5eWDjR.png"
                     }
                     alt={property?.property?.name}
@@ -229,7 +229,7 @@ export function FeaturedProperties() {
                     />
                   </Button>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 p-3">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-semibold text-neutral-900">
                       {property?.property?.name}
@@ -250,11 +250,11 @@ export function FeaturedProperties() {
                   <div className="flex items-center gap-4 text-sm text-neutral-600">
                     <span className="flex items-center gap-1">
                       <Bed className="w-4 h-4" />
-                      {property?.property?.noBedRoom} bedrooms
+                      {property?.property?.bedrooms} bedrooms
                     </span>
                     <span className="flex items-center gap-1">
                       <Bath className="w-4 h-4" />
-                      {property?.property?.noBathRoom} bathrooms
+                      {property?.property?.bathrooms} bathrooms
                     </span>
                   </div>
                 </div>

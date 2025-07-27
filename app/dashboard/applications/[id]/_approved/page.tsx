@@ -25,8 +25,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LeaseAgreementModal } from "../_success/lease-agreement-modal"
 import { PaymentModal } from "../_success/payment-modal"
-import { SaveModal } from "@/app/components/modals/save-modal"
 import { ShareModal } from "@/app/components/modals/share-modal"
+import SaveModal from '../../../../components/modals/save-modal';
 
 export default function ApprovedPage() {
   const { id } = useParams()

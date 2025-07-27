@@ -23,7 +23,7 @@ export default function SimilarPropertyCard({
   className,
   property
 }: SimilarPropertyCard) {
-  console.log(property, "Coming from similar properties");
+  // console.log(property, "Coming from similar properties");
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
