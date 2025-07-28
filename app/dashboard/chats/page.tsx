@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, Suspense } from "react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { Search, Paperclip, Send, ImageIcon, Pin, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,9 +12,19 @@ import { ChatMessage } from "./components/chat-message"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { css } from "@emotion/react"
 import { useGetUserRooms, useGetUserChats, useCreateChat } from "@/services/chat/chatFn"
-import { ChatList } from "./components/chat-list"
-import { ChatArea } from "./components/chat-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import { userStore } from "@/store/userStore"
+
+// Lazy load heavy chat components
+const ChatList = dynamic(() => import("./components/chat-list").then(mod => ({ default: mod.ChatList })), {
+  ssr: false,
+  loading: () => <Skeleton className="w-80 h-full" />
+})
+
+const ChatArea = dynamic(() => import("./components/chat-area").then(mod => ({ default: mod.ChatArea })), {
+  ssr: false,
+  loading: () => <Skeleton className="flex-1 h-full" />
+})
 
 const backgroundPattern = css`
   .bg-grid-pattern {
@@ -65,7 +76,7 @@ export default function ChatsPage() {
       user: {
         id: otherUser.id,
         name: otherUser.email.split('@')[0],
-        avatar: "/placeholder.svg",
+        avatar: otherUser.profile?.profileUrl || "/placeholder-user.jpg",
         online: false
       },
       lastMessage: lastMessage?.content || "No messages yet",

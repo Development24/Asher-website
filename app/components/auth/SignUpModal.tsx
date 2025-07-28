@@ -53,7 +53,6 @@ const SignUpModal = ({
     }
     try {
       // Implement your signup logic here
-      console.log("Sign up:", formData);
       registerUser(formData as any, {
         onSuccess: () => {
           onVerificationNeeded(formData.email);
@@ -75,7 +74,6 @@ const SignUpModal = ({
   };
 
   const handleGoogleSignUp = () => {
-    console.log("Google sign up");
     // Implement Google sign up logic here
   };
 

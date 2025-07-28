@@ -72,7 +72,6 @@ export default function SuccessPage() {
   const similarProperties: Listing[] = propertiesData?.properties;
 
   // const { data, isFetching } = useGetPropertyById(id as string);
-  // console.log(data);
   const propertyData = application?.properties;
   const isLoading = isFetching || isFetchingProperties;
 
@@ -105,7 +104,6 @@ export default function SuccessPage() {
     email: string;
     phone?: string;
   }) => {
-    console.log("Pre-chat data:", data);
     setShowPreChatModal(false);
     setShowChatModal(true);
   };
@@ -865,7 +863,7 @@ export default function SuccessPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={`${window.location.origin}/property/${propertyData?.id}`}
+        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyData?.id}` : `/property/${propertyData?.id}`}
       />
       {paymentStatus === "success" && (
         <motion.div

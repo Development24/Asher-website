@@ -22,10 +22,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-const LoginModal = dynamic(() => import("./components/auth/LoginModal").then(mod => mod.default), { ssr: false, loading: () => null });
-const SignUpModal = dynamic(() => import("./components/auth/SignUpModal").then(mod => mod.default), { ssr: false, loading: () => null });
-const VerificationModal = dynamic(() => import("./components/auth/VerificationModal").then(mod => mod.default), { ssr: false, loading: () => null });
-import { SuccessModal } from "./components/auth/SuccessModal";
+
+// Lazy load auth modals for better performance
+const LoginModal = dynamic(() => import("./components/auth/LoginModal"), { 
+  ssr: false, 
+  loading: () => null 
+});
+const SignUpModal = dynamic(() => import("./components/auth/SignUpModal"), { 
+  ssr: false, 
+  loading: () => null 
+});
+const VerificationModal = dynamic(() => import("./components/auth/VerificationModal"), { 
+  ssr: false, 
+  loading: () => null 
+});
+const SuccessModal = dynamic(() => import("./components/auth/SuccessModal").then(mod => ({ default: mod.SuccessModal })), { 
+  ssr: false, 
+  loading: () => null 
+});
 import { Card } from "./components/Card";
 import { FAQ } from "./components/FAQ";
 import { FeaturedProperties } from "./components/FeaturedProperties";

@@ -204,12 +204,6 @@ export function ApplicationForm({
     }
   }, [lastCompletedStep, nextStepInfo]);
 
-  // console.log({
-  //   lastCompletedStep,
-  //   lastStepInfo,
-  //   nextStepInfo,
-  //   currentStep
-  // });
 
   // Get the component for the current step
   const CurrentStepComponent = steps.find(
@@ -252,7 +246,6 @@ export function ApplicationForm({
       }
     );
   };
-  console.log(applicationData);
   const hasApplicationFee = applicationData?.applicationFee === "Yes";
 
   // Track which steps have been submitted
@@ -445,7 +438,6 @@ export function ApplicationForm({
           currency={applicationData?.properties?.currency || "USD"}
           onPaymentSuccess={() => {
             // Handle successful payment
-            console.log("Payment successful!");
             // You could show a success message or redirect
             router.push("/dashboard/applications/payment-success");
             refetch();

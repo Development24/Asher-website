@@ -44,7 +44,6 @@ const LoginModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      console.log("Login:", { email, password });
       loginUser(
         { email, password },
         {
@@ -68,7 +67,6 @@ const LoginModal = ({
   };
 
   const handleGoogleLogin = () => {
-    console.log("Google login");
     // Implement Google login logic here
   };
 

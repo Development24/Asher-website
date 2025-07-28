@@ -39,7 +39,6 @@ export default function SavedPropertiesPage() {
 
   const { data: properties, isFetching: isFetchingProperties } = useGetUserLikedProperties()
 
-  console.log(properties)
 
   if (isFetchingProperties || !properties) {
     return (

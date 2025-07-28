@@ -14,6 +14,8 @@ interface ViewingCardProps {
   time: string
   beds: number
   baths: number
+  propertyId?: string
+  inviteId?: string
 }
 
 export function ViewingCard({
@@ -24,8 +26,12 @@ export function ViewingCard({
   date,
   time,
   beds,
-  baths
+  baths,
+  propertyId,
+  inviteId
 }: ViewingCardProps) {
+  const viewLink = inviteId ? `/dashboard/property-viewings/${inviteId}` : `/property/${propertyId}`;
+
   return (
     <motion.div
       className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6"
@@ -55,13 +61,15 @@ export function ViewingCard({
               fill
               className="object-cover"
             />
-            <Button
-              variant="secondary"
-              size="sm"
-              className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-neutral-900 border border-neutral-200"
-            >
-              View property
-            </Button>
+            <Link href={viewLink}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-neutral-900 border border-neutral-200"
+              >
+                View property
+              </Button>
+            </Link>
           </div>
           <div className="p-4">
             <div className="flex justify-between items-start mb-2">

@@ -46,10 +46,9 @@ export default function SearchPage() {
   const { data, isFetching, error } = useGetProperties(filters);
 
   const propertiesData: Listing[] = data?.properties;
-  // console.log(propertiesData);
   const pagination = data?.pagination as Pagination;
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
     const location = searchParams.get("state");
     if (location) {
       setCurrentLocation(location);
@@ -291,8 +290,12 @@ export default function SearchPage() {
               <p className="text-gray-500 mb-4">
                 There was an error loading the properties. Please try again.
               </p>
-              <Button
-                onClick={() => window.location.reload()}
+                            <Button 
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.location.reload();
+                  }
+                }}
                 variant="outline"
                 className="gap-2"
               >
@@ -330,10 +333,14 @@ export default function SearchPage() {
                     <X className="w-4 h-4" />
                     Clear filters
                   </Button>
-                  <Button
-                    onClick={() => window.location.reload()}
-                    variant="default"
-                    className="gap-2"
+                                  <Button 
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.location.reload();
+                    }
+                  }}
+                  variant="default"
+                  className="gap-2"
                   >
                     <RefreshCcw className="w-4 h-4" />
                     Refresh

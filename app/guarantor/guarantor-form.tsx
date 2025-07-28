@@ -198,7 +198,9 @@ export default function GuarantorForm({
         });
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error uploading file:", error);
+      }
     }
   };
 
@@ -207,7 +209,6 @@ export default function GuarantorForm({
       ...prev,
       [field]: value
     }));
-    console.log(`Field ${field} updated:`, value);
   };
 
   const handleCheckboxChange = (field: string, value: string | boolean) => {
@@ -215,7 +216,6 @@ export default function GuarantorForm({
       ...prev,
       [field]: value
     }));
-    console.log(`Field ${field} updated:`, value);
   };
 
   // Handle drag events
@@ -269,7 +269,9 @@ export default function GuarantorForm({
         });
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error uploading file:", error);
+      }
     }
   };
 
@@ -295,7 +297,6 @@ export default function GuarantorForm({
     if (docType === "id") {
       const res = await uploadFile(file);
       const uploadResponse: UploadResponse = res?.url;
-      console.log(res);
       setDocuments((prev) => ({
         ...prev,
         id: {
@@ -308,7 +309,6 @@ export default function GuarantorForm({
     } else if (docType === "addressProof") {
       const res = await uploadFile(file);
       const uploadResponse: UploadResponse = res?.url;
-      console.log(res);
       setDocuments((prev) => ({
         ...prev,
         addressProof: {
@@ -321,7 +321,6 @@ export default function GuarantorForm({
     } else if (docType === "incomeProof") {
       const res = await uploadFile(file);
       const uploadResponse: UploadResponse = res?.url;
-      console.log(res);
       setDocuments((prev) => ({
         ...prev,
         incomeProof: {
@@ -334,7 +333,6 @@ export default function GuarantorForm({
     } else if (docType === "additionalDocs") {
       const res = await uploadFile(file);
       const uploadResponse: UploadResponse = res?.url;
-      console.log(res);
       setDocuments(
         (prev) =>
           ({
@@ -442,9 +440,6 @@ export default function GuarantorForm({
     'employerEmail'
   ];
   const handleSubmit = () => {
-    console.log("Form submission started");
-    console.log("Form Data:", formData);
-    console.log("Documents:", documents);
 
 
     const dateOfBirth = new Date(
@@ -501,7 +496,6 @@ export default function GuarantorForm({
       dateOfBirth: dateOfBirth.toISOString(),
       // applicationId: applicationId as string
     };
-    console.log("Payload:", payload);
 
     createGuarantorReference({ applicationId: applicationId as string, data: payload });
   };

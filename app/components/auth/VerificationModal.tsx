@@ -77,7 +77,6 @@ const VerificationModal = ({
     const verificationCode = code.join("");
     try {
       // Implement your verification logic here
-      console.log("Verifying code:", verificationCode);
       verifyEmail(
         { email, code: verificationCode },
         {
@@ -103,7 +102,6 @@ const VerificationModal = ({
   };
 
   const handleResend = () => {
-    console.log("Resending code to:", email);
     resendOTP(
       { email },
       {

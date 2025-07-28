@@ -59,9 +59,7 @@ export function PersonalDetailsForm({
   const router = useRouter();
   const pathname = usePathname();
   const applicationInvitedId = searchParams.get("applicationInviteId");
-  // console.log(id);
   // const applicationInvitedId = useReuseAbleStore((state: any) => state.applicationInvitedId);
-  console.log(applicationInvitedId);
   const { mutate: startApplication, isPending } = useStartApplication();
   const form = useForm<PersonalDetailsFormValues>({
     resolver: zodResolver(personalDetailsSchema),
@@ -118,12 +116,9 @@ export function PersonalDetailsForm({
   });
 
   const { setApplicationId } = useReuseAbleStore((state: any) => state);
-  console.log(form.formState.errors);
-  console.log(isStepCompleted);
 
   function onSubmit(values: PersonalDetailsFormValues) {
     if (isStepCompleted) {
-      console.log("Step already completed, skipping submission");
       onNext();
       return;
     }
@@ -145,21 +140,21 @@ export function PersonalDetailsForm({
       },
       {
         onSuccess: async (data: any) => {
-          console.log("Success Submitted", data);
 
           // Store the applicationId in Zustand
           await setApplicationId(data?.application?.id);
 
           // Update URL using window.history
-          const nextUrl = new URL(window.location.href);
+          const nextUrl = typeof window !== 'undefined' ? new URL(window.location.href) : new URL('http://localhost:3000');
           nextUrl.searchParams.set("applicationId", data?.application?.id);
-          window.history.replaceState({}, "", nextUrl.toString());
+                      if (typeof window !== 'undefined') {
+              window.history.replaceState({}, "", nextUrl.toString());
+            }
           // Wait a tick to ensure state updates are processed
           await new Promise((resolve) => setTimeout(resolve, 0));
           onNext();
         },
         onError: (err: any) => {
-          console.log(err?.response?.data?.message);
           toast.error(err?.response?.data?.message);
         }
       }

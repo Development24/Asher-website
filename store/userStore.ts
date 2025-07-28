@@ -34,13 +34,15 @@ const loadUserFromStorage = (): IUser | null => {
 
 export const userStore = create<UserStore>()(persist(
     (set) => ({
-        user: loadUserFromStorage(),
+        user: null,
         setUser: (user: IUser | null) => set({ user }),
         clearUser: () => {
             set({ user: null });
-            localStorage.removeItem("user");
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem("user");
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+            }
         },
     }),
     {
@@ -61,7 +63,9 @@ export const useLoggedOut = (): (() => void) => {
 
     const logout = () => {
         clear()
-        localStorage.removeItem('access_token')
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('access_token')
+        }
         router.push('/')
     }
 

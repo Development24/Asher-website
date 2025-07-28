@@ -24,19 +24,23 @@ const SavedPropertiesContext = createContext<SavedPropertiesContextType | undefi
 
 export function SavedPropertiesProvider({ children }: { children: ReactNode }) {
   const [savedProperties, setSavedProperties] = useState<Property[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
 
   // Load saved properties from localStorage on mount
   useEffect(() => {
+    setIsHydrated(true)
     const saved = localStorage.getItem('savedProperties')
     if (saved) {
       setSavedProperties(JSON.parse(saved))
     }
   }, [])
 
-  // Save to localStorage whenever savedProperties changes
+  // Save to localStorage whenever savedProperties changes (only after hydration)
   useEffect(() => {
-    localStorage.setItem('savedProperties', JSON.stringify(savedProperties))
-  }, [savedProperties])
+    if (isHydrated) {
+      localStorage.setItem('savedProperties', JSON.stringify(savedProperties))
+    }
+  }, [savedProperties, isHydrated])
 
   const toggleSaveProperty = (property: Property) => {
     setSavedProperties(prev => {

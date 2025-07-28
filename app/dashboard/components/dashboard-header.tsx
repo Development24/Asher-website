@@ -12,9 +12,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { userStore } from "@/store/userStore"
+import { useGetProfile } from "@/services/auth/authFn"
+import LogoutModal from "./modals/logout-modal"
 
 export function DashboardHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false)
+  
+  // Get real user data
+  const user = userStore((state) => state.user)
+  const { data: profileData } = useGetProfile()
+  
+  const userProfile = profileData?.user || user
+  const userName = userProfile?.profile?.firstName || userProfile?.profile?.fullname
+  const userEmail = userProfile?.email
+  const userAvatar = userProfile?.profile?.profileUrl
 
   return (
     <header className="bg-white shadow-sm">
@@ -48,18 +61,22 @@ export function DashboardHeader() {
                 <Button variant="ghost" className="ml-3 flex items-center">
                   <span className="sr-only">Open user menu</span>
                   <img
-                    className="h-8 w-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt=""
+                    className="h-8 w-8 rounded-full object-cover"
+                    src={userAvatar || "/placeholder-user.jpg"}
+                    alt={userName || "User"}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
                   />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLogoutModalOpen(true)}>
+                  Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -93,33 +110,36 @@ export function DashboardHeader() {
             <div className="flex items-center px-4">
               <div className="flex-shrink-0">
                 <img
-                  className="h-10 w-10 rounded-full"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
+                  className="h-10 w-10 rounded-full object-cover"
+                  src={userAvatar || "/placeholder-user.jpg"}
+                  alt={userName || "User"}
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
                 />
               </div>
               <div className="ml-3">
-                <div className="text-base font-medium text-gray-800">Tom Cook</div>
-                <div className="text-sm font-medium text-gray-500">tom@example.com</div>
+                {userName && <div className="text-base font-medium text-gray-800">{userName}</div>}
+                {userEmail && <div className="text-sm font-medium text-gray-500">{userEmail}</div>}
               </div>
               <Button variant="ghost" size="icon" className="ml-auto">
                 <Bell className="h-6 w-6" aria-hidden="true" />
               </Button>
             </div>
             <div className="mt-3 space-y-1">
-              <Link href="#" className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
-                Your Profile
-              </Link>
-              <Link href="#" className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+              <Link href="/dashboard/settings" className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
                 Settings
               </Link>
-              <Link href="#" className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+              <button 
+                onClick={() => setLogoutModalOpen(true)}
+                className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+              >
                 Sign out
-              </Link>
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      <LogoutModal open={logoutModalOpen} setOpen={setLogoutModalOpen} />
     </header>
   )
 }

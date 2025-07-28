@@ -119,9 +119,9 @@ export function ChatArea({
           location="12 Oak Lane, Lagos, Nigeria"
           price="₦280,000"
           specs={["3 Bedrooms", "2 Bathrooms"]}
-          onAccept={() => console.log("Accepted")}
-          onReject={() => console.log("Rejected")}
-          onReschedule={() => console.log("Rescheduled")}
+          onAccept={() => {}}
+          onReject={() => {}}
+          onReschedule={() => {}}
         />
 
         {isLoading ? (

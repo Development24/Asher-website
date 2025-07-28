@@ -39,7 +39,6 @@
 //     const errors = result
 //       .filter((res) => res.status === "rejected")
 //       .map((res) => (res as PromiseRejectedResult).reason);
-//     console.error("Some requests failed:", errors);
 //   }
 // };
 
@@ -52,7 +51,6 @@
 //           fieldName: key,
 //           file: file as File
 //         }));
-//       console.log(files);
 //       onNext();
 
 //       // Upload all files at once
@@ -71,7 +69,6 @@
 //         }),
 //         {}
 //       );
-//       console.log(documentUrls);
 //       return
 //       // Update form data with cloud URLs
 //       // updateFormData({ documents: documentUrls });
@@ -82,14 +79,12 @@
 //         data: documentUrls
 //       };
 
-//       console.log(payload);
 //       return;
 //       // Submit to your application API
 //       documentsApplication(payload);
 
 //       onNext();
 //     } catch (error) {
-//       console.error("Error uploading documents:", error);
 //       // Handle error (show toast, etc.)
 //     }
 //   }

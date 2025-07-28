@@ -94,7 +94,7 @@ export function DeclarationForm({
         onNext();
       },
       onError: (error: any) => {
-        console.log(error);
+        console.error("Declaration form submission error:", error);
         toast.error(error?.response?.data?.message || "An error occurred");
       }
     });

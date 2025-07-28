@@ -25,7 +25,6 @@ export default function SettingsPage() {
     confirmPassword: string 
   }) => {
     // Here you would typically make an API call to change the password
-    console.log('Password change:', data)
     setShowPasswordModal(false)
     setSuccessMessage('Password changed!')
     setShowSuccessModal(true)
@@ -38,7 +37,6 @@ export default function SettingsPage() {
     marketing: boolean
   }) => {
     // Here you would typically make an API call to update email preferences
-    console.log('Email preferences:', preferences)
     setShowEmailPreferencesModal(false)
     setSuccessMessage('Email preferences updated!')
     setShowSuccessModal(true)

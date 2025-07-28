@@ -376,7 +376,7 @@ export default function ApprovedPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={property.title}
-        propertyUrl={`${window.location.origin}/property/${id}`}
+        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${id}` : `/property/${id}`}
       />
       {paymentStatus === "success" && (
         <motion.div

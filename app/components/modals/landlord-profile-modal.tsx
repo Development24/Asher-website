@@ -43,7 +43,6 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
     String(landlord.id)
   );
   const properties = landlordProperties?.properties;
-  console.log(properties);
 
   const nextProperty = () => {
     if (currentIndex < (properties?.length || 0) - 1) {
