@@ -25,11 +25,18 @@ export function ApplicationCard({ activeApplications, completedApplications }: A
           <span className="text-neutral-600">Completed Applications</span>
           <span className="font-semibold text-lg">{completedApplications || 0}</span>
         </div>
-        <Link href="/dashboard/applications" className="block">
-          <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white transition-colors duration-200">
-            View all applications
-          </Button>
-        </Link>
+        <div className="flex gap-2 flex-wrap">
+          <Link href="/dashboard/applications" className="flex-1">
+            <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white transition-colors duration-200">
+              View all applications
+            </Button>
+          </Link>
+          <Link href="/dashboard/applications/cancelled">
+            <Button variant="outline" className="px-3 w-full">
+              Cancelled
+            </Button>
+          </Link>
+        </div>
       </div>
     </motion.div>
   )

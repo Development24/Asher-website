@@ -73,7 +73,6 @@ export default function SuccessPage() {
   const similarProperties: Listing[] = propertiesData?.properties || [];
 
   // const { data, isFetching } = useGetPropertyById(id as string);
-  // console.log(data);
   const propertyData = application?.properties;
   const isLoading = isFetching || isFetchingProperties;
 
@@ -106,7 +105,6 @@ export default function SuccessPage() {
     email: string;
     phone?: string;
   }) => {
-    console.log("Pre-chat data:", data);
     setShowPreChatModal(false);
     setShowChatModal(true);
   };

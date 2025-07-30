@@ -133,7 +133,15 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
         userMessage = message || 'Forbidden: You do not have access to this resource.';
         break;
       case 404:
-        userMessage = message || 'Not Found: The resource was not found.';
+        if (originalRequest.url?.includes('/property/')) {
+          userMessage = 'Property listing not found. It may have been removed or is no longer available.';
+        } else if (originalRequest.url?.includes('/application/')) {
+          userMessage = 'Application not found. It may have been removed or you may not have access.';
+        } else if (originalRequest.url?.includes('/user/')) {
+          userMessage = 'User profile not found.';
+        } else {
+          userMessage = message || 'The requested resource was not found.';
+        }
         break;
       case 500:
         userMessage = message || 'Internal Server Error: Something went wrong on the server.';

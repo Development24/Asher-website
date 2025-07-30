@@ -62,7 +62,6 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
     control: form.control,
     name: "prevAddresses"
   })
- console.log(form.formState.errors);
   function onSubmit(values: ResidentialDetailsFormValues) {
     if (isStepCompleted) {
       onNext();
@@ -72,7 +71,6 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
     const payload = {
       ...values,
     };
-    console.log(payload);
 
     residentApplication(
       {

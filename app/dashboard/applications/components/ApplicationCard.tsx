@@ -67,7 +67,6 @@ const ApplicationCard = ({
     | "completed"
     | "declined";
 }) => {
-  // console.log(application);
   // const {
   //   setApplicationInvitedId,
   //   setApplicationId,

@@ -82,6 +82,8 @@ export const formatName = (firstName?: string | null, lastName?: string | null, 
 
 // Helper function to get property price with fallbacks
 export const getPropertyPrice = (property: any): string => {
+  if (!property) return 'Price on request';
+  
   // Try different price fields in order of preference
   const price = property?.price || property?.rentalFee || property?.marketValue || property?.rentalPrice;
   
@@ -100,18 +102,21 @@ export const getPropertyPrice = (property: any): string => {
 
 // Helper function to safely get bedroom count
 export const getBedroomCount = (property: any): string => {
+  if (!property) return 'N/A';
   const bedrooms = property?.bedrooms || property?.noBedRoom || property?.bedRooms;
   return bedrooms ? String(bedrooms) : 'N/A';
 };
 
 // Helper function to safely get bathroom count
 export const getBathroomCount = (property: any): string => {
+  if (!property) return 'N/A';
   const bathrooms = property?.bathrooms || property?.noBathRoom || property?.bathRooms;
   return bathrooms ? String(bathrooms) : 'N/A';
 };
 
 // Helper function to get property location
 export const getPropertyLocation = (property: any): string => {
+  if (!property) return 'Location not available';
   const parts = [
     property?.address,
     property?.address2,

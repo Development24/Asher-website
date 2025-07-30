@@ -9,28 +9,28 @@ import dynamic from "next/dynamic";
 const FeedbackModal = dynamic(() => import("./components/modals/feedback-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useGetUserLikedProperties } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart } from "lucide-react";
 import { useDashboardStats } from "@/services/application/applicationFn";
 import { ApplicationsStats, Enquiry, Property, PropertyInvite } from "./type";
 import { format } from "date-fns";
 import { Calendar, MessageSquare } from "lucide-react";
 import { SavedPropertiesSection } from './components/sections/saved-properties-section';
-import { useGetAllFeedback } from '../../services/property/propertyFn';
+import { userStore } from "@/store/userStore";
+import { useGetProfile } from "@/services/auth/authFn";
 
 export default function DashboardPage() {
-  const [userEmail] = useState("simoncaldwell@gmail.com");
-  const [userName] = useState("Simon");
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
-  const {data: logs, isFetching: isFetchingLogs} = useGetAllFeedback();
-
-  console.log(logs);
+  
+  // Get user data from store and API
+  const user = userStore((state) => state.user);
+  const { data: profileData, isFetching: isFetchingProfile } = useGetProfile();
+  
+  const userProfile = profileData?.user || user;
+  const userName = userProfile?.profile?.firstName || userProfile?.profile?.fullname || null;
 
   const { data: dashboardStats, isFetching: isFetchingDashboardStats } =
     useDashboardStats();
-  // console.log(dashboardStats);
 
   const dashboardData = dashboardStats?.stats;
   const applicationsStats = dashboardData?.applications as ApplicationsStats;
@@ -40,28 +40,108 @@ export default function DashboardPage() {
     dashboardData?.recentSavedProperties as PropertyInvite[];
   const scheduledInvites = dashboardData?.scheduledInvite as PropertyInvite;
 
-  // Only format dates if scheduledInvites exists and has a valid date
-  const formattedDate = scheduledInvites?.scheduleDate 
-    ? format(new Date(scheduledInvites.scheduleDate.toString()), "dd MMMM, yyyy")
-    : undefined;
-
-  const formattedTime = scheduledInvites?.scheduleDate
-    ? format(new Date(scheduledInvites.scheduleDate.toString()), "HH:mm")
-    : undefined;
-
-
-  const notifications = [
-    {
-      id: 1,
-      message: "Your application for Elmwood Estate was reviewed.",
-      timestamp: new Date()
-    },
-    {
-      id: 2,
-      message: "Agent replied to your inquiry about Parkview Residence.",
-      timestamp: new Date()
+  // Find the next upcoming viewing from all accepted invites
+  const findNextViewing = () => {
+    // Check scheduled invites first
+    if (scheduledInvites?.scheduleDate) {
+      const scheduleDate = new Date(scheduledInvites.scheduleDate);
+      if (scheduleDate > new Date()) {
+        return scheduledInvites;
+      }
     }
-  ];
+
+    // Check recent invites for accepted ones with upcoming dates
+    if (recentInvites?.length > 0) {
+      const acceptedInvites = recentInvites.filter(invite => 
+        (invite.response === "ACCEPTED" || invite.response === "RESCHEDULED_ACCEPTED") &&
+        invite.scheduleDate
+      );
+
+      if (acceptedInvites.length > 0) {
+        // Find the nearest upcoming viewing
+        const upcomingViewings = acceptedInvites
+          .map(invite => ({
+            ...invite,
+            viewingDate: new Date(invite.reScheduleDate || invite.scheduleDate)
+          }))
+          .filter(invite => invite.viewingDate > new Date())
+          .sort((a, b) => a.viewingDate.getTime() - b.viewingDate.getTime());
+
+        return upcomingViewings[0] || null;
+      }
+    }
+
+    return null;
+  };
+
+  const nextViewing = findNextViewing();
+
+  // Be conservative with application counts - only show what the API explicitly provides
+  // Don't confuse viewing invites with actual applications
+  const actualActiveApplications = (applicationsStats?.activeApplications !== undefined && applicationsStats?.activeApplications >= 0) 
+    ? applicationsStats.activeApplications 
+    : 0;
+  const actualCompletedApplications = (applicationsStats?.completedApplications !== undefined && applicationsStats?.completedApplications >= 0)
+    ? applicationsStats.completedApplications 
+    : 0;
+
+  // Only format dates if nextViewing exists and has a valid date
+  const viewingDate = nextViewing?.reScheduleDate || nextViewing?.scheduleDate;
+  const formattedDate = viewingDate 
+    ? format(new Date(viewingDate), "dd MMMM, yyyy")
+    : undefined;
+
+  const formattedTime = viewingDate
+    ? format(new Date(viewingDate), "HH:mm")
+    : undefined;
+
+  // Generate notifications from real data
+  const generateNotifications = () => {
+    const notifications = [];
+    
+    // Add notification for recent applications - use real timestamp from API if available
+    if (actualActiveApplications > 0) {
+      notifications.push({
+        id: 1,
+        message: `You have ${actualActiveApplications} active application${actualActiveApplications > 1 ? 's' : ''} pending review.`,
+        timestamp: dashboardData?.lastUpdated ? new Date(dashboardData.lastUpdated) : new Date()
+      });
+    }
+
+    // Add notification for scheduled viewings - use real schedule date
+    if (nextViewing) {
+      notifications.push({
+        id: 2,
+        message: `You have an upcoming property viewing scheduled for ${formattedDate} at ${formattedTime}.`,
+        timestamp: new Date(viewingDate!)
+      });
+    }
+
+    // Add notification for pending feedback - use real timestamp from API if available
+    if (recentFeedback?.length > 0) {
+      const latestFeedbackDate = recentFeedback[0]?.createdAt ? new Date(recentFeedback[0].createdAt) : new Date();
+      notifications.push({
+        id: 3,
+        message: `You have ${recentFeedback.length} propert${recentFeedback.length > 1 ? 'ies' : 'y'} waiting for your feedback.`,
+        timestamp: latestFeedbackDate
+      });
+    }
+
+    // Add notification for recent invites - use real timestamp from API if available
+    if (recentInvites?.length > 0) {
+      const latestInviteDate = recentInvites[0]?.createdAt ? new Date(recentInvites[0].createdAt) : new Date();
+      notifications.push({
+        id: 4,
+        message: `You have ${recentInvites.length} new viewing invitation${recentInvites.length > 1 ? 's' : ''} to respond to.`,
+        timestamp: latestInviteDate
+      });
+    }
+
+    // Return only real notifications - no fallback mock data
+    return notifications;
+  };
+
+  const notifications = generateNotifications();
 
   const handleFeedbackClick = (property: any) => {
     setSelectedProperty(property);
@@ -70,7 +150,13 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">
+          {userName ? `Welcome back, ${userName}!` : "Welcome to your Dashboard!"}
+        </h1>
+        <p className="text-gray-600 mt-1">Here's what's happening with your property search</p>
+      </div>
+      
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <section>
@@ -94,6 +180,7 @@ export default function DashboardPage() {
                     isInvite
                     property={property as any}
                     showViewProperty
+                    viewLink={`/dashboard/property-viewings/${property.id}?schedule_date=${property.scheduleDate}&invitationId=${property.id}`}
                   />
                 ))
               ) : (
@@ -115,38 +202,26 @@ export default function DashboardPage() {
 
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Leave feedback on these properties</h2>
-              <Link href="/dashboard/property-viewings" className="text-sm text-primary-700 hover:text-primary-800">
+              <h2 className="text-xl font-semibold">Recent Activity</h2>
+              <Link href="/dashboard/activity-log" className="text-sm text-primary-700 hover:text-primary-800">
                 View all
               </Link>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {isFetchingDashboardStats ? (
-                <>
-                  <PropertyCardSkeleton />
-                  <PropertyCardSkeleton />
-                </>
-              ) : recentFeedback?.length > 0 ? (
-                recentFeedback.map((property) => (
-                  <PropertyCard
-                    key={property.id}
-                    {...property}
-                    property={property as any}
-                    showFeedback
-                    onFeedbackClick={() => handleFeedbackClick(property)}
-                  />
-                ))
-              ) : (
-                <div className="col-span-2 flex flex-col items-center justify-center py-10">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-                    <MessageSquare className="h-10 w-10 text-muted-foreground" />
+            <div className="bg-white rounded-lg border p-6">
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mx-auto mb-4">
+                    <MessageSquare className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold">No feedback required</h3>
-                  <p className="mt-2 text-center text-sm text-muted-foreground">
-                    You don't have any properties to provide feedback for at the moment.
+                  <h3 className="text-lg font-semibold mb-2">Track Your Progress</h3>
+                  <p className="text-muted-foreground mb-4">
+                    View your completed feedback, scheduled viewings, and application progress.
                   </p>
+                  <Button asChild>
+                    <Link href="/dashboard/activity-log">View Activity Log</Link>
+                  </Button>
                 </div>
-              )}
+              </div>
             </div>
           </section>
 
@@ -157,7 +232,7 @@ export default function DashboardPage() {
         </div>
         
         <div className="space-y-6">
-          {isFetchingDashboardStats ? (
+          {isFetchingDashboardStats || isFetchingProfile ? (
             <>
               <Skeleton className="h-[200px] rounded-lg" />
               <Skeleton className="h-[300px] rounded-lg" />
@@ -166,31 +241,38 @@ export default function DashboardPage() {
           ) : (
             <>
               <ApplicationCard
-                activeApplications={applicationsStats?.activeApplications}
-                completedApplications={applicationsStats?.completedApplications}
+                activeApplications={actualActiveApplications}
+                completedApplications={actualCompletedApplications}
               />
-              {scheduledInvites ? (
+              {nextViewing ? (
                 <ViewingCard
-                  image={scheduledInvites?.properties?.images[0]}
-                  title={scheduledInvites?.properties?.name}
-                  price={scheduledInvites?.properties?.rentalFee}
-                  location={scheduledInvites?.properties?.location}
+                  image={nextViewing?.properties?.images[0]}
+                  title={nextViewing?.properties?.name}
+                  price={nextViewing?.properties?.rentalFee}
+                  location={nextViewing?.properties?.location}
                   date={formattedDate || ""}
                   time={formattedTime || ""}
-                  beds={scheduledInvites?.properties?.noBedRoom}
-                  baths={scheduledInvites?.properties?.noBathRoom}
+                  beds={nextViewing?.properties?.noBedRoom}
+                  baths={nextViewing?.properties?.noBathRoom}
+                  propertyId={nextViewing?.properties?.id}
+                  inviteId={nextViewing?.id}
                 />
               ) : (
-                <div className="rounded-lg border bg-card p-6 text-card-foreground">
-                  <div className="flex flex-col items-center justify-center py-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                      <Calendar className="h-6 w-6 text-muted-foreground" />
+                <Link href="/dashboard/property-viewings">
+                  <div className="rounded-lg border bg-card p-6 text-card-foreground hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="flex flex-col items-center justify-center py-6">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                        <Calendar className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <h3 className="mt-4 text-sm font-medium">No upcoming viewings</h3>
+                      <p className="text-xs text-muted-foreground mt-1">Click to view all viewings</p>
                     </div>
-                    <h3 className="mt-4 text-sm font-medium">No upcoming viewings</h3>
                   </div>
-                </div>
+                </Link>
               )}
-              <NotificationCard notifications={notifications} />
+              {notifications.length > 0 && (
+                <NotificationCard notifications={notifications} />
+              )}
             </>
           )}
         </div>
@@ -200,7 +282,7 @@ export default function DashboardPage() {
         <FeedbackModal
           isOpen={showFeedbackModal}
           onClose={() => setShowFeedbackModal(false)}
-          property={selectedProperty}
+          data={selectedProperty}
         />
       )}
     </div>

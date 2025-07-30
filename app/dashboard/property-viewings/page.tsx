@@ -16,6 +16,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "next/navigation";
 import { PropertyCardSkeleton, SectionSkeleton } from "./SkeletonLoaders";
 import { displayImages } from "@/app/property/[id]/utils";
+import { Badge } from "@/components/ui/badge";
+import { ChevronDown, ChevronRight } from "lucide-react";
+
 interface Property {
   id: number;
   image: string;
@@ -29,6 +32,7 @@ interface Property {
   landlord?: Landlord;
 }
 
+type SectionType = 'pending' | 'scheduled' | 'feedback' | 'completed';
 
 export default function PropertyViewingsPage() {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -44,9 +48,13 @@ export default function PropertyViewingsPage() {
     noBedRoom: number;
     noBathRoom: number;
   } | null>(null);
-  const { data: invites, isFetching: isFetchingInvites, refetch: refetchInvites } = useGetAllInvites();
-  const invitesData = invites?.invites as any;
-  // console.log(invitesData);
+  
+  const [expandedSections, setExpandedSections] = useState<Set<SectionType>>(new Set(['pending']));
+  
+  const { data: invites, isFetching: isFetchingInvites, refetch: refetchInvites, error } = useGetAllInvites();
+  
+  // Access the data directly from the response (not nested under invites.invites)
+  const invitesData = invites as any;
 
   const acceptedInvites = invitesData?.acceptInvites;
   const rejectedInvites = invitesData?.rejectedInvites;
@@ -63,8 +71,21 @@ export default function PropertyViewingsPage() {
     if (typeof document !== 'undefined' && searchParams.get("#feedback")) {
       const feedbackSection = document.getElementById("feedback-section");
       feedbackSection?.scrollIntoView({ behavior: "smooth" });
+      setExpandedSections(prev => new Set([...prev, 'feedback']));
     }
   }, []);
+
+  const toggleSection = (section: SectionType) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
+  };
 
   const handleAcceptInvite = (invitationId: string) => {
     updateInvite({
@@ -91,7 +112,6 @@ export default function PropertyViewingsPage() {
     noBedRoom: number;
     noBathRoom: number;
   }) => {
-    console.log("data", data);
     setIsFeedbackModalOpen(true);
     setSelectedProperty(data);
   };
@@ -109,6 +129,29 @@ export default function PropertyViewingsPage() {
       <Button className="bg-red-600 hover:bg-red-700 text-white">
         Browse properties
       </Button>
+    </div>
+  );
+
+  const SectionHeader = ({ 
+    title, 
+    count, 
+    section, 
+    isExpanded 
+  }: { 
+    title: string; 
+    count: number; 
+    section: SectionType; 
+    isExpanded: boolean;
+  }) => (
+    <div 
+      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+      onClick={() => toggleSection(section)}
+    >
+      <div className="flex items-center gap-3">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <Badge variant="secondary">{count}</Badge>
+      </div>
+      {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
     </div>
   );
 
@@ -131,6 +174,35 @@ export default function PropertyViewingsPage() {
     );
   }
 
+  // Show error if API call failed
+  if (error) {
+    return (
+      <div className="layout">
+        <div className="flex items-center gap-2 text-sm mb-6">
+          <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+            Home
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-900">Property viewings</span>
+        </div>
+        <h1 className="text-3xl font-bold mb-8">Property viewings</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">API Error</h2>
+          <p className="text-red-700 mb-2">Failed to load property viewings data.</p>
+          <pre className="bg-red-100 p-3 rounded text-sm text-red-800 overflow-auto">
+            {JSON.stringify(error, null, 2)}
+          </pre>
+          <Button 
+            onClick={() => refetchInvites()} 
+            className="mt-4 bg-red-600 hover:bg-red-700"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="layout">
       <div className="flex items-center gap-2 text-sm">
@@ -142,47 +214,16 @@ export default function PropertyViewingsPage() {
       </div>
 
       <h1 className="text-3xl font-bold">Property viewings</h1>
-      {/* <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Viewing invites</h2>
-        {acceptedInvites?.length > 0 ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {acceptedInvites?.map((property) => (
-              <motion.div
-                key={property.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                {isUpdatingInvite ? (
-                  <PropertyCardSkeleton />
-                ) : (
-                  <PropertyCard
-                    {...property}
-                    property={property as any}
-                    viewType="invite"
-                    viewLink={`/dashboard/property-viewings/${property?.id}?schedule_date=${property?.scheduleDate}&invitationId=${property?.id}`}
-                    isInvite
-                    onAcceptInvite={() =>
-                      handleAcceptInvite(property?.id as string)
-                    }
-                  />
-                )}
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No Viewing Invites"
-            description="You haven't been invited to any property viewings yet. Check back later or browse available listings to apply for a property."
-          />
-        )}
-      </section> */}
-
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Pending Invites</h2>
-        {pendingInvites?.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {pendingInvites?.map((property) => (
+        <SectionHeader
+          title="Pending Invites"
+          count={pendingInvites?.length || 0}
+          section="pending"
+          isExpanded={expandedSections.has('pending')}
+        />
+                 {expandedSections.has('pending') && (
+           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+             {pendingInvites?.map((property: any) => (
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -206,19 +247,19 @@ export default function PropertyViewingsPage() {
               </motion.div>
             ))}
           </div>
-        ) : (
-          <EmptyState
-            title="No Viewing Invites"
-            description="You haven't been invited to any property viewings yet. Check back later or browse available listings to apply for a property."
-          />
         )}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Scheduled viewings</h2>
-        {acceptedInvites?.length > 0 ? (
+        <SectionHeader
+          title="Scheduled Viewings"
+          count={acceptedInvites?.length || 0}
+          section="scheduled"
+          isExpanded={expandedSections.has('scheduled')}
+        />
+        {expandedSections.has('scheduled') && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {acceptedInvites.map((property) => (
+            {acceptedInvites.map((property: any) => (
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -235,23 +276,19 @@ export default function PropertyViewingsPage() {
               </motion.div>
             ))}
           </div>
-        ) : (
-          <EmptyState
-            title="No Viewings Scheduled"
-            description="You don't have any property viewings scheduled yet. Check back later or browse available listings to apply for a property."
-          />
         )}
       </section>
 
       <section id="feedback-section">
-        <h2 className="text-2xl font-semibold mb-4">What did you think?</h2>
-        <p className="text-gray-500 mb-6">
-          Leave feedback on your recently viewed properties.
-        </p>
-        {feedbackInvites?.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {feedbackInvites.map((property) => {
-              // console.log(property);
+        <SectionHeader
+          title="What did you think?"
+          count={feedbackInvites?.length || 0}
+          section="feedback"
+          isExpanded={expandedSections.has('feedback')}
+        />
+                 {expandedSections.has('feedback') && (
+           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+             {feedbackInvites.map((property: any) => {
               return (
                 <motion.div
                   key={property.id}
@@ -284,19 +321,19 @@ export default function PropertyViewingsPage() {
               );
             })}
           </div>
-        ) : (
-          <EmptyState
-            title="No Properties to Review"
-            description="You haven't viewed any properties recently. Check back after your next viewing to leave feedback."
-          />
         )}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Recent Viewings</h2>
-        {allCompletedInvites?.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {allCompletedInvites.map((property) => (
+        <SectionHeader
+          title="Recent Viewings"
+          count={allCompletedInvites?.length || 0}
+          section="completed"
+          isExpanded={expandedSections.has('completed')}
+        />
+                 {expandedSections.has('completed') && (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+             {allCompletedInvites.map((property: any) => (
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -313,11 +350,6 @@ export default function PropertyViewingsPage() {
               </motion.div>
             ))}
           </div>
-        ) : (
-          <EmptyState
-            title="No Viewings Scheduled"
-            description="You don't have any property viewings scheduled yet. Check back later or browse available listings to apply for a property."
-          />
         )}
       </section>
       {selectedProperty && (

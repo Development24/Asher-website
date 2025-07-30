@@ -38,8 +38,7 @@ export default function SavedPropertiesPage() {
   const [showDemo] = useState(savedProperties.length === 0)
 
   const { data: properties, isFetching: isFetchingProperties } = useGetUserLikedProperties()
-
-  console.log(properties)
+  const propertiesData = properties?.properties || []
 
   if (isFetchingProperties || !properties) {
     return (
@@ -67,14 +66,14 @@ export default function SavedPropertiesPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Saved properties</h1>
         <p className="text-gray-500">
-          {properties?.length} {properties?.length === 1 ? 'property' : 'properties'} saved
+          {propertiesData?.length} {propertiesData?.length === 1 ? 'property' : 'properties'} saved
         </p>
       </div>
 
       <AnimatePresence mode="popLayout">
-        {properties?.length > 0 ? (
+        {propertiesData?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {properties?.map((property: any, index: number) => (
+            {propertiesData?.map((property: any, index: number) => (
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -110,7 +109,7 @@ export default function SavedPropertiesPage() {
         )}
       </AnimatePresence>
 
-      {showDemo && properties?.length === 0 && (
+      {showDemo && propertiesData?.length === 0 && (
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600">
             👆 Try clicking the heart icon on any property card above to save it to your list!

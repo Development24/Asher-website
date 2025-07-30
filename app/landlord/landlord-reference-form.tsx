@@ -133,7 +133,6 @@ export default function LandlordReferenceForm({
       signature: formData.signature
     };
 
-    console.log("Form submitted:", payload);
     createLandlordReference(
       { applicationId: applicationId as string, data: payload },
       {

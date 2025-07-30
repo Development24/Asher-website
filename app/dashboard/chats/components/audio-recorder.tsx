@@ -60,7 +60,9 @@ export function AudioRecorder({ onRecordingComplete, isDisabled }: AudioRecorder
       }, 1000);
 
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error accessing microphone:', error);
+      }
       // You might want to show a toast notification here
     }
   };

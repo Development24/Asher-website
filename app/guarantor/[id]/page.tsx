@@ -11,7 +11,6 @@ export default function Home({ params }: HomeInterface) {
   const { id } = params;
   const { data: applicationData, isFetching: isApplicationFetching } =
   useGetReferenceDetails(id as string);
-  console.log(applicationData);
 
 
   return (

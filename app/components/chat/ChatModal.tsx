@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChatMessage } from './ChatMessage'
 import { useGetUserRooms, useCreateChat } from '@/services/chat/chatFn'
 import { userStore } from '@/store/userStore'
+import { useEnquiryStore } from '@/store/enquiryStore'
 
 interface ChatModalProps {
   isOpen: boolean
@@ -26,11 +27,12 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
   const [message, setMessage] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const currentUserId = userStore((state) => state.user?.id)
+  const { markAsChatted } = useEnquiryStore()
   
   const { data: rooms } = useGetUserRooms()
   const { mutate: sendMessage, isPending: isSending } = useCreateChat()
 
-  const chatRoom = rooms?.chatRooms?.find((room: any) => 
+  const chatRoom = (rooms as any)?.chatRooms?.find((room: any) => 
     (room.user1Id === currentUserId && room.user2Id === landlord.id) ||
     (room.user2Id === currentUserId && room.user1Id === landlord.id)
   )
@@ -65,6 +67,10 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
       },
       {
         onSuccess: () => {
+          // Mark as chatted when first message is sent
+          if (messages.length === 0) {
+            markAsChatted(propertyId.toString())
+          }
           setMessage('')
           scrollToBottom()
         }

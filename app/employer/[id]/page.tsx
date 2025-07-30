@@ -10,7 +10,6 @@ export default function Home({ params }: EmployerReferenceProps) {
   const { id } = params;
   const { data: applicationData, isFetching: isApplicationFetching } =
     useGetReferenceDetails(id as string);
-  console.log(applicationData);
   return (
     <main className="min-h-screen bg-gray-100 py-8 px-4">
       <EmployeeReferenceForm

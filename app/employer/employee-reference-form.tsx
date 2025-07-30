@@ -134,7 +134,6 @@ export default function EmployeeReferenceForm({
         new Date().toISOString().split("T")[0]
     };
 
-    console.log("Form submitted:", payload);
     createEmployeeReference(
       {
         applicationId: applicationId as string,

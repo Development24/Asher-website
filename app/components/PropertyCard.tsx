@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,29 +19,51 @@ interface SimilarPropertyCard {
   property?: Listing;
 }
 
-export default function SimilarPropertyCard({
+const SimilarPropertyCard = memo(function SimilarPropertyCard({
   className,
   property
 }: SimilarPropertyCard) {
-  // console.log(property, "Coming from similar properties");
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
-  const userId = user?.landlords?.userId;
-  const propertyId = property?.property?.propertyId;
+  
+  const memoizedValues = useMemo(() => {
+    const userId = user?.landlords?.userId;
+    const propertyId = property?.property?.propertyId;
+    const propertyLiked = property?.property?.UserLikedProperty?.some(
+      (likedProperty) => likedProperty.userId === userId
+    );
+    // console.log(property?.property?.images, "property images from property card");
+    const imageUrl = displayImages(property?.property?.images)?.[0] || "/placeholder.svg";
+    const propertyName = property?.property?.name || 'Property';
+    const propertyPrice = getPropertyPrice(property?.property);
+    const propertyLocation = getPropertyLocation(property?.property);
+    const bedroomCount = getBedroomCount(property?.property);
+    const bathroomCount = getBathroomCount(property?.property);
+    
+    return {
+      userId,
+      propertyId,
+      propertyLiked,
+      imageUrl,
+      propertyName,
+      propertyPrice,
+      propertyLocation,
+      bedroomCount,
+      bathroomCount
+    };
+  }, [property, user]);
+
   const {
     mutate: likeProperty,
     isPending: isLikePending,
     isSuccess: isLikeSuccess
-  } = useLikeProperty(String(propertyId));
-  const propertyLiked = property?.property?.UserLikedProperty?.some(
-    (likedProperty) => likedProperty.userId === userId
-  );
+  } = useLikeProperty(String(memoizedValues.propertyId));
 
-  const handleSaveClick = (e: React.MouseEvent) => {
+  const handleSaveClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     likeProperty();
-  };
+  }, [likeProperty]);
 
   if (isLikePending) {
     return <Skeleton className="h-[400px] w-full rounded-xl" />;
@@ -62,10 +84,11 @@ export default function SimilarPropertyCard({
       >
         <div className="relative aspect-[4/3] rounded-t-lg overflow-hidden">
           <Image
-            src={displayImages(property?.property?.images)?.[0] || "/placeholder.svg"}
-            alt={String(property?.property?.name || 'Property')}
+            src={memoizedValues.imageUrl}
+            alt={memoizedValues.propertyName}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={(e) => { 
               e.currentTarget.onerror = null; 
               e.currentTarget.src = "/placeholder.svg"; 
@@ -75,7 +98,7 @@ export default function SimilarPropertyCard({
             variant="ghost"
             size="icon"
             className={`absolute top-2 right-2 bg-white/80 hover:bg-white transition-opacity ${
-              propertyLiked || isLikeSuccess
+              memoizedValues.propertyLiked || isLikeSuccess
                 ? "opacity-100"
                 : isHovered
                 ? "opacity-100"
@@ -85,7 +108,7 @@ export default function SimilarPropertyCard({
           >
             <Heart
               className={`w-12 h-12 sm:w-8 sm:h-8 ${
-                propertyLiked || isLikeSuccess
+                memoizedValues.propertyLiked || isLikeSuccess
                   ? "fill-red-600 text-red-600"
                   : "text-gray-600"
               }`}
@@ -96,29 +119,31 @@ export default function SimilarPropertyCard({
         <div className="p-4 sm:p-2">
           <div className="flex justify-between items-start mb-1 sm:mb-0.5">
             <h3 className="font-semibold text-lg sm:text-base line-clamp-1 text-neutral-900">
-              {property?.property?.name || 'Property name not available'}
+              {memoizedValues.propertyName}
             </h3>
             <span className="text-primary-500 font-semibold sm:text-base ml-2 whitespace-nowrap">
-              {getPropertyPrice(property?.property)}
+              {memoizedValues.propertyPrice}
             </span>
           </div>
 
           <p className="text-neutral-600 text-sm sm:text-xs mb-2 sm:mb-1 line-clamp-2">
-            {getPropertyLocation(property?.property)}
+            {memoizedValues.propertyLocation}
           </p>
 
           <div className="flex items-center gap-4 sm:gap-2 text-sm sm:text-xs text-neutral-600">
             <span className="flex items-center gap-1">
               <Bed className="w-4 h-4 sm:w-3 sm:h-3" />
-              {getBedroomCount(property?.property)} bedroom{getBedroomCount(property?.property) !== '1' ? 's' : ''}
+              {memoizedValues.bedroomCount} bedroom{memoizedValues.bedroomCount !== '1' ? 's' : ''}
             </span>
             <span className="flex items-center gap-1">
               <Bath className="w-4 h-4 sm:w-3 sm:h-3" />
-              {getBathroomCount(property?.property)} bathroom{getBathroomCount(property?.property) !== '1' ? 's' : ''}
+              {memoizedValues.bathroomCount} bathroom{memoizedValues.bathroomCount !== '1' ? 's' : ''}
             </span>
           </div>
         </div>
       </motion.div>
     </Link>
   );
-}
+});
+
+export default SimilarPropertyCard;
