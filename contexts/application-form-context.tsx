@@ -159,7 +159,7 @@ export function ApplicationFormProvider({ children }: { children: ReactNode }) {
   // This provider now just provides access to the Zustand store
   // All state management is handled by the store
   return (
-    <ApplicationFormContext.Provider value={{}}>
+    <ApplicationFormContext.Provider value={{} as any}>
       {children}
     </ApplicationFormContext.Provider>
   )
