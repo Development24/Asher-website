@@ -134,7 +134,6 @@ export default function ApplicationProgressPage() {
     useMilestonesApplication(id as string, applicationId as string);
 
   const propertyData = milestonesData?.application as ApplicationData;
-  console.log("Property Data:", propertyData); // Debug log
 
   const milestonesApplication = milestonesData?.milestones as MileStoneData[];
 

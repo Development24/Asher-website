@@ -105,7 +105,6 @@ export function DocumentsForm({
     //     applicationId,
     //     data: documents
     //   };
-    //   console.log(payload);
 
 
     //   // Submit to your application API
@@ -116,7 +115,6 @@ export function DocumentsForm({
     //   });
       
     // } catch (error) {
-    //   console.error('Error submitting documents:', error);
     //   // Handle error (show toast, etc.)
     // }
 
@@ -139,7 +137,6 @@ export function DocumentsForm({
           formData.append(`files`, file as File);
         });
 
-      console.log(formData);
       // Send the formData
       documentsApplication({
         applicationId: String(applicationId),

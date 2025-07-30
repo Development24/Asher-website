@@ -37,7 +37,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/applications/payment-success` : `/dashboard/applications/payment-success`
+        return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/applications/payment-success` : '/dashboard/applications/payment-success'
       }
     });
 

@@ -74,7 +74,6 @@ export function EmploymentDetailsForm({
     }
   });
 
-  console.log(form.formState.errors);
   function handleSubmit() {
     const values = form.getValues();
     // updateFormData({

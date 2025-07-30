@@ -14,6 +14,7 @@ import { userStore } from "@/store/userStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { displayImages } from '../../property/[id]/utils';
 import { animations, animationClasses } from "@/lib/animations";
+import { EnquiryStatusIndicator } from "@/components/EnquiryStatusIndicator";
 
 interface PropertyCardProps {
   id?: number | string;
@@ -37,6 +38,7 @@ interface PropertyCardProps {
   onFeedbackClick?: () => void;
   showViewProperty?: boolean;
   property?: Listing;
+  showEnquiryStatus?: boolean;
 }
 
 export function PropertyCard({
@@ -57,14 +59,14 @@ export function PropertyCard({
   isScheduled,
   onFeedbackClick,
   showViewProperty,
-  property
+  property,
+  showEnquiryStatus
 }: PropertyCardProps) {
   const { isPropertySaved, toggleSaveProperty } = useSavedProperties();
   const propertyData = property?.properties ?? property?.property;
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
-  console.log(property, "Coming from property card");
   const propertyId = property?.propertyId;
   const {
     mutate: likeProperty,
@@ -188,6 +190,13 @@ export function PropertyCard({
               View schedule
             </Button>
           </Link>
+        )}
+        {showEnquiryStatus && propertyData?.id && (
+          <EnquiryStatusIndicator
+            propertyId={propertyData.id}
+            variant="badge"
+            showDate={true}
+          />
         )}
       </div>
     </motion.div>

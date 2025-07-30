@@ -44,7 +44,9 @@ const formatDateValue = (value: any) => {
     // If nothing matches, return empty values
     return { year: "", month: "", day: "" };
   } catch (error) {
-    console.error("Error parsing date:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error parsing date:", error);
+    }
     return { year: "", month: "", day: "" };
   }
 };

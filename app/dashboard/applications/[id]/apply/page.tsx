@@ -24,7 +24,6 @@ const ApplicationPage = () => {
   
   // Use the first available applicationId
   // const applicationId = storeApplicationId || queryApplicationId || pathApplicationId;
-  // console.log("applicationId", applicationId);
   // Fetch application data
   
   const { data: applicationData, isFetching: isApplicationFetching, refetch } = useGetSingleApplication(

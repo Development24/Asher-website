@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import {
   MapPin,
   Filter,
@@ -37,6 +38,7 @@ export interface Pagination {
   totalPages: number;
 }
 export default function SearchPage() {
+  const searchParams = useSearchParams();
   const [sortBy, setSortBy] = useState("popular");
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
@@ -59,7 +61,7 @@ export default function SearchPage() {
         setCurrentLocation(location);
       }
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     setFilters((prev) => ({
@@ -68,18 +70,18 @@ export default function SearchPage() {
     }));
   }, [currentLocation]);
 
-  const handleApplyFilters = (newFilters: Partial<PropertyRentalFilter>) => {
+  const handleApplyFilters = useCallback((newFilters: Partial<PropertyRentalFilter>) => {
     setFilters((prev) => ({
       ...prev,
       ...newFilters
     }));
-  };
+  }, []);
 
-  const handlePropertyTypeChange = (value: string) => {
+  const handlePropertyTypeChange = useCallback((value: string) => {
     handleApplyFilters({ type: value === "all" ? undefined : value });
-  };
+  }, [handleApplyFilters]);
 
-  const handleBedroomChange = (value: string) => {
+  const handleBedroomChange = useCallback((value: string) => {
     if (value === "any") {
       handleApplyFilters({ minBedRoom: undefined, maxBedRoom: undefined });
     } else {
@@ -89,9 +91,9 @@ export default function SearchPage() {
         maxBedRoom: bedrooms === 3 ? undefined : bedrooms
       });
     }
-  };
+  }, [handleApplyFilters]);
 
-  const handlePriceChange = (value: string) => {
+  const handlePriceChange = useCallback((value: string) => {
     if (value === "any") {
       handleApplyFilters({ minRentalFee: undefined, maxRentalFee: undefined });
     } else {
@@ -101,34 +103,55 @@ export default function SearchPage() {
         maxRentalFee: max || undefined
       });
     }
-  };
+  }, [handleApplyFilters]);
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     setFilters((prev) => ({
       ...prev,
       page: newPage
     }));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const getPaginationRange = (currentPage: number, totalPages: number) => {
-    const delta = 2;
-    const range: (number | string)[] = [];
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        (i >= currentPage - delta && i <= currentPage + delta)
-      ) {
-        range.push(i);
-      } else if (range[range.length - 1] !== "...") {
-        range.push("...");
-      }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  }, []);
 
-    return range;
-  };
+  const getPaginationRange = useMemo(() => {
+    return (currentPage: number, totalPages: number) => {
+      const delta = 2;
+      const range: (number | string)[] = [];
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (
+          i === 1 ||
+          i === totalPages ||
+          (i >= currentPage - delta && i <= currentPage + delta)
+        ) {
+          range.push(i);
+        } else if (range[range.length - 1] !== "...") {
+          range.push("...");
+        }
+      }
+
+      return range;
+    };
+  }, []);
+
+  // Memoize computed values
+  const memoizedValues = useMemo(() => {
+    const resultCount = propertyResults?.length || 0;
+    const currentPage = filters.page || 1;
+    const totalPages = pagination?.totalPages || 1;
+    const paginationRange = getPaginationRange(currentPage, totalPages);
+    
+    return {
+      resultCount,
+      currentPage,
+      totalPages,
+      paginationRange,
+      showResults: !isLoading && !error && propertyResults && propertyResults.length > 0,
+      showEmptyState: !isLoading && !error && (!propertyResults || propertyResults.length === 0)
+    };
+  }, [propertyResults, filters.page, pagination?.totalPages, getPaginationRange, isLoading, error]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -359,7 +382,7 @@ export default function SearchPage() {
                   <PropertyCard
                     {...property}
                     showViewProperty
-                    isSaved={isPropertySaved(Number(property?.propertyId))}
+                    isSaved={property?.propertyId ? isPropertySaved(Number(property.propertyId)) : false}
                     property={property}
                   />
                 </motion.div>

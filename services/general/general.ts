@@ -42,7 +42,6 @@ export const uploadFiles = async (
     const uploadFile = Array.isArray(files) ? files : [files];
     const fileBinaryPromises = uploadFile.map((file) => getFileBinary(file));
     fileData = await Promise.all(fileBinaryPromises);
-    console.log(fileData);
   } else {
     fileData = await getFileBinary(files as File);
   }

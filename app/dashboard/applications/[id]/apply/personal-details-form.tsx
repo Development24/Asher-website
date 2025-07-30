@@ -59,9 +59,7 @@ export function PersonalDetailsForm({
   const router = useRouter();
   const pathname = usePathname();
   const applicationInvitedId = searchParams.get("applicationInviteId");
-  // console.log(id);
   // const applicationInvitedId = useReuseAbleStore((state: any) => state.applicationInvitedId);
-  console.log(applicationInvitedId);
   const { mutate: startApplication, isPending } = useStartApplication();
   const form = useForm<PersonalDetailsFormValues>({
     resolver: zodResolver(personalDetailsSchema),
@@ -118,12 +116,9 @@ export function PersonalDetailsForm({
   });
 
   const { setApplicationId } = useReuseAbleStore((state: any) => state);
-  console.log(form.formState.errors);
-  console.log(isStepCompleted);
 
   function onSubmit(values: PersonalDetailsFormValues) {
     if (isStepCompleted) {
-      console.log("Step already completed, skipping submission");
       onNext();
       return;
     }
@@ -145,7 +140,6 @@ export function PersonalDetailsForm({
       },
       {
         onSuccess: async (data: any) => {
-          console.log("Success Submitted", data);
 
           // Store the applicationId in Zustand
           await setApplicationId(data?.application?.id);
@@ -161,7 +155,6 @@ export function PersonalDetailsForm({
           onNext();
         },
         onError: (err: any) => {
-          console.log(err?.response?.data?.message);
           toast.error(err?.response?.data?.message);
         }
       }

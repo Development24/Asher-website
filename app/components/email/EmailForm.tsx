@@ -15,15 +15,47 @@ import { Property } from "@/services/property/types";
 import { formatPrice } from "@/lib/utils";
 import { userStore } from "@/store/userStore";
 import { useCreateEnquiry } from "@/services/property/propertyFn";
+import { useEnquiryStore } from "@/store/enquiryStore";
+import { EnquiryStatusIndicator } from "@/components/EnquiryStatusIndicator";
+
 interface EmailFormProps {
   propertyDetails: any;
 }
 // propertyDetails?.property = Property
 
 export function EmailForm({ propertyDetails }: EmailFormProps) {
-  console.log(propertyDetails, "propertyDetails EmailForm");
   const router = useRouter();
   const user = userStore((state) => state.user);
+  const { hasEnquired, markAsEnquired } = useEnquiryStore();
+  
+  // Get the correct property ID with fallbacks
+  const propertyId = propertyDetails?.id || 
+                    propertyDetails?.property?.id || 
+                    propertyDetails?.property?.propertyId || 
+                    propertyDetails?.propertyId;
+  
+  const isAlreadyEnquired = hasEnquired(propertyId);
+
+  // Debug logging to understand the structure
+  console.log('EmailForm propertyDetails:', propertyDetails);
+  console.log('EmailForm propertyId:', propertyId);
+
+  if (!propertyId) {
+    return (
+      <div className="layout">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold mb-4">Error</h1>
+          <p className="text-gray-600 mb-6">
+            Property information is missing. Please go back and try again.
+          </p>
+          <Button asChild>
+            <Link href="/search">Back to Search</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const [formData, setFormData] = useState({
     fullName: user?.profile?.firstName + " " + user?.profile?.lastName || "",
     email: user?.email || "",
@@ -40,8 +72,12 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isAlreadyEnquired) {
+      return; // Prevent duplicate submissions
+    }
+
     // Here you would typically send the email
-    console.log("Sending email:", formData);
     createEnquiry({
       // event: "sendEmail",
       // senderEmail: formData.email,
@@ -52,6 +88,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
 
     }, {
       onSuccess: () => {
+        markAsEnquired(propertyId); // Mark as enquired in store
         setShowSuccessModal(true)
         Object.entries(formData).forEach(([key, value]) => {
           setFormData({ ...formData, [key]: "" });
@@ -62,8 +99,46 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    router.push(`/property/${propertyDetails?.id}`);
+    router.push(`/property/${propertyId}`);
   };
+
+  // If already enquired, show status instead of form
+  if (isAlreadyEnquired) {
+    return (
+      <div className="layout">
+        <div className="flex items-center gap-2 mb-6 text-sm">
+          <Link href="/search" className="text-gray-600 hover:text-gray-900">
+            Home
+          </Link>
+          <span className="text-gray-400">/</span>
+          <Link
+            href={`/property/${propertyId}`}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            Property information
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-900">Email agent</span>
+        </div>
+
+        <div className="max-w-2xl mx-auto text-center py-12">
+          <EnquiryStatusIndicator 
+            propertyId={propertyId} 
+            variant="button" 
+            showDate={true}
+          />
+          <p className="text-gray-600 mt-4 mb-6">
+            You have already sent an enquiry for this property. The landlord will get back to you soon.
+          </p>
+          <Button asChild>
+            <Link href={`/property/${propertyId}`}>
+              Back to Property
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="layout">
@@ -73,7 +148,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         </Link>
         <span className="text-gray-400">/</span>
         <Link
-          href={`/property/${propertyDetails?.property?.propertyId}`}
+          href={`/property/${propertyId}`}
           className="text-gray-600 hover:text-gray-900"
         >
           Property information

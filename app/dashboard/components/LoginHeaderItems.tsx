@@ -8,7 +8,7 @@ import {
   DropdownMenuContent
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Menu, Settings, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,16 +20,12 @@ interface LoginHeaderItemsProps {
 }
 
 const LoginHeaderItems = ({ onMenuClick }: LoginHeaderItemsProps) => {
-  const [showDashboardButton, setShowDashboardButton] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const user = userStore((state) => state.user);
 
-  useEffect(() => {
-    const currentPath = pathname;
-    setShowDashboardButton(currentPath !== "/dashboard");
-  }, [pathname]);
+  const showDashboardButton = pathname !== "/dashboard";
 
   return (
     <div className="flex items-center gap-3">

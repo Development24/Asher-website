@@ -65,11 +65,8 @@ export function GuarantorDetailsForm({
     }
   });
 
-  console.log(form.formState.errors);
   function handleSubmit() {
     const values = form.getValues();
-    // console.log("Before update - Form values:", values);
-    // console.log("Before update - Store data:", formData);
     if (isStepCompleted) {
       onNext();
       return;
@@ -89,7 +86,6 @@ export function GuarantorDetailsForm({
     // };
 
     // updateFormData(guarantorData);
-    // console.log("After update - Store data:", formData);
     guarantorApplication(
       {
         applicationId: applicationId,
@@ -107,7 +103,6 @@ export function GuarantorDetailsForm({
       },
       {
         onSuccess: (data: any) => {
-          // console.log("Success Submitted", data);
           onNext();
         }
       }

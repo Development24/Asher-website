@@ -6,9 +6,6 @@ export const useUploadFiles = (isMultiple: boolean) => {
     return useMutation({
       mutationFn: (files: File | File[]) => uploadFiles(files, isMultiple),
   
-      // onError: (error: any) => {
-      //   console.error('Error uploading files:', error);
-      // },
     });
   };
 

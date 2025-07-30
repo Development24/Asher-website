@@ -64,7 +64,6 @@ export function ApplicationSection({
   sectionType,
   emptyMessage = "No applications found in this section. Check back later for updates."
 }: ApplicationSectionProps) {
-  // console.log(data);
   return (
     <section className="mb-12">
       <h2 className="text-2xl font-semibold mb-4">{title}</h2>

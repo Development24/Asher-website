@@ -95,7 +95,6 @@ export default function MessagePage() {
     }
   }, [message]);
 
-  console.log(message);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -111,7 +110,6 @@ export default function MessagePage() {
 
   const handleReply = () => {
     // Handle reply logic here
-    console.log("Reply:", replyMessage);
 
     sendEmail(
       {

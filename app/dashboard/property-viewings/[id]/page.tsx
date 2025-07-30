@@ -18,7 +18,8 @@ import {
   ChevronRight,
   Heart,
   MapPin,
-  Share2
+  Share2,
+  Calendar
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -70,6 +71,7 @@ enum ViewingStatus {
   ACCEPTED = "ACCEPTED",
   REJECTED = "REJECTED",
   RESCHEDULED = "RESCHEDULED",
+  RESCHEDULED_ACCEPTED = "RESCHEDULED_ACCEPTED",
   CANCELLED = "CANCELLED",
   SCHEDULED = "SCHEDULED",
   AWAITING_FEEDBACK = "AWAITING_FEEDBACK",
@@ -100,10 +102,9 @@ export default function PropertyViewingDetailPage() {
   // >("pending"); // Added state for viewing status
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
-  const similarProperties: Listing[] = propertiesData?.properties;
+  const similarProperties: Listing[] = propertiesData?.properties || [];
   const { data, isFetching, refetch } = useGetPropertyByInviteId(id as string);
-  // console.log(data);
-  const dataInvite = data?.invite as InviteData;
+  const dataInvite = (data as any)?.invite || data;
   const propertyData = dataInvite?.properties;
   const viewingStatus = dataInvite?.response as ViewingStatus;
   const scheduledDate = dataInvite?.scheduleDate
@@ -359,6 +360,106 @@ export default function PropertyViewingDetailPage() {
                   <span className="text-sm font-normal text-gray-600">
                     per month
                   </span>
+                </div>
+              </div>
+
+              {/* Viewing Schedule Information Card */}
+              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-neutral-700">Viewing Schedule</h3>
+                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium border ${
+                    (() => {
+                      switch (viewingStatus) {
+                        case 'ACCEPTED':
+                          return 'bg-green-100 text-green-800 border-green-200';
+                        case 'RESCHEDULED_ACCEPTED':
+                          return 'bg-blue-100 text-blue-800 border-blue-200';
+                        case 'RESCHEDULED':
+                          return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                        case 'REJECTED':
+                          return 'bg-red-100 text-red-800 border-red-200';
+                        case 'PENDING':
+                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                        default:
+                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                      }
+                    })()
+                  }`}>
+                    {(() => {
+                      switch (viewingStatus) {
+                        case 'ACCEPTED':
+                          return 'Accepted';
+                        case 'RESCHEDULED_ACCEPTED':
+                          return 'Rescheduled & Accepted';
+                        case 'RESCHEDULED':
+                          return 'Rescheduled';
+                        case 'REJECTED':
+                          return 'Declined';
+                        case 'PENDING':
+                          return 'Pending';
+                        default:
+                          return viewingStatus;
+                      }
+                    })()}
+                  </span>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-neutral-600">Original Date</span>
+                        <Calendar className="w-4 h-4 text-neutral-500" />
+                      </div>
+                      <div className="text-lg font-semibold text-neutral-900">
+                        {scheduledDate}
+                      </div>
+                      <div className="text-sm text-neutral-600">
+                        at {scheduledTime}
+                      </div>
+                    </div>
+                    
+                    {dataInvite?.reScheduleDate && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-blue-700">Rescheduled To</span>
+                          <Calendar className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="text-lg font-semibold text-blue-900">
+                          {rescheduledDateData}
+                        </div>
+                        <div className="text-sm text-blue-700">
+                          at {rescheduledTimeData}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Response Steps Timeline */}
+                  {(dataInvite as any)?.responseStepsCompleted && (dataInvite as any).responseStepsCompleted.length > 1 && (
+                    <div className="border-t pt-4 mt-4">
+                      <h4 className="text-sm font-medium text-neutral-700 mb-3">Progress Timeline</h4>
+                      <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                        {(dataInvite as any).responseStepsCompleted.map((step: string, index: number) => (
+                          <div key={index} className="flex items-center flex-shrink-0">
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                index === (dataInvite as any).responseStepsCompleted.length - 1 
+                                  ? 'bg-blue-500' 
+                                  : 'bg-green-500'
+                              }`}></div>
+                              <span className="text-sm font-medium px-2 py-1 bg-neutral-100 rounded">
+                                {step.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              </span>
+                            </div>
+                            {index < (dataInvite as any).responseStepsCompleted.length - 1 && (
+                              <div className="w-8 h-0.5 bg-neutral-300 mx-2"></div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

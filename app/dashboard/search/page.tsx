@@ -46,7 +46,6 @@ export default function SearchPage() {
   const { data, isFetching, error } = useGetProperties(filters);
 
   const propertiesData: Listing[] = data?.properties;
-  // console.log(propertiesData);
   const pagination = data?.pagination as Pagination;
   useEffect(() => {
     if (typeof window !== 'undefined') {
