@@ -1,7 +1,7 @@
 "use client";
 
 // Force dynamic rendering to avoid SSR issues with location
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { AuthPromptModal } from "@/app/components/auth/AuthPromptModal";
 import LoginModal from "@/app/components/auth/LoginModal";
@@ -43,7 +43,6 @@ import { displayImages, filteredImageUrls, ImageObject } from "./utils";
 import { EmailFormModal } from "@/app/components/email/EmailFormModal";
 import { useEmailFormModal } from "@/hooks/useEmailFormModal";
 
-
 const propertyImages = [
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_01_0000.jpeg",
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_02_0000.jpeg",
@@ -68,6 +67,7 @@ export default function PropertyDetails() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLandlordProfile, setShowLandlordProfile] = useState(false);
   const [showEmailFormModal, setShowEmailFormModal] = useState(false);
+  const [showAllDescription, setShowAllDescription] = useState(false);
 
   const user = userStore((state) => state.user);
   const setRedirectUrl = useAuthRedirectStore((state) => state.setRedirectUrl);
@@ -75,8 +75,15 @@ export default function PropertyDetails() {
     useGetProperties();
   const similarProperties: Listing[] = propertiesData?.properties || [];
 
-  const { data, isFetching, error } = useGetPropertyByIdForListingId(id as string);
+  const { data, isFetching, error } = useGetPropertyByIdForListingId(
+    id as string
+  );
   const propertyData = data?.property?.property as Property | undefined;
+  const type = data?.property?.type;
+  const subInfo =
+    type === "SINGLE_UNIT" ? data?.property?.unit : data?.property?.room;
+  const propertyInfo =
+    type === "ENTIRE_PROPERTY" ? data?.property?.property : subInfo;
 
   // useEffect(() => {
   //   // const selectedProperty = properties.find((p) => p.id.toString() === id);
@@ -257,13 +264,26 @@ export default function PropertyDetails() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
-            <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              className="w-16 h-16 mx-auto text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Property Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Property Not Found
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            The property you're looking for might have been removed or is no longer available.
+            The property you're looking for might have been removed or is no
+            longer available.
           </p>
           <div className="space-x-4">
             <Button onClick={() => router.push("/search")} variant="default">
@@ -284,11 +304,23 @@ export default function PropertyDetails() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
-            <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            <svg
+              className="w-16 h-16 mx-auto text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Property Data</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            No Property Data
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             We couldn't load the property information. Please try again.
           </p>
@@ -577,8 +609,16 @@ export default function PropertyDetails() {
                     scrolling="no"
                     marginHeight={0}
                     marginWidth={0}
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(data.property.longitude) - 0.01},${Number(data.property.latitude) - 0.01},${Number(data.property.longitude) + 0.01},${Number(data.property.latitude) + 0.01}&layer=mapnik&marker=${data.property.latitude},${data.property.longitude}`}
-                    style={{ border: 0, borderRadius: '8px' }}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+                      Number(data.property.longitude) - 0.01
+                    },${Number(data.property.latitude) - 0.01},${
+                      Number(data.property.longitude) + 0.01
+                    },${
+                      Number(data.property.latitude) + 0.01
+                    }&layer=mapnik&marker=${data.property.latitude},${
+                      data.property.longitude
+                    }`}
+                    style={{ border: 0, borderRadius: "8px" }}
                     title={`Map showing ${data?.property?.name}`}
                   ></iframe>
                 </div>
@@ -709,7 +749,9 @@ export default function PropertyDetails() {
                   propertyData?.landlord?.user?.profile?.fullname
                 ),
                 email: propertyData?.landlord?.user?.email || null || undefined,
-                image: propertyData?.landlord?.user?.profile?.profileUrl,
+                image:
+                  propertyData?.landlord?.user?.profile?.profileUrl ||
+                  undefined,
                 id: propertyData?.landlord?.id,
                 isActive: propertyData?.landlord?.isActive
               }}
@@ -778,10 +820,14 @@ export default function PropertyDetails() {
         isOpen={showChatModal}
         onClose={() => setShowChatModal(false)}
         landlord={{
-          name: `${propertyData?.landlord?.user?.profile?.firstName} ${propertyData?.landlord?.user?.profile?.lastName}`,
-          image: propertyData?.landlord?.image || "",
+          name: formatName(
+            propertyData?.landlord?.user?.profile?.firstName,
+            propertyData?.landlord?.user?.profile?.lastName,
+            propertyData?.landlord?.user?.profile?.fullname
+          ),
+          image: propertyData?.landlord?.user?.profile?.profileUrl || "",
           role: "Landlord",
-          id: propertyData?.landlord?.userId
+          id: propertyData?.landlord?.id
         }}
         propertyId={Number(id)}
       />
@@ -833,14 +879,18 @@ export default function PropertyDetails() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${id}` : `/property/${id}`}
+        propertyUrl={
+          typeof window !== "undefined"
+            ? `${window.location.origin}/property/${id}`
+            : `/property/${id}`
+        }
       />
 
-             <EmailFormModal
-         isOpen={showEmailFormModal}
-         onClose={() => setShowEmailFormModal(false)}
-         propertyDetails={data?.property}
-       />
+      <EmailFormModal
+        isOpen={showEmailFormModal}
+        onClose={() => setShowEmailFormModal(false)}
+        propertyDetails={data?.property}
+      />
     </div>
   );
 }

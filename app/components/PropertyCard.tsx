@@ -32,6 +32,7 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
     const propertyLiked = property?.property?.UserLikedProperty?.some(
       (likedProperty) => likedProperty.userId === userId
     );
+    // console.log(property?.property?.images, "property images from property card");
     const imageUrl = displayImages(property?.property?.images)?.[0] || "/placeholder.svg";
     const propertyName = property?.property?.name || 'Property';
     const propertyPrice = getPropertyPrice(property?.property);
