@@ -3,7 +3,13 @@
 import { ChatModal } from "@/app/components/chat/ChatModal";
 import { PreChatModal } from "@/app/components/chat/PreChatModal";
 import dynamic from "next/dynamic";
-const LandlordProfileModal = dynamic(() => import("@/app/components/modals/landlord-profile-modal").then(mod => mod.default), { ssr: false, loading: () => null });
+const LandlordProfileModal = dynamic(
+  () =>
+    import("@/app/components/modals/landlord-profile-modal").then(
+      (mod) => mod.default
+    ),
+  { ssr: false, loading: () => null }
+);
 import { ShareModal } from "@/app/components/modals/share-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +48,7 @@ import { LeaseAgreementModal } from "./lease-agreement-modal";
 import { PaymentModal } from "./payment-modal";
 import { toast } from "sonner";
 import { displayImages } from "@/app/property/[id]/utils";
-import SaveModal from '../../../../components/modals/save-modal';
+import SaveModal from "../../../../components/modals/save-modal";
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -69,12 +75,35 @@ export default function SuccessPage() {
   const { mutateAsync: signAgreement, isPending: isSigningAgreement } =
     useSignAgreement();
   const application = applicationData?.application;
+  const applicationAgreementDocID = application?.agreementDocument[0]?.id;
   const router = useRouter();
   const user = userStore((state) => state.user);
 
-  const hasAgreement = application?.agreementDocument?.length > 0;
-  const lastAgreementUrl =
-    application?.agreementDocument[application?.agreementDocument?.length - 1];
+  // Coerce various possible shapes into a URL string
+  const coerceUrl = (value: any): string | null => {
+    if (!value) return null;
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) return coerceUrl(value[value.length - 1]);
+    if (typeof value === "object") {
+      if (typeof value.url === "string") return value.url;
+      if (typeof value.documentUrl === "string") return value.documentUrl;
+      if (Array.isArray(value.documentUrl))
+        return coerceUrl(value.documentUrl[value.documentUrl.length - 1]);
+    }
+    return null;
+  };
+
+  const agreementDocs = (application as any)?.agreementDocument ?? [];
+  const lastAgreement =
+    Array.isArray(agreementDocs) && agreementDocs.length > 0
+      ? agreementDocs[agreementDocs.length - 1]
+      : null;
+  const processedAgreementHtml: string | null =
+    lastAgreement?.processedContent ?? null;
+  const lastAgreementUrl: string | null = coerceUrl(
+    lastAgreement?.documentUrl ?? null
+  );
+  const hasAgreement = Boolean(processedAgreementHtml || lastAgreementUrl);
 
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
@@ -119,7 +148,7 @@ export default function SuccessPage() {
 
   const handleSignAgreement = async (signedPdf: File) => {
     await signAgreement({
-      applicationId: idToUse as string,
+      applicationId: applicationAgreementDocID as string,
       data: { files: signedPdf }
     });
   };
@@ -127,13 +156,43 @@ export default function SuccessPage() {
   const handleLeaseAgreementSubmit = async (signedPdf: File) => {
     try {
       // First handle the signed agreement
-      await handleSignAgreement(signedPdf);
 
-      setShowLeaseAgreementModal(false);
-      setShowPaymentModal(true);
+      await handleSignAgreement(signedPdf);
     } catch (error) {
       console.error("Error handling lease agreement:", error);
       toast.error("Failed to process signed agreement. Please try again.");
+    }
+  };
+
+  const handleLeaseAgreementSubmitJson = async (payload: {
+    updatedProcessedContent: string;
+    userSignature: string;
+  }) => {
+    try {
+      console.debug("Lease agreement JSON payload", payload);
+      const formData = new FormData();
+      formData.append("processedContent", payload.updatedProcessedContent);
+      // formData.append("files", payload.userSignature);
+      await signAgreement(
+        {
+          applicationId: applicationAgreementDocID as string,
+          data: formData
+        },
+        {
+          onSuccess: () => {
+            // toast.success("Agreement content prepared");
+            setShowLeaseAgreementModal(false);
+            setShowPaymentModal(true);
+          },
+          onError: (error: any) => {
+            console.error("Error sending agreement JSON payload", error);
+            toast.error("Failed to send agreement content");
+          }
+        }
+      );
+    } catch (e) {
+      console.error("Error sending agreement JSON payload", e);
+      toast.error("Failed to send agreement content");
     }
   };
   const handlePaymentSuccess = () => {
@@ -282,7 +341,8 @@ export default function SuccessPage() {
           <div className="md:col-span-2 relative rounded-lg overflow-hidden">
             <Image
               src={
-                displayImages(propertyData?.images)[currentImageIndex] || "/placeholder.svg"
+                displayImages(propertyData?.images)[currentImageIndex] ||
+                "/placeholder.svg"
               }
               alt={propertyData?.name}
               width={800}
@@ -763,8 +823,9 @@ export default function SuccessPage() {
                       <div className="relative h-48">
                         <Image
                           src={
-                            displayImages(similarProperty?.property?.images)[0] ||
-                            "/placeholder.svg"
+                            displayImages(
+                              similarProperty?.property?.images
+                            )[0] || "/placeholder.svg"
                           }
                           alt={String(similarProperty?.property?.name)}
                           fill
@@ -776,7 +837,10 @@ export default function SuccessPage() {
                           {similarProperty?.property?.name}
                         </h3>
                         <p className="text-gray-600 text-sm mb-2">
-                          {similarProperty?.property?.address}, {similarProperty?.property?.city}, {similarProperty?.property?.state?.name}, {similarProperty?.property?.country}
+                          {similarProperty?.property?.address},{" "}
+                          {similarProperty?.property?.city},{" "}
+                          {similarProperty?.property?.state?.name},{" "}
+                          {similarProperty?.property?.country}
                         </p>
                         <p className="text-red-600 font-semibold">
                           {formatPrice(
@@ -814,8 +878,17 @@ export default function SuccessPage() {
         isOpen={showLeaseAgreementModal}
         onClose={() => setShowLeaseAgreementModal(false)}
         onSubmit={handleLeaseAgreementSubmit}
+        onSubmitJson={handleLeaseAgreementSubmitJson}
         agreementDocumentUrl={lastAgreementUrl}
+        agreementHtml={processedAgreementHtml}
         canSubmit={application?.status?.toLowerCase() !== "agreements_signed"}
+        tenantFullName={
+          user?.profile?.fullname ||
+          [user?.profile?.firstName, user?.profile?.lastName]
+            .filter(Boolean)
+            .join(" ") ||
+          undefined
+        }
       />
 
       <PaymentModal
@@ -833,7 +906,11 @@ export default function SuccessPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         propertyTitle={propertyData?.name}
-        propertyUrl={typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyData?.id}` : `/property/${propertyData?.id}`}
+        propertyUrl={
+          typeof window !== "undefined"
+            ? `${window.location.origin}/property/${propertyData?.id}`
+            : `/property/${propertyData?.id}`
+        }
       />
       {paymentStatus === "success" && (
         <motion.div

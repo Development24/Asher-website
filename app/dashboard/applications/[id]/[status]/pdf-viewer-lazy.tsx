@@ -11,19 +11,24 @@ const PDFViewerInner = dynamic(async () => {
     import("@react-pdf-viewer/core"),
     import("@react-pdf-viewer/default-layout")
   ]);
-  return function PDFViewerInnerImpl({ agreementDocumentUrl }: { agreementDocumentUrl: string }) {
+  return function PDFViewerInnerImpl({ agreementDocumentUrl }: { agreementDocumentUrl?: string | null }) {
     const defaultLayoutPluginInstance = layout.defaultLayoutPlugin();
     return (
       <core.Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-        <core.Viewer
-          fileUrl={agreementDocumentUrl}
-          plugins={[defaultLayoutPluginInstance]}
-        />
+        {agreementDocumentUrl ? (
+          <core.Viewer
+            key={agreementDocumentUrl}
+            fileUrl={agreementDocumentUrl}
+            plugins={[defaultLayoutPluginInstance]}
+          />
+        ) : (
+          <div className="p-4 text-sm text-gray-600">No PDF available.</div>
+        )}
       </core.Worker>
     );
   };
 }, { ssr: false });
 
-export default function PDFViewerLazy({ agreementDocumentUrl }: { agreementDocumentUrl: string }) {
+export default function PDFViewerLazy({ agreementDocumentUrl }: { agreementDocumentUrl?: string | null }) {
   return <PDFViewerInner agreementDocumentUrl={agreementDocumentUrl} />;
 } 
