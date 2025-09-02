@@ -354,11 +354,11 @@ export default function GuarantorForm({
   // Remove a document
   const removeDocument = (docType: string, index: number | null) => {
     if (docType === "id") {
-      setDocuments((prev) => ({ ...prev, id: null }));
+      setDocuments((prev: any) => ({ ...prev, id: null }));
     } else if (docType === "addressProof") {
-      setDocuments((prev) => ({ ...prev, addressProof: null }));
+      setDocuments((prev: any) => ({ ...prev, addressProof: null }));
     } else if (docType === "incomeProof") {
-      setDocuments((prev) => ({ ...prev, incomeProof: null }));
+      setDocuments((prev: any) => ({ ...prev, incomeProof: null }));
     } else if (docType === "additionalDocs" && index !== null) {
       setDocuments((prev) => ({
         ...prev,

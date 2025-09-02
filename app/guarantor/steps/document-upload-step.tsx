@@ -168,10 +168,10 @@ export function DocumentUploadStep({
                   <div className="flex items-center space-x-2">
                     <FileText className="h-5 w-5 text-blue-500" />
                     <span className="text-sm font-medium truncate max-w-xs">
-                      {documents.addressProof.file.name}
+                      {documents?.addressProof?.file?.name}
                     </span>
                     <span className="text-xs text-gray-500">
-                      ({Math.round(documents.addressProof.file.size / 1024)} KB)
+                      ({Math.round(documents?.addressProof?.file?.size / 1024)} KB)
                     </span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                       <Check className="h-3 w-3 mr-1" />
@@ -180,7 +180,7 @@ export function DocumentUploadStep({
                   </div>
                   <button
                     onClick={() =>
-                      removeDocument("addressProof", documents.addressProof)
+                      removeDocument("addressProof", documents?.addressProof)
                     }
                     className="text-red-500 hover:text-red-700"
                   >
@@ -240,10 +240,10 @@ export function DocumentUploadStep({
                     <div className="flex items-center space-x-2">
                       <FileText className="h-5 w-5 text-blue-500" />
                       <span className="text-sm font-medium truncate max-w-xs">
-                        {documents.incomeProof.file.name}
+                        {documents?.incomeProof?.file?.name}
                       </span>
                       <span className="text-xs text-gray-500">
-                        ({Math.round(documents.incomeProof.file.size / 1024)}{" "}
+                        ({Math.round(documents?.incomeProof?.file?.size / 1024)}{" "}
                         KB)
                       </span>
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
@@ -253,7 +253,7 @@ export function DocumentUploadStep({
                     </div>
                     <button
                       onClick={() =>
-                        removeDocument("incomeProof", documents.incomeProof)
+                        removeDocument("incomeProof", documents?.incomeProof)
                       }
                       className="text-red-500 hover:text-red-700"
                     >
@@ -309,16 +309,16 @@ export function DocumentUploadStep({
               </Label>
 
               <div className="space-y-4">
-                {documents.additionalDocs.map((doc: any, index: number) => (
+                {documents?.additionalDocs?.map((doc: any, index: number) => (
                   <div key={index} className="border rounded-lg p-4 bg-white">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-2">
                         <FileText className="h-5 w-5 text-blue-500" />
                         <span className="text-sm font-medium truncate max-w-xs">
-                          {doc.file.name}
+                          {doc?.file?.name}
                         </span>
                         <span className="text-xs text-gray-500">
-                          ({Math.round(doc.file.size / 1024)} KB)
+                          ({Math.round(doc?.file?.size / 1024)} KB)
                         </span>
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                           <Check className="h-3 w-3 mr-1" />
