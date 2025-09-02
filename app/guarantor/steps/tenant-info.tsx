@@ -51,7 +51,7 @@ const TenantInfo = ({ formData, handleFormChange, applicationInfo }: TenantInfoP
             id="property-address"
             placeholder="Address"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-            value={`${applicationInfo?.properties?.location} ${applicationInfo?.properties?.city} ${applicationInfo?.properties?.country}`}
+            value={`${applicationInfo?.properties?.address} ${applicationInfo?.properties?.city} ${applicationInfo?.properties?.country}`}
             disabled
             onChange={(e) =>
               handleFormChange("propertyAddress", e.target.value)
@@ -66,7 +66,7 @@ const TenantInfo = ({ formData, handleFormChange, applicationInfo }: TenantInfoP
             id="rent-amount"
             placeholder="Enter amount"
             className="h-12 rounded-lg border-gray-300 focus:ring-[#dc0a3c] focus:border-[#dc0a3c] shadow-sm"
-            value={applicationInfo?.properties?.rentalFee}
+            value={applicationInfo?.properties?.price}
             disabled
             onChange={(e) => handleFormChange("rentAmount", e.target.value)}
           />

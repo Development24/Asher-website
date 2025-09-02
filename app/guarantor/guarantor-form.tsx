@@ -296,7 +296,7 @@ export default function GuarantorForm({
     // Update state based on document type
     if (docType === "id") {
       const res = await uploadFile(file);
-      const uploadResponse: UploadResponse = res?.url;
+      const uploadResponse: any = res?.url;
       setDocuments((prev) => ({
         ...prev,
         id: {
@@ -308,7 +308,7 @@ export default function GuarantorForm({
       }));
     } else if (docType === "addressProof") {
       const res = await uploadFile(file);
-      const uploadResponse: UploadResponse = res?.url;
+      const uploadResponse: any = res?.url;
       setDocuments((prev) => ({
         ...prev,
         addressProof: {
@@ -320,7 +320,7 @@ export default function GuarantorForm({
       }));
     } else if (docType === "incomeProof") {
       const res = await uploadFile(file);
-      const uploadResponse: UploadResponse = res?.url;
+      const uploadResponse: any = res?.url;
       setDocuments((prev) => ({
         ...prev,
         incomeProof: {
@@ -332,7 +332,7 @@ export default function GuarantorForm({
       }));
     } else if (docType === "additionalDocs") {
       const res = await uploadFile(file);
-      const uploadResponse: UploadResponse = res?.url;
+      const uploadResponse: any = res?.url;
       setDocuments(
         (prev) =>
           ({
@@ -498,6 +498,16 @@ export default function GuarantorForm({
     };
 
     createGuarantorReference({ applicationId: applicationId as string, data: payload });
+  };
+
+  const clearAllDocuments = () => {
+    setDocuments({
+      id: { file: null, url: null, type: null, size: null },
+      addressProof: { file: null, url: null, type: null, size: null },
+      incomeProof: { file: null, url: null, type: null, size: null },
+      additionalDocs: []
+    });
+    console.log("All documents cleared.");
   };
 
   return (
@@ -672,7 +682,7 @@ export default function GuarantorForm({
             <Button
               onClick={goToNextStep}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
-              loading={isCreatingGuarantorReference}
+              // loading={isCreatingGuarantorReference}
               disabled={isUploadingFile}
             >
               Next
@@ -681,7 +691,7 @@ export default function GuarantorForm({
             <Button
               onClick={handleSubmit}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
-              loading={isCreatingGuarantorReference}
+              // loading={isCreatingGuarantorReference}
               disabled={!formData.signedByGuarantor}
             >
               Submit

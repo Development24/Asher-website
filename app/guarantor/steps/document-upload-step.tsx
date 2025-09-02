@@ -91,16 +91,16 @@ export function DocumentUploadStep({
               </div>
             </div>
 
-            {documents.id ? (
+            {documents?.id?.file ? (
               <div className="border rounded-lg p-4 bg-white">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
                     <FileText className="h-5 w-5 text-blue-500" />
                     <span className="text-sm font-medium truncate max-w-xs">
-                      {documents.id.file.name}
+                      {documents?.id?.file?.name}
                     </span>
                     <span className="text-xs text-gray-500">
-                      ({Math.round(documents.id.file.size / 1024)} KB)
+                      ({Math.round(documents?.id?.file?.size / 1024)} KB)
                     </span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                       <Check className="h-3 w-3 mr-1" />
@@ -108,7 +108,7 @@ export function DocumentUploadStep({
                     </span>
                   </div>
                   <button
-                    onClick={() => removeDocument("id", documents.id)}
+                    onClick={() => removeDocument("id", documents?.id)}
                     className="text-red-500 hover:text-red-700"
                   >
                     <X className="h-5 w-5" />
@@ -162,7 +162,7 @@ export function DocumentUploadStep({
               Proof of Address (Utility Bill, Bank Statement)
             </Label>
 
-            {documents.addressProof ? (
+            {documents.addressProof?.file ? (
               <div className="border rounded-lg p-4 bg-white">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
@@ -234,7 +234,7 @@ export function DocumentUploadStep({
                 {getIncomeProofLabel()}
               </Label>
 
-              {documents.incomeProof ? (
+              {documents.incomeProof?.file ? (
                 <div className="border rounded-lg p-4 bg-white">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
@@ -309,7 +309,7 @@ export function DocumentUploadStep({
               </Label>
 
               <div className="space-y-4">
-                {documents?.additionalDocs?.map((doc: any, index: number) => (
+                {documents?.additionalDocs?.filter((doc: any) => doc?.file)?.map((doc: any, index: number) => (
                   <div key={index} className="border rounded-lg p-4 bg-white">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-2">

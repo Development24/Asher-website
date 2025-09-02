@@ -32,7 +32,7 @@ export default function LandlordReferenceForm({
   const [formData, setFormData] = useState({
     // Tenant Information
     tenantName: "",
-    currentAddress: `${applicationData?.residentialInfo?.address}, ${applicationData?.residentialInfo?.city}, ${applicationData?.residentialInfo?.state}, ${applicationData?.residentialInfo?.country}`,
+    currentAddress: `${applicationData?.properties?.address}, ${applicationData?.properties?.city}, ${applicationData?.properties?.state?.name || ""}, ${applicationData?.properties?.country}`,
     monthlyRent: "",
     rentalStartDate: "",
     rentalEndDate: "",
@@ -91,8 +91,8 @@ export default function LandlordReferenceForm({
     // Group data into required categories
     const tenancyHistory = {
       tenantName: `${applicationData?.personalDetails?.firstName} ${applicationData?.personalDetails?.lastName}`,
-      currentAddress: applicationData?.residentialInfo?.address
-        ? `${applicationData?.residentialInfo?.address}, ${applicationData?.residentialInfo?.city}, ${applicationData?.residentialInfo?.state}, ${applicationData?.residentialInfo?.country}`
+      currentAddress: applicationData?.properties?.address
+        ? `${applicationData?.properties?.address}, ${applicationData?.properties?.city}, ${applicationData?.properties?.state?.name || ""}, ${applicationData?.properties?.country}`
         : formData.currentAddress,
       rentAmount: formData.monthlyRent,
       rentStartDate: formData.rentalStartDate,
