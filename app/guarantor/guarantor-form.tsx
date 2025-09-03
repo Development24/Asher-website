@@ -170,6 +170,9 @@ export default function GuarantorForm({
 
     try {
       const response = await uploadFile(file) as UploadFilesResponse;
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Upload response for ${docType}:`, response);
+      }
       if (response.url) {
         const docState: DocumentState = {
           file,
@@ -177,6 +180,10 @@ export default function GuarantorForm({
           type: file.type,
           size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
         };
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Created doc state for ${docType}:`, docState);
+        }
 
         setDocuments(prev => {
           const newState = { ...prev };
@@ -457,10 +464,10 @@ export default function GuarantorForm({
           value.forEach(doc => {
             if (doc?.url) {
               acc.push({
-                documentUrl: doc.url,
-                type: doc.type,
-                size: doc.size,
-                documentName: doc.documentName || "Additional Document",
+                documentUrl: doc?.url?.documentUrl,
+                type: doc?.type,
+                size: doc?.size,
+                documentName: doc?.url?.documentName || "Additional Document",
                 idType: idType?.toUpperCase() || "PASSPORT",
                 docType: "ID"
               });
@@ -469,10 +476,11 @@ export default function GuarantorForm({
         } 
         // Handle single document objects
         else if (value && typeof value === "object" && value.url) {
+          console.log("value", value);
           acc.push({
-            documentUrl: value.url,
-            type: value.type,
-            size: value.size,
+            documentUrl: value?.url?.documentUrl,
+            type: value?.type,
+            size: value?.size,
             documentName: key,
             idType: idType?.toUpperCase() || "PASSPORT",
             docType: "ID"
@@ -682,7 +690,7 @@ export default function GuarantorForm({
             <Button
               onClick={goToNextStep}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
-              // loading={isCreatingGuarantorReference}
+              loading={isCreatingGuarantorReference}
               disabled={isUploadingFile}
             >
               Next
@@ -691,7 +699,7 @@ export default function GuarantorForm({
             <Button
               onClick={handleSubmit}
               className="flex-1 h-12 rounded-md bg-[#dc0a3c] text-white hover:bg-[#c00935] transition-colors"
-              // loading={isCreatingGuarantorReference}
+              loading={isCreatingGuarantorReference}
               disabled={!formData.signedByGuarantor}
             >
               Submit
