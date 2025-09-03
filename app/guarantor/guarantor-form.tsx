@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LoadingButton } from '@/components/ui/button';
+import { LoadingButton } from "@/components/ui/button";
 import { uploadSingleFile } from "@/services/general/general";
 import { useCreateGuarantorReference } from "@/services/refrences/referenceFn";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,8 +16,8 @@ import { EmploymentStep } from "./steps/employment-step";
 import { PersonalInfoStep } from "./steps/personal-info-step";
 import TenantInfo from "./steps/tenant-info";
 import SkeletonLoader from "./SkeletonLoader";
-import { LoadingStates } from '@/components/ui/loading-states';
-import { UploadFilesResponse } from '@/services/general/general';
+import { LoadingStates } from "@/components/ui/loading-states";
+import { UploadFilesResponse } from "@/services/general/general";
 
 interface DocumentState {
   file: File | null;
@@ -65,7 +65,8 @@ export default function GuarantorForm({
     mutate: createGuarantorReference,
     isPending: isCreatingGuarantorReference
   } = useCreateGuarantorReference();
-  const { mutateAsync: uploadFile, isPending: isUploadingFile } = uploadSingleFile();
+  const { mutateAsync: uploadFile, isPending: isUploadingFile } =
+    uploadSingleFile();
   const idInputRef = useRef<HTMLInputElement>(null);
   const addressProofInputRef = useRef<HTMLInputElement>(null);
   const incomeProofInputRef = useRef<HTMLInputElement>(null);
@@ -164,13 +165,16 @@ export default function GuarantorForm({
   ];
 
   // Handle file upload
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, docType: string) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    docType: string
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
-      const response = await uploadFile(file) as UploadFilesResponse;
-      if (process.env.NODE_ENV === 'development') {
+      const response = (await uploadFile(file)) as UploadFilesResponse;
+      if (process.env.NODE_ENV === "development") {
         console.log(`Upload response for ${docType}:`, response);
       }
       if (response.url) {
@@ -181,11 +185,11 @@ export default function GuarantorForm({
           size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
         };
 
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
           console.log(`Created doc state for ${docType}:`, docState);
         }
 
-        setDocuments(prev => {
+        setDocuments((prev) => {
           const newState = { ...prev };
           switch (docType) {
             case "id":
@@ -205,7 +209,7 @@ export default function GuarantorForm({
         });
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.error("Error uploading file:", error);
       }
     }
@@ -238,7 +242,10 @@ export default function GuarantorForm({
   };
 
   // Handle drop event
-  const handleDrop = async (event: React.DragEvent<HTMLDivElement>, docType: string) => {
+  const handleDrop = async (
+    event: React.DragEvent<HTMLDivElement>,
+    docType: string
+  ) => {
     event.preventDefault();
     event.stopPropagation();
     setDragActive("");
@@ -247,7 +254,7 @@ export default function GuarantorForm({
     if (!file) return;
 
     try {
-      const response = await uploadFile(file) as UploadFilesResponse;
+      const response = (await uploadFile(file)) as UploadFilesResponse;
       if (response.url) {
         const docState: DocumentState = {
           file,
@@ -256,7 +263,7 @@ export default function GuarantorForm({
           size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
         };
 
-        setDocuments(prev => {
+        setDocuments((prev) => {
           const newState = { ...prev };
           switch (docType) {
             case "id":
@@ -276,7 +283,7 @@ export default function GuarantorForm({
         });
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.error("Error uploading file:", error);
       }
     }
@@ -410,45 +417,43 @@ export default function GuarantorForm({
 
   // Define employment-related fields
   const employmentFields = [
-    'employmentType',
-    'employmentStartDate',
-    'monthlyIncome',
-    'portfolioWebsite',
-    'majorClients',
-    'jobTitle',
-    'businessAddress',
-    'businessName',
-    'businessNature',
-    'yearsInBusiness',
-    'annualIncome',
-    'annualIncomeSelf',
-    'businessAddressSole',
-    'businessNameSole',
-    'businessNatureSole',
-    'businessYearsSole',
-    'annualIncomeSole',
-    'utrNumberSole',
-    'freelanceType',
-    'yearsFreelancing',
-    'freelanceMonthlyIncome',
-    'freelancePortfolioWebsite',
-    'freelanceMajorClients',
-    'freelanceUtrNumber',
-    'companyName',
-    'companyNumber',
-    'position',
-    'ownershipPercentage',
-    'directorIncome',
-    'companyFounded',
-    'companyAddress',
-    'employerName',
-    'employerAddress',
-    'employerPhone',
-    'employerEmail'
+    "employmentType",
+    "employmentStartDate",
+    "monthlyIncome",
+    "portfolioWebsite",
+    "majorClients",
+    "jobTitle",
+    "businessAddress",
+    "businessName",
+    "businessNature",
+    "yearsInBusiness",
+    "annualIncome",
+    "annualIncomeSelf",
+    "businessAddressSole",
+    "businessNameSole",
+    "businessNatureSole",
+    "businessYearsSole",
+    "annualIncomeSole",
+    "utrNumberSole",
+    "freelanceType",
+    "yearsFreelancing",
+    "freelanceMonthlyIncome",
+    "freelancePortfolioWebsite",
+    "freelanceMajorClients",
+    "freelanceUtrNumber",
+    "companyName",
+    "companyNumber",
+    "position",
+    "ownershipPercentage",
+    "directorIncome",
+    "companyFounded",
+    "companyAddress",
+    "employerName",
+    "employerAddress",
+    "employerPhone",
+    "employerEmail"
   ];
   const handleSubmit = () => {
-
-
     const dateOfBirth = new Date(
       `${formData.dateOfBirthYear}-${formData.dateOfBirthMonth}-${formData.dateOfBirthDay}`
     );
@@ -461,7 +466,7 @@ export default function GuarantorForm({
       (acc: any[], [key, value]: [string, any]) => {
         // Handle additionalDocs array
         if (key === "additionalDocs" && Array.isArray(value)) {
-          value.forEach(doc => {
+          value.forEach((doc) => {
             if (doc?.url) {
               acc.push({
                 documentUrl: doc?.url?.documentUrl,
@@ -473,7 +478,7 @@ export default function GuarantorForm({
               });
             }
           });
-        } 
+        }
         // Handle single document objects
         else if (value && typeof value === "object" && value.url) {
           console.log("value", value);
@@ -495,17 +500,26 @@ export default function GuarantorForm({
     const guarantorEmployment = Object.entries(formData)
       .filter(([key, value]) => value !== "" && employmentFields.includes(key))
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-    const {dateOfBirthDay, dateOfBirthMonth, dateOfBirthYear, additionalDocs, ...rest} = filteredFormData as any
+    const {
+      dateOfBirthDay,
+      dateOfBirthMonth,
+      dateOfBirthYear,
+      additionalDocs,
+      ...rest
+    } = filteredFormData as any;
     const payload = {
       ...rest,
       guarantorEmployment,
       documents: cleanDocumentData,
       // tenancyStartDate: new Date(applicationData?.createdAt).toISOString(),
-      dateOfBirth: dateOfBirth.toISOString(),
+      dateOfBirth: dateOfBirth.toISOString()
       // applicationId: applicationId as string
     };
 
-    createGuarantorReference({ applicationId: applicationId as string, data: payload });
+    createGuarantorReference({
+      applicationId: applicationId as string,
+      data: payload
+    });
   };
 
   const clearAllDocuments = () => {
