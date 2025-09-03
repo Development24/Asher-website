@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import {
@@ -31,13 +31,15 @@ import { useGetProperties } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Listing } from "@/services/property/types";
 import { PropertyRentalFilter } from "@/services/property/property";
+
 export interface Pagination {
   limit: number;
   page: number;
   total: number;
   totalPages: number;
 }
-export default function SearchPage() {
+
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const [sortBy, setSortBy] = useState("popular");
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -53,15 +55,21 @@ export default function SearchPage() {
 
   const { isPropertySaved } = useSavedProperties();
 
+  // Client-side only check
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search);
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
       const location = searchParams.get("state");
       if (location) {
         setCurrentLocation(location);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, isClient]);
 
   useEffect(() => {
     setFilters((prev) => ({
@@ -442,5 +450,13 @@ export default function SearchPage() {
         onApplyFilters={handleApplyFilters}
       />
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
