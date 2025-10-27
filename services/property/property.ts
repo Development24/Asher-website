@@ -67,6 +67,27 @@ const feedbackURL = {
     all: "api/logs",
 }
 
+/**
+ * Property Rental Filter Interface
+ * 
+ * This interface defines all available filters for property search.
+ * The backend should handle these filters by checking the corresponding
+ * property fields:
+ * 
+ * - hasGarden: Check if property has garden (amenities array contains garden-related items)
+ * - hasGarage: Check noGarage > 0
+ * - hasParking: Check if property has parking (amenities array contains parking-related items)
+ * - isFurnished: Check if property is furnished (amenities array contains furnished-related items)
+ * - isPetFriendly: Check if property allows pets (amenities array contains pet-friendly items)
+ * - hasSwimmingPool: Check amenities array for swimming pool
+ * - hasGym: Check amenities array for gym/fitness center
+ * - hasSecurity: Check amenities array for security system
+ * - hasAirConditioning: Check amenities array for air conditioning
+ * - hasBalcony: Check amenities array for balcony/terrace
+ * - nearPublicTransport: Check amenities array for public transport proximity
+ * - nearSchools: Check amenities array for school proximity
+ * - nearShopping: Check amenities array for shopping proximity
+ */
 export type PropertyRentalFilter = IPropertyParams & {
     propertyType?: any;
     type?: string;
@@ -83,6 +104,24 @@ export type PropertyRentalFilter = IPropertyParams & {
     state?: string;
     minGarage?: number;
     maxGarage?: number;
+    // Hierarchy filtering
+    hierarchyLevel?: 'property' | 'unit' | 'room' | 'all';
+    propertyId?: string; // Search within specific building
+    // Simple Yes/No filters
+    hasGarden?: boolean;
+    hasGarage?: boolean;
+    hasParking?: boolean;
+    isFurnished?: boolean;
+    isPetFriendly?: boolean;
+    // High-level amenities
+    hasSwimmingPool?: boolean;
+    hasGym?: boolean;
+    hasSecurity?: boolean;
+    hasAirConditioning?: boolean;
+    hasBalcony?: boolean;
+    nearPublicTransport?: boolean;
+    nearSchools?: boolean;
+    nearShopping?: boolean;
     [key: string]: any;
 }
 
@@ -152,3 +191,35 @@ export const createEnquiry = async (data: Partial<EnquiryPayload>): Promise<Crea
     const response = await api.post(URL + propertyURL.enquiry, data)
     return response.data
 }
+
+// Related listings service
+export interface GetRelatedListingsResponse {
+    success: boolean;
+    data: {
+        units: Array<{
+            id: string;
+            name: string;
+            price: number;
+            currency: string;
+            url: string;
+        }>;
+        rooms: Array<{
+            id: string;
+            name: string;
+            price: number;
+            currency: string;
+            url: string;
+        }>;
+        totalCount: number;
+    };
+}
+
+export const getRelatedListings = async (propertyId: string, excludeListingId?: string): Promise<GetRelatedListingsResponse> => {
+    const params = new URLSearchParams();
+    if (excludeListingId) {
+        params.append('excludeListingId', excludeListingId);
+    }
+    
+    const response = await api.get(`${URL}/property/${propertyId}/related-listings?${params.toString()}`);
+    return response.data;
+};

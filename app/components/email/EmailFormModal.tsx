@@ -221,7 +221,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
                       {propertyDetails?.property?.noBathRoom || propertyDetails?.noBathRoom || 0} bath
                     </span>
                     <span className="font-semibold text-primary-600">
-                      {formatPrice(propertyDetails?.property?.rentalFee || propertyDetails?.rentalFee || 0)}
+                      {formatPrice(propertyDetails?.property?.rentalFee || propertyDetails?.rentalFee || 0, propertyDetails?.property?.currency || propertyDetails?.currency || 'USD')}
                     </span>
                   </div>
                 </div>

@@ -11,13 +11,13 @@ export const useLoginUser = () => {
     const setUser = userStore((state) => state.setUser)
     return useMutation({
         mutationFn: loginUser,
-        onSuccess: (data) => {
-            // console.log(data)
+        onSuccess: (data : any) => {
+            console.log(data)
             if (typeof window !== 'undefined') {
-                localStorage.setItem('access_token', data?.token);
-                localStorage.setItem('refresh_token', data?.refreshToken);
+                localStorage.setItem('access_token', data?.data?.data?.token);
+                localStorage.setItem('refresh_token', data?.data?.data?.refreshToken);
             }
-            setUser(data?.userDetails)
+            setUser(data?.data?.data?.userDetails)
         }
     })
 }

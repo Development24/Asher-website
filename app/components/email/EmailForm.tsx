@@ -276,7 +276,8 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
               </span>
             </div>
             <div className="mt-4 text-xl font-bold text-red-600">{`${formatPrice(
-              Number(propertyDetails?.property?.price)
+              Number(propertyDetails?.property?.price),
+              propertyDetails?.property?.currency || 'USD'
             )}`}</div>
           </div>
         </div>

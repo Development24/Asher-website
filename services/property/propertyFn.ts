@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { EnquiryPayload, FeedBackPayload, createEnquiry, createFeedback, getAllFeedback, getAllProperties, getLandlordProperties, getPropertyById, getPropertyByIdForListingId, getUserLikedProperties, likeProperty, unlikeProperty } from "./property"
+import { EnquiryPayload, FeedBackPayload, createEnquiry, createFeedback, getAllFeedback, getAllProperties, getLandlordProperties, getPropertyById, getPropertyByIdForListingId, getRelatedListings, getUserLikedProperties, likeProperty, unlikeProperty } from "./property"
 import { IPropertyParams } from "./types"
 
 export const useGetProperties = (params?: IPropertyParams) => {
@@ -67,8 +67,16 @@ export const useGetLandlordProperties = (landlordId: string) => {
 }
 
 export const useCreateFeedback = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: Partial<FeedBackPayload>) => createFeedback(data),
+        onSuccess: () => {
+            // Invalidate all related queries
+            const keysToInvalidate = ["feedback", "allInvites", "getPropertyByInviteId", "allApplications", "properties", "dashboardStats"];
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
+        }
     })
 }
 
@@ -83,5 +91,15 @@ export const useGetAllFeedback = () => {
 export const useCreateEnquiry = () => {
     return useMutation({
         mutationFn: (data: Partial<EnquiryPayload>) => createEnquiry(data),
+    })
+}
+
+export const useGetRelatedListings = (propertyId: string, excludeListingId?: string, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["relatedListings", propertyId, excludeListingId],
+        queryFn: () => getRelatedListings(propertyId, excludeListingId),
+        enabled: enabled && !!propertyId,
+        retry: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     })
 }

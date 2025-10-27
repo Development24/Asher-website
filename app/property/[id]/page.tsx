@@ -36,12 +36,15 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthRedirectStore } from "@/store/authRedirect";
 import { displayImages, filteredImageUrls, ImageObject } from "./utils";
 import { EmailFormModal } from "@/app/components/email/EmailFormModal";
 import { useEmailFormModal } from "@/hooks/useEmailFormModal";
+import { trackPropertyView } from "@/services/analytics/propertyAnalytics";
+import { RelatedListingsSection } from "@/app/components/RelatedListingsSection";
+import { MapWithAmenities, SimpleMap } from "@/components/maps";
 
 const propertyImages = [
   "https://media.rightmove.co.uk/17k/16023/156966407/16023_1310013_IMG_01_0000.jpeg",
@@ -85,17 +88,13 @@ export default function PropertyDetails() {
   const propertyInfo =
     type === "ENTIRE_PROPERTY" ? data?.property?.property : subInfo;
 
-  // useEffect(() => {
-  //   // const selectedProperty = properties.find((p) => p.id.toString() === id);
-  //   // setProperty(selectedProperty || null);
-
-  //   // Simulating an authentication check
-  //   const checkAuth = () => {
-  //     const isAuth = localStorage.getItem("isAuthenticated") === "true";
-  //     setIsAuthenticated(isAuth);
-  //   };
-  //   checkAuth();
-  // }, [id]);
+  // Track property view when component mountsy);
+  useEffect(() => {
+    if (id && propertyData) {
+      // Track property view for analytics
+      trackPropertyView(id as string);
+    }
+  }, [id, propertyData]);
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % propertyImages.length);
@@ -165,12 +164,12 @@ export default function PropertyDetails() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="container max-w-[1400px] mx-auto px-4 py-8">
           {/* Header Skeleton */}
-          <Skeleton className="w-24 h-10 mb-4" /> {/* Back button */}
-          <div className="flex items-center gap-2 mb-6">
+          <Skeleton className="mb-4 w-24 h-10" /> {/* Back button */}
+          <div className="flex gap-2 items-center mb-6">
             <Skeleton className="w-20 h-4" /> {/* Breadcrumb */}
           </div>
           {/* Image Gallery Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-3">
             <div className="md:col-span-2">
               <Skeleton className="w-full h-[500px] rounded-lg" />{" "}
               {/* Main image */}
@@ -185,25 +184,25 @@ export default function PropertyDetails() {
             </div>
           </div>
           {/* Property Info Skeleton */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid gap-8 mb-12 md:grid-cols-3">
             <div className="md:col-span-2">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <Skeleton className="w-64 h-8 mb-2" /> {/* Title */}
+                  <Skeleton className="mb-2 w-64 h-8" /> {/* Title */}
                   <Skeleton className="w-48 h-4" /> {/* Location */}
                 </div>
               </div>
-              <Skeleton className="w-40 h-8 mb-6" /> {/* Price */}
+              <Skeleton className="mb-6 w-40 h-8" /> {/* Price */}
               {/* Description Skeleton */}
               <div className="space-y-6">
                 <div>
-                  <Skeleton className="w-32 h-6 mb-4" />
+                  <Skeleton className="mb-4 w-32 h-6" />
                   <Skeleton className="w-full h-24" />
                 </div>
 
                 {/* Features Skeleton */}
                 <div>
-                  <Skeleton className="w-48 h-6 mb-4" />
+                  <Skeleton className="mb-4 w-48 h-6" />
                   <div className="grid grid-cols-2 gap-4">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                       <Skeleton key={i} className="w-full h-6" />
@@ -213,12 +212,12 @@ export default function PropertyDetails() {
 
                 {/* Location Skeleton */}
                 <div>
-                  <Skeleton className="w-36 h-6 mb-4" />
+                  <Skeleton className="mb-4 w-36 h-6" />
                   <Skeleton className="w-full h-[200px] mb-4" />
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                     {[1, 2, 3].map((i) => (
                       <div key={i}>
-                        <Skeleton className="w-32 h-6 mb-2" />
+                        <Skeleton className="mb-2 w-32 h-6" />
                         <Skeleton className="w-full h-16" />
                       </div>
                     ))}
@@ -229,25 +228,25 @@ export default function PropertyDetails() {
 
             {/* Landlord Card Skeleton */}
             <div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="flex items-center gap-4 mb-6">
+              <div className="p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                <div className="flex gap-4 items-center mb-6">
                   <Skeleton className="w-12 h-12 rounded-full" />
                   <div className="flex-1">
-                    <Skeleton className="w-32 h-5 mb-2" />
+                    <Skeleton className="mb-2 w-32 h-5" />
                     <Skeleton className="w-24 h-4" />
                   </div>
                 </div>
-                <Skeleton className="w-full h-10 mb-4" />
+                <Skeleton className="mb-4 w-full h-10" />
                 <Skeleton className="w-full h-10" />
               </div>
             </div>
           </div>
           {/* Similar Properties Skeleton */}
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex justify-between items-center mb-6">
               <Skeleton className="w-48 h-8" />
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-3">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="w-full h-[400px] rounded-lg" />
               ))}
@@ -261,11 +260,11 @@ export default function PropertyDetails() {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="mb-4">
             <svg
-              className="w-16 h-16 mx-auto text-gray-400"
+              className="mx-auto w-16 h-16 text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -278,10 +277,10 @@ export default function PropertyDetails() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
             Property Not Found
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
             The property you're looking for might have been removed or is no
             longer available.
           </p>
@@ -301,11 +300,11 @@ export default function PropertyDetails() {
   // Show empty state if no property data
   if (!propertyData) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="mb-4">
             <svg
-              className="w-16 h-16 mx-auto text-gray-400"
+              className="mx-auto w-16 h-16 text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -318,10 +317,10 @@ export default function PropertyDetails() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
             No Property Data
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
             We couldn't load the property information. Please try again.
           </p>
           <div className="space-x-4">
@@ -346,23 +345,50 @@ export default function PropertyDetails() {
       >
         ← Back to search
       </Button>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-6 text-sm">
-        <Link
-          href="/search"
-          className="text-gray-600 dark:text-gray-400 hover:text-primary"
-        >
-          Home
-        </Link>
-        <span className="text-gray-400">/</span>
-        <span className="text-gray-900 dark:text-white">
-          Property Information
-        </span>
-      </div>
+      {/* Hierarchy Breadcrumb */}
+      {data?.property?.hierarchy ? (
+        <div className="mb-6 bg-white border-b">
+          <div className="flex items-center py-3 space-x-2 text-sm">
+            {data.property.hierarchy.breadcrumb.map(
+              (item: any, index: number) => (
+                <React.Fragment key={item.id}>
+                  {index > 0 && (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  )}
+                  <Link
+                    href={item.url}
+                    className={`text-gray-600 hover:text-gray-900 ${
+                      index === data.property.hierarchy.breadcrumb.length - 1
+                        ? "font-medium text-gray-900"
+                        : ""
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                </React.Fragment>
+              )
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Fallback breadcrumb */
+        <div className="flex gap-2 items-center mb-6 text-sm">
+          <Link
+            href="/search"
+            className="text-gray-600 dark:text-gray-400 hover:text-primary"
+          >
+            Home
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-900 dark:text-white">
+            Property Information
+          </span>
+        </div>
+      )}
 
       {/* Image Gallery */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="md:col-span-2 relative rounded-lg overflow-hidden">
+      <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-3">
+        <div className="overflow-hidden relative rounded-lg md:col-span-2">
           <Image
             src={
               displayImages(propertyData?.images)[currentImageIndex] ||
@@ -375,13 +401,13 @@ export default function PropertyDetails() {
           />
           <button
             onClick={prevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+            className="absolute left-4 top-1/2 p-2 text-white rounded-full -translate-y-1/2 bg-black/50 hover:bg-black/70"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+            className="absolute right-4 top-1/2 p-2 text-white rounded-full -translate-y-1/2 bg-black/50 hover:bg-black/70"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -390,7 +416,7 @@ export default function PropertyDetails() {
           {displayImages(propertyData?.images)
             .slice(1, 4)
             .map((image: string, index: number) => (
-              <div key={index} className="relative rounded-lg overflow-hidden">
+              <div key={index} className="overflow-hidden relative rounded-lg">
                 <Image
                   src={image || "/placeholder.svg"}
                   alt={`Property image ${index + 2}`}
@@ -404,17 +430,39 @@ export default function PropertyDetails() {
       </div>
 
       {/* Property Info */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="grid gap-8 mb-12 md:grid-cols-3">
         <div className="md:col-span-2">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{propertyData?.name}</h1>
+              {/* Context Banner */}
+              {data?.property?.hierarchy && (
+                <div className="flex gap-4 items-center mb-4">
+                  <div className="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                    {data.property.hierarchy.level.toUpperCase()}
+                  </div>
+                  <div>
+                    <h1 className="mb-2 text-3xl font-bold">
+                      {propertyData?.name}
+                    </h1>
+                    <p className="text-sm text-gray-600">
+                      {data.property.hierarchy.context}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {!data?.property?.hierarchy && (
+                <h1 className="mb-2 text-3xl font-bold">
+                  {propertyData?.name}
+                </h1>
+              )}
+
               <div className="flex items-center text-gray-600 dark:text-gray-400">
-                <MapPin className="w-4 h-4 mr-1" />
+                <MapPin className="mr-1 w-4 h-4" />
                 {`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}, ${propertyData?.zipcode}`}
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex gap-4 items-center">
               <Button
                 variant="outline"
                 size="icon"
@@ -432,13 +480,14 @@ export default function PropertyDetails() {
             </div>
           </div>
 
-          <div className="text-3xl font-bold mb-6">
+          <div className="mb-6 text-3xl font-bold">
             {formatPrice(
               Number(
                 type === "ENTIRE_PROPERTY"
                   ? propertyData?.price
                   : propertyInfo?.price
-              )
+              ),
+              propertyData?.currency || "USD"
             )}{" "}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
               {propertyData?.priceFrequency === "MONTHLY"
@@ -448,13 +497,13 @@ export default function PropertyDetails() {
           </div>
 
           {/* Property Type and Basic Info */}
-          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
+          <div className="p-6 mb-6 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
             <div className="grid grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                <div className="mb-1 text-sm tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Property Type
                 </div>
-                <div className="flex items-center justify-center">
+                <div className="flex justify-center items-center">
                   <span className="font-medium">
                     {type
                       ?.replace(/_/g, " ")
@@ -465,30 +514,30 @@ export default function PropertyDetails() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                <div className="mb-1 text-sm tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Bedrooms
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="font-medium text-2xl">
+                <div className="flex justify-center items-center">
+                  <span className="text-2xl font-medium">
                     {propertyInfo?.bedrooms || 0}
                   </span>
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                <div className="mb-1 text-sm tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Bathrooms
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="font-medium text-2xl">
+                <div className="flex justify-center items-center">
+                  <span className="text-2xl font-medium">
                     {propertyInfo?.bathrooms || 0}
                   </span>
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                <div className="mb-1 text-sm tracking-wide text-gray-600 uppercase dark:text-gray-400">
                   Size
                 </div>
-                <div className="flex items-center justify-center">
+                <div className="flex justify-center items-center">
                   <span className="font-medium">
                     {propertyInfo?.area || "N/A"} sqm
                   </span>
@@ -498,8 +547,8 @@ export default function PropertyDetails() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-semibold mb-4">Description</h2>
+            <div className="p-6 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
+              <h2 className="mb-4 text-xl font-semibold">Description</h2>
               <p
                 className={`text-gray-600 dark:text-gray-400 ${
                   showAllDescription ? "line-clamp-none" : "line-clamp-3"
@@ -516,11 +565,11 @@ export default function PropertyDetails() {
             </div>
 
             {/* Letting Details */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Letting details</h2>
+            <div className="p-6 mb-6 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
+              <h2 className="mb-4 text-xl font-semibold">Letting details</h2>
               <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
                     Let available date:
                   </div>
                   <div className="font-medium">
@@ -528,18 +577,21 @@ export default function PropertyDetails() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
                     Deposit:
                   </div>
                   <div className="font-medium">
                     {data?.property?.securityDeposit &&
                     data.property.securityDeposit !== "0"
-                      ? formatPrice(Number(data.property.securityDeposit))
+                      ? formatPrice(
+                          Number(data.property.securityDeposit),
+                          data?.property?.currency || "USD"
+                        )
                       : "Ask agent"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
                     Min. Tenancy:
                   </div>
                   <div className="font-medium">
@@ -549,7 +601,7 @@ export default function PropertyDetails() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
                     Let type:
                   </div>
                   <div className="font-medium">
@@ -559,7 +611,7 @@ export default function PropertyDetails() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
                     Furnish type:
                   </div>
                   <div className="font-medium">
@@ -567,7 +619,7 @@ export default function PropertyDetails() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
                     Council Tax:
                   </div>
                   <div className="font-medium">
@@ -579,13 +631,13 @@ export default function PropertyDetails() {
 
             {/* Key Features */}
             {data?.property?.keyFeatures?.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700">
-                <h2 className="text-xl font-semibold mb-4">Key features</h2>
+              <div className="p-6 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
+                <h2 className="mb-4 text-xl font-semibold">Key features</h2>
                 <div className="grid grid-cols-2 gap-2">
                   {data?.property?.keyFeatures?.map(
                     (feature: string, index: number) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      <div key={index} className="flex gap-2 items-center">
+                        <Check className="flex-shrink-0 w-4 h-4 text-primary" />
                         <span className="text-sm">
                           {feature
                             .replace(/-/g, " ")
@@ -598,33 +650,28 @@ export default function PropertyDetails() {
               </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-5">
-              <h2 className="text-xl font-semibold mb-4">Location on map</h2>
-              {data?.property?.latitude && data?.property?.longitude ? (
-                <div className="h-[300px] rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                    scrolling="no"
-                    marginHeight={0}
-                    marginWidth={0}
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${
-                      Number(data.property.longitude) - 0.01
-                    },${Number(data.property.latitude) - 0.01},${
-                      Number(data.property.longitude) + 0.01
-                    },${
-                      Number(data.property.latitude) + 0.01
-                    }&layer=mapnik&marker=${data.property.latitude},${
-                      data.property.longitude
-                    }`}
-                    style={{ border: 0, borderRadius: "8px" }}
-                    title={`Map showing ${data?.property?.name}`}
-                  ></iframe>
-                </div>
+            <div className="p-6 space-y-5 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
+              <h2 className="mb-4 text-xl font-semibold">Location on map</h2>
+              {data?.property?.property?.latitude && data?.property?.property?.longitude ? (
+                <MapWithAmenities
+                  latitude={Number(data?.property?.property?.latitude || 0)}
+                  longitude={Number(data?.property?.property?.longitude || 0)}
+                  zoom={15}
+                  title="Property Location with Nearby Amenities"
+                  amenityTypes={[
+                    "restaurant",
+                    "hospital",
+                    "school",
+                    "shopping_mall",
+                    "gas_station",
+                    "bank"
+                  ]}
+                  radius={2}
+                  height="500px"
+                />
               ) : (
                 <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden border border-gray-200 dark:border-gray-700">
-                  <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
+                  <div className="flex absolute inset-0 flex-col gap-4 justify-center items-center">
                     <MapPin className="w-8 h-8 text-gray-400" />
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       Location not available
@@ -646,23 +693,23 @@ export default function PropertyDetails() {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-3">
+              <div className="grid grid-cols-2 gap-4 mt-3 md:grid-cols-3">
                 <div>
-                  <h3 className="font-semibold mb-2">Nearest stations</h3>
+                  <h3 className="mb-2 font-semibold">Nearest stations</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div>Vauxhall Station - 0.7 miles</div>
                     <div>Fulham Broadway - 0.8 miles</div>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-2">Nearest schools</h3>
+                  <h3 className="mb-2 font-semibold">Nearest schools</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div>Clapham Junction - 0.9 miles</div>
                     <div>Clapham Junction - 0.9 miles</div>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-2">Nearest malls</h3>
+                  <h3 className="mb-2 font-semibold">Nearest malls</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div>Clapham Junction - 0.9 miles</div>
                     <div>Clapham Junction - 0.9 miles</div>
@@ -674,8 +721,8 @@ export default function PropertyDetails() {
         </div>
 
         <div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg sticky top-4">
-            <div className="flex items-center gap-4 mb-6">
+          <div className="sticky top-4 p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+            <div className="flex gap-4 items-center mb-6">
               <div className="relative">
                 <div
                   className={cn(
@@ -693,7 +740,7 @@ export default function PropertyDetails() {
                     }
                     alt={propertyData?.landlord?.name || ""}
                     fill
-                    className="rounded-full object-cover"
+                    className="object-cover rounded-full"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
                       e.currentTarget.src = "/placeholder-user.jpg";
@@ -701,7 +748,7 @@ export default function PropertyDetails() {
                   />
                 </div>
                 {true && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                  <div className="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                 )}
               </div>
               <div>
@@ -726,7 +773,7 @@ export default function PropertyDetails() {
               </Button>
             </div>
             <Button
-              className="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white mb-4"
+              className="mb-4 w-full text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900"
               onClick={() => handleContactClick("chat")}
             >
               Chat with landlord
@@ -759,12 +806,21 @@ export default function PropertyDetails() {
               onEmailClick={() => handleContactClick("email")}
             />
           </div>
+
+          {/* Related Listings Section */}
+          {data?.property?.hierarchy && (
+            <RelatedListingsSection
+              propertyId={data.property.hierarchy.propertyId}
+              excludeListingId={id as string}
+              className="mt-6"
+            />
+          )}
         </div>
       </div>
 
       {/* Similar Properties */}
       <div>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Similar properties</h2>
           <div className="flex gap-2">
             <Button
@@ -788,7 +844,7 @@ export default function PropertyDetails() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden">
+        <div className="overflow-hidden relative">
           <motion.div
             className="flex gap-5 w-full"
             initial={false}

@@ -45,10 +45,18 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { LeaseAgreementModal } from "./lease-agreement-modal";
-import { PaymentModal } from "./payment-modal";
+import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { toast } from "sonner";
+import { loadStripe } from "@stripe/stripe-js";
 import { displayImages } from "@/app/property/[id]/utils";
 import SaveModal from "../../../../components/modals/save-modal";
+
+
+
+// Initialize Stripe
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
+);
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -68,6 +76,8 @@ export default function SuccessPage() {
     "idle" | "success" | "failure"
   >("idle");
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const idToUse = id ?? applicationId;
   const { data: applicationData, isFetching } = useGetSingleApplication(
     idToUse as string
@@ -182,7 +192,7 @@ export default function SuccessPage() {
           onSuccess: () => {
             // toast.success("Agreement content prepared");
             setShowLeaseAgreementModal(false);
-            setShowPaymentModal(true);
+            handleCreatePayment();
           },
           onError: (error: any) => {
             console.error("Error sending agreement JSON payload", error);
@@ -198,11 +208,41 @@ export default function SuccessPage() {
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
     setPaymentStatus("success");
+    toast.success("Payment successful! Your lease agreement has been submitted.");
   };
 
-  const handlePaymentFailure = () => {
+  const handlePaymentFailure = (error?: any) => {
     setShowPaymentModal(false);
     setPaymentStatus("failure");
+    toast.error("Payment failed. Please try again or contact support.");
+    console.error("Payment failed:", error);
+  };
+
+  const handleCreatePayment = () => {
+    // Set a default amount for lease agreement payment (you can adjust this)
+    const amount = 5000; // $50.00 in cents
+    setPaymentAmount(amount);
+    
+    createLeasePayment(
+      {
+        amount,
+        paymentGateway: "STRIPE",
+        payment_method_types: "card",
+        currency: "USD"
+      },
+      {
+        onSuccess: (data: any) => {
+          const response = data as any;
+          const { paymentDetails } = response;
+          setClientSecret(paymentDetails?.client_secret);
+          setShowPaymentModal(true);
+        },
+        onError: (error) => {
+          console.error("Lease payment creation failed:", error);
+          toast.error("Failed to create payment. Please try again.");
+        }
+      }
+    );
   };
 
   if (isLoading || !propertyData) {
@@ -210,12 +250,12 @@ export default function SuccessPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="container max-w-[1400px] mx-auto px-4 py-8">
           {/* Header Skeleton */}
-          <Skeleton className="w-24 h-10 mb-4" /> {/* Back button */}
-          <div className="flex items-center gap-2 mb-6">
+          <Skeleton className="mb-4 w-24 h-10" /> {/* Back button */}
+          <div className="flex gap-2 items-center mb-6">
             <Skeleton className="w-20 h-4" /> {/* Breadcrumb */}
           </div>
           {/* Image Gallery Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-3">
             <div className="md:col-span-2">
               <Skeleton className="w-full h-[500px] rounded-lg" />{" "}
               {/* Main image */}
@@ -230,25 +270,25 @@ export default function SuccessPage() {
             </div>
           </div>
           {/* Property Info Skeleton */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid gap-8 mb-12 md:grid-cols-3">
             <div className="md:col-span-2">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <Skeleton className="w-64 h-8 mb-2" /> {/* Title */}
+                  <Skeleton className="mb-2 w-64 h-8" /> {/* Title */}
                   <Skeleton className="w-48 h-4" /> {/* Location */}
                 </div>
               </div>
-              <Skeleton className="w-40 h-8 mb-6" /> {/* Price */}
+              <Skeleton className="mb-6 w-40 h-8" /> {/* Price */}
               {/* Description Skeleton */}
               <div className="space-y-6">
                 <div>
-                  <Skeleton className="w-32 h-6 mb-4" />
+                  <Skeleton className="mb-4 w-32 h-6" />
                   <Skeleton className="w-full h-24" />
                 </div>
 
                 {/* Features Skeleton */}
                 <div>
-                  <Skeleton className="w-48 h-6 mb-4" />
+                  <Skeleton className="mb-4 w-48 h-6" />
                   <div className="grid grid-cols-2 gap-4">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                       <Skeleton key={i} className="w-full h-6" />
@@ -258,12 +298,12 @@ export default function SuccessPage() {
 
                 {/* Location Skeleton */}
                 <div>
-                  <Skeleton className="w-36 h-6 mb-4" />
+                  <Skeleton className="mb-4 w-36 h-6" />
                   <Skeleton className="w-full h-[200px] mb-4" />
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i}>
-                        <Skeleton className="w-32 h-6 mb-2" />
+                        <Skeleton className="mb-2 w-32 h-6" />
                         <Skeleton className="w-full h-16" />
                       </div>
                     ))}
@@ -274,39 +314,39 @@ export default function SuccessPage() {
 
             {/* Application Status Card Skeleton */}
             <div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="flex items-center gap-4 mb-6">
+              <div className="p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                <div className="flex gap-4 items-center mb-6">
                   <Skeleton className="w-12 h-12 rounded-full" />
                   <div className="flex-1">
-                    <Skeleton className="w-32 h-5 mb-2" />
+                    <Skeleton className="mb-2 w-32 h-5" />
                     <Skeleton className="w-24 h-4" />
                   </div>
                 </div>
-                <Skeleton className="w-full h-10 mb-4" />
+                <Skeleton className="mb-4 w-full h-10" />
                 <Skeleton className="w-full h-10" />
               </div>
             </div>
             {/* Landlord Card Skeleton */}
             <div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="flex items-center gap-4 mb-6">
+              <div className="p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                <div className="flex gap-4 items-center mb-6">
                   <Skeleton className="w-12 h-12 rounded-full" />
                   <div className="flex-1">
-                    <Skeleton className="w-32 h-5 mb-2" />
+                    <Skeleton className="mb-2 w-32 h-5" />
                     <Skeleton className="w-24 h-4" />
                   </div>
                 </div>
-                <Skeleton className="w-full h-10 mb-4" />
+                <Skeleton className="mb-4 w-full h-10" />
                 <Skeleton className="w-full h-10" />
               </div>
             </div>
           </div>
           {/* Similar Properties Skeleton */}
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex justify-between items-center mb-6">
               <Skeleton className="w-48 h-8" />
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-3">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="w-full h-[400px] rounded-lg" />
               ))}
@@ -319,9 +359,9 @@ export default function SuccessPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-sm">
+        <div className="flex gap-2 items-center mb-6 text-sm">
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
             Home
           </Link>
@@ -337,8 +377,8 @@ export default function SuccessPage() {
         </div>
 
         {/* Main Image Gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="md:col-span-2 relative rounded-lg overflow-hidden">
+        <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-3">
+          <div className="overflow-hidden relative rounded-lg md:col-span-2">
             <Image
               src={
                 displayImages(propertyData?.images)[currentImageIndex] ||
@@ -357,7 +397,7 @@ export default function SuccessPage() {
                     propertyData?.images.length
                 )
               }
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+              className="absolute left-4 top-1/2 p-2 text-white rounded-full -translate-y-1/2 bg-black/50 hover:bg-black/70"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
@@ -367,7 +407,7 @@ export default function SuccessPage() {
                   (prev) => (prev + 1) % propertyData?.images.length
                 )
               }
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+              className="absolute right-4 top-1/2 p-2 text-white rounded-full -translate-y-1/2 bg-black/50 hover:bg-black/70"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
@@ -378,7 +418,7 @@ export default function SuccessPage() {
               .map((image: any, index: number) => (
                 <div
                   key={index}
-                  className="relative rounded-lg overflow-hidden"
+                  className="overflow-hidden relative rounded-lg"
                 >
                   <Image
                     src={image || "/placeholder.svg"}
@@ -392,20 +432,20 @@ export default function SuccessPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Property Information */}
           <div className="lg:col-span-2">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h1 className="text-2xl font-bold mb-2">
+                <h1 className="mb-2 text-2xl font-bold">
                   {propertyData?.title}
                 </h1>
                 <div className="flex items-center text-gray-600">
-                  <MapPin className="w-4 h-4 mr-1" />
+                  <MapPin className="mr-1 w-4 h-4" />
                   {`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}, `}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex gap-4 items-center">
                 <Button variant="outline" size="icon">
                   <Heart className="w-4 h-4" />
                 </Button>
@@ -415,8 +455,8 @@ export default function SuccessPage() {
               </div>
             </div>
 
-            <div className="text-2xl font-bold mb-6">
-              {`${formatPrice(propertyData?.price)}`}{" "}
+            <div className="mb-6 text-2xl font-bold">
+              {`${formatPrice(propertyData?.price, propertyData?.currency || 'USD')}`}{" "}
               <span className="text-base font-normal text-gray-600">
                 per month
               </span>
@@ -424,55 +464,55 @@ export default function SuccessPage() {
 
             <div className="space-y-8">
               <section className="">
-                <h2 className="text-xl font-semibold mb-4">Property Details</h2>
-                <p className="text-gray-600 leading-relaxed">
+                <h2 className="mb-4 text-xl font-semibold">Property Details</h2>
+                <p className="leading-relaxed text-gray-600">
                   {propertyData?.description}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-4">Features</h2>
-                <Card className="p-6 shadow-sm w-full mb-6">
+                <h2 className="mb-4 text-xl font-semibold">Features</h2>
+                <Card className="p-6 mb-6 w-full shadow-sm">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>Bedrooms: {propertyData?.noBedRoom}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>Bathrooms: {propertyData?.noBathRoom}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>Area: {propertyData?.size}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>
                         Pets Allowed: {propertyData?.petsAllowed ? "Yes" : "No"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>
                         Communal garden:{" "}
                         {propertyData?.communalGarden ? "Yes" : "No"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>
                         Balcony: {propertyData?.balcony ? "Yes" : "No"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>
                         Parking space/Garage:{" "}
                         {propertyData?.parkingSpace ? "Yes" : "No"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
                       <span>
                         Open-concept living and dining area:{" "}
@@ -491,16 +531,16 @@ export default function SuccessPage() {
               status?.toString().toLowerCase() === "completed" ||
               status?.toString().toLowerCase() === "approved") && (
               <>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">
+                <Card className="p-6 w-full shadow-sm">
+                  <h2 className="mb-4 text-xl font-semibold">
                     Application Status
                   </h2>
-                  <div className="flex items-center gap-4 mb-4 w-full">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <div className="flex gap-4 items-center mb-4 w-full">
+                    <div className="flex justify-center items-center w-12 h-12 bg-green-100 rounded-full">
                       <Check className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="text-lg font-semibold">
                         Application Submitted
                       </h3>
                       <p className="text-gray-600">
@@ -509,31 +549,31 @@ export default function SuccessPage() {
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Application ID</span>
-                      <span className="font-medium break-all text-right">
+                      <span className="font-medium text-right break-all">
                         APP-{idToUse}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Submission Date</span>
                       <span className="font-medium">
                         {format(application?.createdAt, "MMMM d, yyyy")}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Status</span>
-                      <Badge className="bg-blue-100 text-blue-800 capitalize">
+                      <Badge className="text-blue-800 capitalize bg-blue-100">
                         {application?.status}
                       </Badge>
                     </div>
                   </div>
                 </Card>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
+                <Card className="p-6 w-full shadow-sm">
+                  <h2 className="mb-4 text-xl font-semibold">Next Steps</h2>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <div className="flex gap-4 items-center">
+                      <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
                         <FileText className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
@@ -543,8 +583,8 @@ export default function SuccessPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <div className="flex gap-4 items-center">
+                      <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
                         <Home className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
@@ -562,16 +602,16 @@ export default function SuccessPage() {
             {(status?.toString()?.toLowerCase() === "agreements" ||
               status?.toString()?.toLowerCase() === "agreements_signed") && (
               <>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">
+                <Card className="p-6 w-full shadow-sm">
+                  <h2 className="mb-4 text-xl font-semibold">
                     Application Status
                   </h2>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <div className="flex gap-4 items-center mb-4">
+                    <div className="flex justify-center items-center w-12 h-12 bg-green-100 rounded-full">
                       <Check className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="text-lg font-semibold">
                         Application Approved
                       </h3>
                       <p className="text-gray-600">
@@ -580,32 +620,32 @@ export default function SuccessPage() {
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Application ID</span>
                       <span className="font-medium break-all">
                         APP-{idToUse}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Approval Date</span>
                       <span className="font-medium">
                         {format(application?.createdAt, "MMMM d, yyyy")}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Status</span>
-                      <Badge className="bg-green-100 text-green-800 capitalize">
+                      <Badge className="text-green-800 capitalize bg-green-100">
                         {application?.status}
                       </Badge>
                     </div>
                   </div>
                 </Card>
                 {hasAgreement && (
-                  <Card className="p-6 shadow-sm w-full">
-                    <h2 className="text-xl font-semibold mb-4">Next Steps</h2>
+                  <Card className="p-6 w-full shadow-sm">
+                    <h2 className="mb-4 text-xl font-semibold">Next Steps</h2>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <div className="flex gap-4 items-center">
+                        <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
                           <FileText className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
@@ -617,7 +657,7 @@ export default function SuccessPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex gap-4 w-full flex-wrap">
+                      <div className="flex flex-wrap gap-4 w-full">
                         <Button
                           className="flex-1 bg-red-600 hover:bg-red-700"
                           onClick={() => setShowLeaseAgreementModal(true)}
@@ -639,16 +679,16 @@ export default function SuccessPage() {
 
             {status?.toString()?.toLowerCase() === "rejected" && (
               <>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">
+                <Card className="p-6 w-full shadow-sm">
+                  <h2 className="mb-4 text-xl font-semibold">
                     Application Status
                   </h2>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <div className="flex gap-4 items-center mb-4">
+                    <div className="flex justify-center items-center w-12 h-12 bg-red-100 rounded-full">
                       <X className="w-6 h-6 text-red-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="text-lg font-semibold">
                         Application Rejected
                       </h3>
                       <p className="text-gray-600">
@@ -657,29 +697,29 @@ export default function SuccessPage() {
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Application ID</span>
                       <span className="font-medium break-all">
                         APP-{idToUse}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Decision Date</span>
                       <span className="font-medium">
                         {format(application?.createdAt, "MMMM d, yyyy")}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Status</span>
                       <Badge variant="destructive">{application?.status}</Badge>
                     </div>
                   </div>
                 </Card>
-                <Card className="p-6 shadow-sm w-full">
-                  <h2 className="text-xl font-semibold mb-4">What's Next?</h2>
+                <Card className="p-6 w-full shadow-sm">
+                  <h2 className="mb-4 text-xl font-semibold">What's Next?</h2>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <div className="flex gap-4 items-center">
+                      <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
                         <Home className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
@@ -699,8 +739,8 @@ export default function SuccessPage() {
               </>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg sticky top-4">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="sticky top-4 p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+              <div className="flex gap-4 items-center mb-6">
                 <div className="relative">
                   <div
                     className={cn(
@@ -718,11 +758,11 @@ export default function SuccessPage() {
                       }
                       alt={propertyData?.landlord?.user?.profile?.firstName}
                       fill
-                      className="rounded-full object-cover"
+                      className="object-cover rounded-full"
                     />
                   </div>
                   {true && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                    <div className="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   )}
                 </div>
                 <div>
@@ -744,7 +784,7 @@ export default function SuccessPage() {
                 </Button>
               </div>
               <Button
-                className="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white mb-4"
+                className="mb-4 w-full text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900"
                 onClick={() => handleContactClick("chat")}
               >
                 Chat with landlord
@@ -755,6 +795,16 @@ export default function SuccessPage() {
                 onClick={() => handleContactClick("email")}
               >
                 Email landlord
+              </Button>
+              
+              {/* Test Stripe Payment Button */}
+              <Button
+                variant="outline"
+                className="mt-4 w-full text-green-600 border-green-500 hover:bg-green-50"
+                onClick={handleCreatePayment}
+                disabled={isCreateLeasePaymentPending}
+              >
+                {isCreateLeasePaymentPending ? "Creating Payment..." : "🧪 Test Stripe Payment"}
               </Button>
 
               <LandlordProfileModal
@@ -778,7 +828,7 @@ export default function SuccessPage() {
 
         {/* Similar Properties */}
         <section className="mt-12">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">Similar Properties</h2>
             <div className="flex gap-2">
               <Button
@@ -788,7 +838,7 @@ export default function SuccessPage() {
                 onClick={prevSlide}
                 disabled={scrollIndex === 0}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
@@ -797,11 +847,11 @@ export default function SuccessPage() {
                 onClick={nextSlide}
                 disabled={scrollIndex >= similarProperties.length - 3}
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
-          <div className="relative overflow-hidden">
+          <div className="overflow-hidden relative">
             <motion.div
               className="flex gap-6"
               initial={false}
@@ -833,18 +883,19 @@ export default function SuccessPage() {
                         />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold mb-2">
+                        <h3 className="mb-2 font-semibold">
                           {similarProperty?.property?.name}
                         </h3>
-                        <p className="text-gray-600 text-sm mb-2">
+                        <p className="mb-2 text-sm text-gray-600">
                           {similarProperty?.property?.address},{" "}
                           {similarProperty?.property?.city},{" "}
                           {similarProperty?.property?.state?.name},{" "}
                           {similarProperty?.property?.country}
                         </p>
-                        <p className="text-red-600 font-semibold">
+                        <p className="font-semibold text-red-600">
                           {formatPrice(
-                            Number(similarProperty?.property?.price) || 0
+                            Number(similarProperty?.property?.price) || 0,
+                            similarProperty?.property?.currency || 'USD'
                           )}
                         </p>
                       </div>
@@ -891,11 +942,15 @@ export default function SuccessPage() {
         }
       />
 
-      <PaymentModal
-        isOpen={showPaymentModal}
+      <DepositComponent
+        stripePromise={stripePromise}
+        opened={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
+        clientSecret={clientSecret}
+        amount={paymentAmount}
+        currency="USD"
         onPaymentSuccess={handlePaymentSuccess}
-        onPaymentFailure={handlePaymentFailure}
+        onPaymentError={handlePaymentFailure}
       />
       <SaveModal
         isOpen={showSaveModal}
@@ -916,7 +971,7 @@ export default function SuccessPage() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md shadow-lg"
+          className="fixed right-4 bottom-4 p-4 text-white bg-green-500 rounded-md shadow-lg"
         >
           Payment successful! Your lease agreement has been submitted.
         </motion.div>
@@ -926,7 +981,7 @@ export default function SuccessPage() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-md shadow-lg"
+          className="fixed right-4 bottom-4 p-4 text-white bg-red-500 rounded-md shadow-lg"
         >
           Payment failed. Please try again or contact support.
         </motion.div>

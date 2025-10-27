@@ -26,11 +26,41 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
-const AcceptInviteModal = dynamic(() => import("@/app/dashboard/components/modals/accept-invite-modal").then(mod => mod.default), { ssr: false, loading: () => null });
-const RejectInviteModal = dynamic(() => import("@/app/dashboard/components/modals/reject-invite-modal").then(mod => mod.default), { ssr: false, loading: () => null });
-const RescheduleModal = dynamic(() => import("@/app/dashboard/components/modals/reschedule-modal").then(mod => mod.default), { ssr: false, loading: () => null });
-const RescheduleViewingModal = dynamic(() => import("@/app/dashboard/components/modals/reschedule-viewing-modal").then(mod => mod.default), { ssr: false, loading: () => null });
-const CancelViewingModal = dynamic(() => import("@/app/dashboard/components/modals/cancel-viewing-modal").then(mod => mod.default), { ssr: false, loading: () => null });
+const AcceptInviteModal = dynamic(
+  () =>
+    import("@/app/dashboard/components/modals/accept-invite-modal").then(
+      (mod) => mod.default
+    ),
+  { ssr: false, loading: () => null }
+);
+const RejectInviteModal = dynamic(
+  () =>
+    import("@/app/dashboard/components/modals/reject-invite-modal").then(
+      (mod) => mod.default
+    ),
+  { ssr: false, loading: () => null }
+);
+const RescheduleModal = dynamic(
+  () =>
+    import("@/app/dashboard/components/modals/reschedule-modal").then(
+      (mod) => mod.default
+    ),
+  { ssr: false, loading: () => null }
+);
+const RescheduleViewingModal = dynamic(
+  () =>
+    import("@/app/dashboard/components/modals/reschedule-viewing-modal").then(
+      (mod) => mod.default
+    ),
+  { ssr: false, loading: () => null }
+);
+const CancelViewingModal = dynamic(
+  () =>
+    import("@/app/dashboard/components/modals/cancel-viewing-modal").then(
+      (mod) => mod.default
+    ),
+  { ssr: false, loading: () => null }
+);
 import { InviteData, Landlord } from "../type";
 import { PropertyViewingDetailSkeleton } from "./PropertyViewingSkeleton";
 import {
@@ -39,6 +69,7 @@ import {
   ViewingActions
 } from "./ViewingsComp";
 import { displayImages } from "@/app/property/[id]/utils";
+import { MapWithAmenities } from "@/components/maps";
 
 interface Property {
   id: number;
@@ -249,7 +280,7 @@ export default function PropertyViewingDetailPage() {
 
   return (
     <div className="layout">
-      <div className="flex items-center gap-2 mb-6 text-sm">
+      <div className="flex gap-2 items-center mb-6 text-sm">
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
           Home
         </Link>
@@ -279,7 +310,7 @@ export default function PropertyViewingDetailPage() {
         </div>
 
         {/* Gallery Navigation */}
-        <div className="absolute inset-x-0 bottom-0 flex gap-2 p-4 overflow-x-auto">
+        <div className="flex overflow-x-auto absolute inset-x-0 bottom-0 gap-2 p-4">
           {propertyData?.images.map((image: any, index: number) => (
             <button
               key={index}
@@ -299,7 +330,7 @@ export default function PropertyViewingDetailPage() {
         </div>
 
         {/* Overlay Buttons */}
-        <div className="absolute top-4 left-4 flex gap-2">
+        <div className="flex absolute top-4 left-4 gap-2">
           <Button
             variant="secondary"
             size="sm"
@@ -317,36 +348,36 @@ export default function PropertyViewingDetailPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="flex absolute top-4 right-4 gap-2">
           <Button
             variant="secondary"
             size="icon"
             className="bg-white/90 hover:bg-white"
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="w-4 h-4" />
           </Button>
           <Button
             variant="secondary"
             size="icon"
             className="bg-white/90 hover:bg-white"
           >
-            <Share2 className="h-4 w-4" />
+            <Share2 className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="container px-4 mx-auto">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Property Information */}
           <div className="lg:col-span-2">
             <div className="space-y-6">
               <div>
-                <h1 className="text-2xl font-bold mb-2">
+                <h1 className="mb-2 text-2xl font-bold">
                   {propertyData?.name}
                 </h1>
                 <div className="flex items-center text-gray-600">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  <p className="text-gray-600 text-sm mb-2">
+                  <MapPin className="mr-1 w-4 h-4" />
+                  <p className="mb-2 text-sm text-gray-600">
                     {propertyData?.address},{" "}
                     {propertyData?.address2 && propertyData?.address2 !== ""
                       ? propertyData?.address2
@@ -355,8 +386,11 @@ export default function PropertyViewingDetailPage() {
                     {propertyData?.country}
                   </p>
                 </div>
-                <div className="text-2xl font-bold text-red-600 mt-4">
-                  {formatPrice(Number(propertyData?.price))}{" "}
+                <div className="mt-4 text-2xl font-bold text-red-600">
+                  {formatPrice(
+                    Number(propertyData?.price),
+                    propertyData?.currency || "USD"
+                  )}{" "}
                   <span className="text-sm font-normal text-gray-600">
                     per month
                   </span>
@@ -364,51 +398,55 @@ export default function PropertyViewingDetailPage() {
               </div>
 
               {/* Viewing Schedule Information Card */}
-              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-neutral-700">Viewing Schedule</h3>
-                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium border ${
-                    (() => {
+              <div className="p-6 space-y-4 rounded-lg border bg-neutral-50 border-neutral-200">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-neutral-700">
+                    Viewing Schedule
+                  </h3>
+                  <span
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium border ${(() => {
                       switch (viewingStatus) {
-                        case 'ACCEPTED':
-                          return 'bg-green-100 text-green-800 border-green-200';
-                        case 'RESCHEDULED_ACCEPTED':
-                          return 'bg-blue-100 text-blue-800 border-blue-200';
-                        case 'RESCHEDULED':
-                          return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                        case 'REJECTED':
-                          return 'bg-red-100 text-red-800 border-red-200';
-                        case 'PENDING':
-                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                        case "ACCEPTED":
+                          return "bg-green-100 text-green-800 border-green-200";
+                        case "RESCHEDULED_ACCEPTED":
+                          return "bg-blue-100 text-blue-800 border-blue-200";
+                        case "RESCHEDULED":
+                          return "bg-yellow-100 text-yellow-800 border-yellow-200";
+                        case "REJECTED":
+                          return "bg-red-100 text-red-800 border-red-200";
+                        case "PENDING":
+                          return "bg-gray-100 text-gray-800 border-gray-200";
                         default:
-                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                          return "bg-gray-100 text-gray-800 border-gray-200";
                       }
-                    })()
-                  }`}>
+                    })()}`}
+                  >
                     {(() => {
                       switch (viewingStatus) {
-                        case 'ACCEPTED':
-                          return 'Accepted';
-                        case 'RESCHEDULED_ACCEPTED':
-                          return 'Rescheduled & Accepted';
-                        case 'RESCHEDULED':
-                          return 'Rescheduled';
-                        case 'REJECTED':
-                          return 'Declined';
-                        case 'PENDING':
-                          return 'Pending';
+                        case "ACCEPTED":
+                          return "Accepted";
+                        case "RESCHEDULED_ACCEPTED":
+                          return "Rescheduled & Accepted";
+                        case "RESCHEDULED":
+                          return "Rescheduled";
+                        case "REJECTED":
+                          return "Declined";
+                        case "PENDING":
+                          return "Pending";
                         default:
                           return viewingStatus;
                       }
                     })()}
                   </span>
                 </div>
-                
+
                 <div className="space-y-3">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-4 border">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-neutral-600">Original Date</span>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="p-4 bg-white rounded-lg border">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-neutral-600">
+                          Original Date
+                        </span>
                         <Calendar className="w-4 h-4 text-neutral-500" />
                       </div>
                       <div className="text-lg font-semibold text-neutral-900">
@@ -418,11 +456,13 @@ export default function PropertyViewingDetailPage() {
                         at {scheduledTime}
                       </div>
                     </div>
-                    
+
                     {dataInvite?.reScheduleDate && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-blue-700">Rescheduled To</span>
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium text-blue-700">
+                            Rescheduled To
+                          </span>
                           <Calendar className="w-4 h-4 text-blue-600" />
                         </div>
                         <div className="text-lg font-semibold text-blue-900">
@@ -436,47 +476,66 @@ export default function PropertyViewingDetailPage() {
                   </div>
 
                   {/* Response Steps Timeline */}
-                  {(dataInvite as any)?.responseStepsCompleted && (dataInvite as any).responseStepsCompleted.length > 1 && (
-                    <div className="border-t pt-4 mt-4">
-                      <h4 className="text-sm font-medium text-neutral-700 mb-3">Progress Timeline</h4>
-                      <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-                        {(dataInvite as any).responseStepsCompleted.map((step: string, index: number) => (
-                          <div key={index} className="flex items-center flex-shrink-0">
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-3 h-3 rounded-full ${
-                                index === (dataInvite as any).responseStepsCompleted.length - 1 
-                                  ? 'bg-blue-500' 
-                                  : 'bg-green-500'
-                              }`}></div>
-                              <span className="text-sm font-medium px-2 py-1 bg-neutral-100 rounded">
-                                {step.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
-                              </span>
-                            </div>
-                            {index < (dataInvite as any).responseStepsCompleted.length - 1 && (
-                              <div className="w-8 h-0.5 bg-neutral-300 mx-2"></div>
-                            )}
-                          </div>
-                        ))}
+                  {(dataInvite as any)?.responseStepsCompleted &&
+                    (dataInvite as any).responseStepsCompleted.length > 1 && (
+                      <div className="pt-4 mt-4 border-t">
+                        <h4 className="mb-3 text-sm font-medium text-neutral-700">
+                          Progress Timeline
+                        </h4>
+                        <div className="flex overflow-x-auto items-center pb-2 space-x-2">
+                          {(dataInvite as any).responseStepsCompleted.map(
+                            (step: string, index: number) => (
+                              <div
+                                key={index}
+                                className="flex flex-shrink-0 items-center"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <div
+                                    className={`w-3 h-3 rounded-full ${
+                                      index ===
+                                      (dataInvite as any).responseStepsCompleted
+                                        .length -
+                                        1
+                                        ? "bg-blue-500"
+                                        : "bg-green-500"
+                                    }`}
+                                  ></div>
+                                  <span className="px-2 py-1 text-sm font-medium rounded bg-neutral-100">
+                                    {step
+                                      .replace(/_/g, " ")
+                                      .toLowerCase()
+                                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                                  </span>
+                                </div>
+                                {index <
+                                  (dataInvite as any).responseStepsCompleted
+                                    .length -
+                                    1 && (
+                                  <div className="w-8 h-0.5 bg-neutral-300 mx-2"></div>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               </div>
 
               <div className="space-y-6">
                 <section>
-                  <h2 className="text-xl font-semibold mb-4">Description</h2>
-                  <p className="text-gray-600 leading-relaxed">
+                  <h2 className="mb-4 text-xl font-semibold">Description</h2>
+                  <p className="leading-relaxed text-gray-600">
                     {propertyData?.description}
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="text-xl font-semibold mb-4">Features</h2>
+                  <h2 className="mb-4 text-xl font-semibold">Features</h2>
                   <div className="grid grid-cols-2 gap-4">
-                    {propertyData?.amenities?.map(
+                    {propertyData?.keyFeatures?.map(
                       (feature: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2">
+                        <div key={index} className="flex gap-2 items-center">
                           <Check className="w-5 h-5 text-green-600" />
                           <span>{feature}</span>
                         </div>
@@ -485,61 +544,52 @@ export default function PropertyViewingDetailPage() {
                   </div>
                 </section>
 
-                <section>
-                  <h2 className="text-xl font-semibold mb-4">Location</h2>
-                  <div className="h-[300px] bg-gray-100 rounded-lg mb-6"></div>
-
-                  <div className="grid md:grid-cols-3 gap-8">
-                    <div>
-                      <h3 className="font-semibold mb-4">Nearest stations</h3>
-                      <ul className="space-y-2">
-                        {nearbyStations.map((station, index) => (
-                          <li
-                            key={index}
-                            className="flex justify-between text-sm"
-                          >
-                            <span>{station.name}</span>
-                            <span className="text-gray-500">
-                              {station.distance}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                <div className="">
+                  <h2 className="mb-4 text-xl font-semibold">
+                    Location on map
+                  </h2>
+                  {propertyData?.latitude && propertyData?.longitude ? (
+                    <MapWithAmenities
+                      latitude={Number(propertyData?.latitude || 0)}
+                      longitude={Number(propertyData?.longitude || 0)}
+                      zoom={15}
+                      title="Property Location with Nearby Amenities"
+                      amenityTypes={[
+                        "restaurant",
+                        "hospital",
+                        "school",
+                        "shopping_mall",
+                        "gas_station",
+                        "bank"
+                      ]}
+                      radius={2}
+                      height="500px"
+                    />
+                  ) : (
+                    <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden border border-gray-200 dark:border-gray-700">
+                      <div className="flex absolute inset-0 flex-col gap-4 justify-center items-center">
+                        <MapPin className="w-8 h-8 text-gray-400" />
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Location not available
+                        </div>
+                        <button
+                          className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                          onClick={() =>
+                            window.open(
+                              `https://www.openstreetmap.org/search?query=${encodeURIComponent(
+                                `${data?.property?.city}, ${data?.property?.country}` ||
+                                  ""
+                              )}`,
+                              "_blank"
+                            )
+                          }
+                        >
+                          View on OpenStreetMap
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold mb-4">Nearest malls</h3>
-                      <ul className="space-y-2">
-                        {nearbyMalls.map((mall, index) => (
-                          <li
-                            key={index}
-                            className="flex justify-between text-sm"
-                          >
-                            <span>{mall.name}</span>
-                            <span className="text-gray-500">
-                              {mall.distance}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-4">Nearest schools</h3>
-                      <ul className="space-y-2">
-                        {nearbySchools.map((school, index) => (
-                          <li
-                            key={index}
-                            className="flex justify-between text-sm"
-                          >
-                            <span>{school.name}</span>
-                            <span className="text-gray-500">
-                              {school.distance}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </section>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -547,15 +597,15 @@ export default function PropertyViewingDetailPage() {
           {/* Another state to */}
           <div className="space-y-6">
             {viewingStatus === ViewingStatus.PENDING && (
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4">
+              <div className="p-6 bg-gray-50 rounded-lg">
+                <h2 className="mb-4 text-lg font-semibold">
                   Property Viewing Schedule
                 </h2>
                 {/* Status indicator */}
-                {/* <div className="flex items-center justify-between mb-4">
+                {/* <div className="flex justify-between items-center mb-4">
                   <span className="text-sm text-gray-500">Viewing invite</span>
                   {viewingStatus === ViewingStatus.CANCELLED && (
-                    <span className="text-red-600 font-medium text-sm">
+                    <span className="text-sm font-medium text-red-600">
                       Rejected
                     </span>
                   )}
@@ -565,7 +615,7 @@ export default function PropertyViewingDetailPage() {
                 <ScheduleDisplay date={scheduledDate} time={scheduledTime} />
 
                 {/* Accept/Reject Actions */}
-                <div className="space-y-3 mt-4">
+                <div className="mt-4 space-y-3">
                   <Button
                     className="w-full bg-red-600 hover:bg-red-700"
                     onClick={() => setShowAcceptModal(true)}
@@ -580,13 +630,13 @@ export default function PropertyViewingDetailPage() {
               </div>
             )}
 
-            <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="p-6 bg-gray-50 rounded-lg">
               <div className="space-y-4">
                 {/* Accepted Schedule */}
                 {viewingStatus === ViewingStatus.ACCEPTED && (
                   <div className="space-y-4">
                     <Card className="p-6">
-                      <h2 className="text-lg font-semibold mb-4">
+                      <h2 className="mb-4 text-lg font-semibold">
                         Property Viewing Schedule
                       </h2>
                       <ScheduleDisplay
@@ -606,7 +656,7 @@ export default function PropertyViewingDetailPage() {
                 {viewingStatus === ViewingStatus.APPROVED && (
                   <div className="space-y-4">
                     <Card className="p-6">
-                      <h2 className="text-lg font-semibold mb-4">
+                      <h2 className="mb-4 text-lg font-semibold">
                         Approved Property Viewing Schedule
                       </h2>
                       <ScheduleDisplay
@@ -626,14 +676,14 @@ export default function PropertyViewingDetailPage() {
                 {/* Rescheduled Schedule */}
                 {viewingStatus === ViewingStatus.RESCHEDULED && (
                   <div className="space-y-4">
-                    <div className="bg-gray-100 p-4 rounded-lg">
+                    <div className="p-4 bg-gray-100 rounded-lg">
                       <ScheduleDisplay
                         date={scheduledDate}
                         time={scheduledTime}
                         label="Original Schedule"
                       />
                     </div>
-                    <div className="bg-gray-100 p-4 rounded-lg">
+                    <div className="p-4 bg-gray-100 rounded-lg">
                       <ScheduleDisplay
                         date={rescheduledDateData}
                         time={rescheduledTimeData}
@@ -651,7 +701,7 @@ export default function PropertyViewingDetailPage() {
                       time={scheduledTime}
                       isStrikethrough
                     />
-                    <div className="text-red-600 font-medium mt-2">
+                    <div className="mt-2 font-medium text-red-600">
                       Viewing Cancelled
                     </div>
                   </>
@@ -660,7 +710,7 @@ export default function PropertyViewingDetailPage() {
                 {viewingStatus === ViewingStatus.AWAITING_FEEDBACK && (
                   <div className="space-y-4">
                     <Card className="p-6">
-                      <h2 className="text-lg font-semibold mb-4">
+                      <h2 className="mb-4 text-lg font-semibold">
                         Property Viewing Schedule
                       </h2>
                       <ScheduleDisplay
@@ -668,7 +718,7 @@ export default function PropertyViewingDetailPage() {
                         time={scheduledTime}
                       />
                     </Card>
-                    <div className="text-gray-600 font-medium mt-2">
+                    <div className="mt-2 font-medium text-gray-600">
                       Landlord is awaiting your feedback
                     </div>
 
@@ -702,7 +752,7 @@ export default function PropertyViewingDetailPage() {
 
         {/* Similar Properties */}
         <div className="max-w-5xl">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Similar properties</h2>
             <div className="flex gap-2">
               <Button
@@ -726,7 +776,7 @@ export default function PropertyViewingDetailPage() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden">
+          <div className="overflow-hidden relative">
             <motion.div
               className="flex gap-5 w-full"
               initial={false}

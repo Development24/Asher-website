@@ -83,6 +83,15 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="relative aspect-[4/3] rounded-t-lg overflow-hidden">
+          {/* Hierarchy Badge */}
+          {property?.hierarchy && (
+            <div className="absolute top-2 left-2 z-10">
+              <div className="bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium">
+                {property.hierarchy.level.toUpperCase()}
+              </div>
+            </div>
+          )}
+          
           <Image
             src={memoizedValues.imageUrl}
             alt={memoizedValues.propertyName}
@@ -117,6 +126,13 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
         </div>
 
         <div className="p-4 sm:p-2">
+          {/* Context Information */}
+          {property?.hierarchy && property.hierarchy.context !== property?.property?.name && (
+            <div className="mb-2">
+              <p className="text-xs text-gray-500 mb-1">{property.hierarchy.context}</p>
+            </div>
+          )}
+          
           <div className="flex justify-between items-start mb-1 sm:mb-0.5">
             <h3 className="font-semibold text-lg sm:text-base line-clamp-1 text-neutral-900">
               {memoizedValues.propertyName}
@@ -140,6 +156,15 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
               {memoizedValues.bathroomCount} bathroom{memoizedValues.bathroomCount !== '1' ? 's' : ''}
             </span>
           </div>
+          
+          {/* Related Listings Preview */}
+          {property?.relatedListings && property.relatedListings.totalCount > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-500">
+                {property.relatedListings.totalCount} other space{property.relatedListings.totalCount !== 1 ? 's' : ''} available in this building
+              </p>
+            </div>
+          )}
         </div>
       </motion.div>
     </Link>

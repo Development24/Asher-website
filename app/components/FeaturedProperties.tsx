@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, formatPrice, getPropertyPrice } from "@/lib/utils";
+import { cn, formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount } from "@/lib/utils";
 import Link from "next/link";
 import type React from "react";
 import { useGetProperties } from "@/services/property/propertyFn";
@@ -250,11 +250,11 @@ export function FeaturedProperties() {
                   <div className="flex items-center gap-4 text-sm text-neutral-600">
                     <span className="flex items-center gap-1">
                       <Bed className="w-4 h-4" />
-                      {property?.property?.bedrooms} bedrooms
+                      {getBedroomCount(property?.property)} bedroom{getBedroomCount(property?.property) !== '1' ? 's' : ''}
                     </span>
                     <span className="flex items-center gap-1">
                       <Bath className="w-4 h-4" />
-                      {property?.property?.bathrooms} bathrooms
+                      {getBathroomCount(property?.property)} bathroom{getBathroomCount(property?.property) !== '1' ? 's' : ''}
                     </span>
                   </div>
                 </div>

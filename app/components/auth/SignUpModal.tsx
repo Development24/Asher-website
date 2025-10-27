@@ -9,6 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, X } from "lucide-react";
 import { useRegisterUser } from "@/services/auth/authFn";
 import { toast } from "sonner";
+import { GoogleLoginButton } from "./GoogleLoginButton";
+import { useAuthRedirectStore } from "@/store/authRedirect";
+import { useRouter } from "next/navigation";
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -33,6 +36,9 @@ const SignUpModal = ({
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { mutate: registerUser, isPending } = useRegisterUser();
+  const redirectUrl = useAuthRedirectStore((state) => state.redirectUrl);
+  const setRedirectUrl = useAuthRedirectStore((state) => state.setRedirectUrl);
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -75,8 +81,15 @@ const SignUpModal = ({
     }
   };
 
-  const handleGoogleSignUp = () => {
-    // Implement Google sign up logic here
+  const handleGoogleSuccess = (data: any) => {
+    console.log("Google login success:", data);
+    onClose();
+    if (redirectUrl) {
+      router.push(redirectUrl);
+      setRedirectUrl(null);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -88,28 +101,28 @@ const SignUpModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-50 backdrop-blur-sm bg-background/80"
           />
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: "spring", damping: 15, stiffness: 300 }}
-            className="fixed inset-0 flex items-center justify-center z-50"
+            className="flex fixed inset-0 z-50 justify-center items-center"
             role="dialog"
             aria-modal="true"
             aria-label="Sign up dialog"
           >
-            <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md">
-              <div className="h-full flex flex-col">
+            <div className="p-6 w-full max-w-md rounded-lg shadow-lg backdrop-blur-md bg-background/50">
+              <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold">Create an account</h2>
                   <Button variant="ghost" size="icon" onClick={onClose}>
-                    <X className="h-5 w-5" />
+                    <X className="w-5 h-5" />
                   </Button>
                 </div>
                 <div className="max-h-[90vh] overflow-y-auto">
-                  <form onSubmit={handleSubmit} className="space-y-4 flex-grow">
+                  <form onSubmit={handleSubmit} className="flex-grow space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label
@@ -203,7 +216,7 @@ const SignUpModal = ({
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          className="absolute right-3 top-1/2 text-gray-500 -translate-y-1/2 hover:text-gray-700"
                         >
                           {showPassword ? (
                             <EyeOff size={20} />
@@ -223,7 +236,7 @@ const SignUpModal = ({
                       />
                       <label
                         htmlFor="terms"
-                        className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        className="text-sm leading-none text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
                         I agree to terms & conditions
                       </label>
@@ -231,7 +244,7 @@ const SignUpModal = ({
                     <LoadingButton
                       type="submit"
                       disabled={!acceptedTerms}
-                      className="w-full bg-primary hover:bg-primary-dark"
+                      className="w-full !bg-primary hover:bg-primary-dark"
                       loading={isPending}
                     >
                       Sign up
@@ -239,20 +252,18 @@ const SignUpModal = ({
                   </form>
                   <div className="mt-6">
                     <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
+                      <div className="flex absolute inset-0 items-center">
                         <div className="w-full border-t border-gray-300"></div>
                       </div>
-                      <div className="relative flex justify-center text-sm">
+                      <div className="flex relative justify-center text-sm">
                         <span className="px-2 bg-background text-muted-foreground">
                           or
                         </span>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full mt-4"
-                      onClick={handleGoogleSignUp}
+                    <GoogleLoginButton
+                      onSuccess={handleGoogleSuccess}
+                      className="mt-4 w-full"
                     >
                       <Image
                         src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -262,14 +273,14 @@ const SignUpModal = ({
                         className="mr-2"
                       />
                       Continue with Google
-                    </Button>
+                    </GoogleLoginButton>
                   </div>
-                  <p className="text-center text-sm text-muted-foreground mt-6">
+                  <p className="mt-6 text-sm text-center text-muted-foreground">
                     Already have an account?{" "}
                     <button
                       type="button"
                       onClick={onLoginClick}
-                      className="text-primary hover:underline font-semibold"
+                      className="font-semibold text-primary hover:underline"
                     >
                       Sign in
                     </button>

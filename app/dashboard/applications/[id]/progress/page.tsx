@@ -342,7 +342,7 @@ export default function ApplicationProgressPage() {
                     </p>
                   </div>
                   <div className="text-lg font-semibold text-red-600">
-                    {formatPrice(Number(propertyData.properties.rentalFee))}
+                    {formatPrice(Number(propertyData.properties.rentalFee), propertyData.properties.currency || 'USD')}
                     <span className="text-sm font-normal text-gray-500">
                       {" "}
                       / month

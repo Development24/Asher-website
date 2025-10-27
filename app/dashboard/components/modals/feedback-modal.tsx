@@ -92,7 +92,7 @@ const FeedbackModal = ({
   const propertyAddress = data?.address || "N/A";
   const propertyPrice =
     typeof data?.rentalFee === "number" && !isNaN(data.rentalFee)
-      ? formatPrice(data.rentalFee)
+      ? formatPrice(data.rentalFee, data?.currency || 'USD')
       : "—";
   const bedrooms = data?.noBedRoom ?? "—";
   const bathrooms = data?.noBathRoom ?? "—";

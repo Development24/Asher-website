@@ -33,7 +33,7 @@ import { useCompleteApplication } from "@/services/application/applicationFn";
 import { useCreatePayment } from "@/services/finance/financeFn";
 import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { loadStripe } from "@stripe/stripe-js";
-import { LoadingStates } from '@/components/ui/loading-states';
+import { LoadingStates } from "@/components/ui/loading-states";
 
 // PERSONAL_KIN
 //   REFEREE
@@ -204,7 +204,6 @@ export function ApplicationForm({
     }
   }, [lastCompletedStep, nextStepInfo]);
 
-
   // Get the component for the current step
   const CurrentStepComponent = steps.find(
     (step) => step.id === currentStep
@@ -233,7 +232,7 @@ export function ApplicationForm({
       },
       {
         onSuccess: (data) => {
-          const response = data as IntialPaymentResInterface;
+          const response = data as unknown as IntialPaymentResInterface;
           const { paymentDetails } = response;
           setClientSecret(paymentDetails?.client_secret);
           setShowPaymentModal(true);
@@ -247,6 +246,53 @@ export function ApplicationForm({
     );
   };
   const hasApplicationFee = applicationData?.applicationFee === "Yes";
+
+  // Get application fee amount - check multiple sources
+  const getApplicationFeeAmount = () => {
+    console.log("Checking application fee sources...");
+    console.log("Application data:", applicationData);
+
+    // Check if fee amount is in properties
+    if (applicationData?.properties?.applicationFee) {
+      console.log(
+        "Found fee in properties:",
+        applicationData.properties.applicationFee
+      );
+      return applicationData.properties.applicationFee;
+    }
+
+    // Check if fee amount is in application data (as any to handle dynamic properties)
+    const appData = applicationData as any;
+    if (appData?.applicationFeeAmount) {
+      console.log(
+        "Found fee in applicationFeeAmount:",
+        appData.applicationFeeAmount
+      );
+      return appData.applicationFeeAmount;
+    }
+
+    if (appData?.applicationInvites?.feeAmount) {
+      console.log(
+        "Found fee in applicationInvites:",
+        appData.applicationInvites.feeAmount
+      );
+      return appData.applicationInvites.feeAmount;
+    }
+
+    // Fallback to default amount based on currency
+    const currency = applicationData?.properties?.currency || "USD";
+    const defaultFees = {
+      USD: 2000, // $20.00 in cents
+      NGN: 30000, // ₦300.00 in kobo
+      GBP: 1500, // £15.00 in pence
+      EUR: 1800 // €18.00 in cents
+    };
+
+    const fallbackAmount =
+      defaultFees[currency as keyof typeof defaultFees] || 2000;
+    console.log(`Using fallback fee: ${fallbackAmount} ${currency}`);
+    return fallbackAmount;
+  };
 
   // Track which steps have been submitted
   const [submittedSteps, setSubmittedSteps] = useState<number[]>([]);
@@ -277,14 +323,10 @@ export function ApplicationForm({
     }
 
     // Show payment modal if current step is the last step
-    if (
-      arrayLastStep.id === currentStep &&
-      hasApplicationFee
-    ) {
-      // TODO: Get these values from the backend response
-      // For now, using default values
-      const applicationFee = 2000; // $20.00 in cents
+    if (arrayLastStep.id === currentStep && hasApplicationFee) {
+      const applicationFee = getApplicationFeeAmount();
       const currency = applicationData?.properties?.currency || "USD";
+      console.log(`Processing application fee: ${applicationFee} ${currency}`);
       handleAmountSubmit(applicationFee, currency);
       return;
     }
@@ -339,17 +381,17 @@ export function ApplicationForm({
   // Loading state
   if (isApplicationFetching) {
     return (
-      <div className="layout bg-white rounded-lg shadow-sm p-6">
+      <div className="p-6 bg-white rounded-lg shadow-sm layout">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-10 w-24" />
+            <Skeleton className="w-64 h-8" />
+            <Skeleton className="w-24 h-10" />
           </div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex justify-between items-center mb-4">
             {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="flex flex-col items-center mx-2">
                 <Skeleton className="w-8 h-8 rounded-full" />
-                <Skeleton className="h-4 w-16 mt-1" />
+                <Skeleton className="mt-1 w-16 h-4" />
               </div>
             ))}
           </div>
@@ -361,7 +403,7 @@ export function ApplicationForm({
 
   // Application form
   return (
-    <div className="layout bg-white rounded-lg shadow-sm p-6">
+    <div className="p-6 bg-white rounded-lg shadow-sm layout">
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Tenant Application Form</h1>
@@ -369,7 +411,7 @@ export function ApplicationForm({
             Save Draft
           </Button>
         </div>
-        <div className="flex items-center justify-between mb-4 overflow-x-auto">
+        <div className="flex overflow-x-auto justify-between items-center mb-4">
           {steps.map((step, index) => (
             <div key={index} className="flex flex-col items-center mx-2">
               <div
@@ -434,20 +476,26 @@ export function ApplicationForm({
           opened={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           clientSecret={clientSecret}
-          amount={2000}
+          amount={getApplicationFeeAmount()}
           currency={applicationData?.properties?.currency || "USD"}
           onPaymentSuccess={() => {
             // Handle successful payment
-            // You could show a success message or redirect
-            router.push("/dashboard/applications/payment-success");
-            refetch();
+            console.log("Payment successful, completing application...");
+            completeApplication(String(applicationId), {
+              onSuccess: (data: any) => {
+                router.replace(
+                  `/dashboard/applications/${
+                    data?.id
+                  }/${data?.status?.toLowerCase()}`
+                );
+              }
+            });
           }}
           onPaymentError={(error) => {
             console.error("Payment failed:", error);
             // You could show an error message
           }}
         />
-      
       )}
     </div>
   );

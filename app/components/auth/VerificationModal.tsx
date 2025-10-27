@@ -80,7 +80,7 @@ const VerificationModal = ({
     try {
       // Implement your verification logic here
       verifyEmail(
-        { email, code: verificationCode },
+        { email, token: verificationCode },
         {
           onSuccess: () => {
             setCode(["", "", "", "", "", ""])
@@ -124,24 +124,24 @@ const VerificationModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-50 backdrop-blur-sm bg-background/80"
           />
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: "spring", damping: 15, stiffness: 300 }}
-            className="fixed inset-0 flex items-center justify-center z-50"
+            className="flex fixed inset-0 z-50 justify-center items-center"
             role="dialog"
             aria-modal="true"
             aria-label="Email verification dialog"
           >
-            <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md">
-              <div className="h-full flex flex-col">
+            <div className="p-6 w-full max-w-md rounded-lg shadow-lg backdrop-blur-md bg-background/50">
+              <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold">Verify your email</h2>
                   <Button variant="ghost" size="icon" onClick={onClose}>
-                    <X className="h-5 w-5" />
+                    <X className="w-5 h-5" />
                   </Button>
                 </div>
                 <div className="space-y-4 flex-grow max-h-[90vh] overflow-y-auto">
@@ -149,7 +149,7 @@ const VerificationModal = ({
                     We've sent a 6-digit verification code to {email}. Enter the
                     code below to confirm your email address.
                   </p>
-                  <div className="flex justify-center gap-2">
+                  <div className="flex gap-2 justify-center">
                     {code.map((digit, index) => (
                       <Input
                         key={index}
@@ -160,19 +160,19 @@ const VerificationModal = ({
                         onKeyDown={(e) => handleKeyDown(index, e)}
                         onPaste={handlePaste}
                         ref={(el) => { inputRefs.current[index] = el; }}
-                        className="w-12 h-12 text-center text-2xl"
+                        className="w-12 h-12 text-2xl text-center"
                       />
                     ))}
                   </div>
                   <LoadingButton
                     onClick={handleVerify}
-                    className="w-full bg-primary hover:bg-primary-dark"
+                    className="w-full !bg-primary hover:!bg-primary-dark"
                     disabled={isVerifyingEmail || isResendingOTP}
                     loading={isVerifyingEmail}
                   >
                     {isVerifyingEmail ? (
-                      <span className="flex items-center justify-center">
-                        <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <span className="flex justify-center items-center">
+                        <svg className="mr-2 w-5 h-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                         </svg>
@@ -182,17 +182,17 @@ const VerificationModal = ({
                       'Verify'
                     )}
                   </LoadingButton>
-                  <p className="text-center text-sm text-muted-foreground">
+                  <p className="text-sm text-center text-muted-foreground">
                     Didn't receive a code?{" "}
                     <button
                       type="button"
                       onClick={handleResend}
-                      className="text-primary hover:underline font-semibold"
+                      className="font-semibold text-primary hover:underline"
                       disabled={isResendingOTP || isVerifyingEmail}
                     >
                       {isResendingOTP ? (
-                        <span className="flex items-center justify-center">
-                          <svg className="animate-spin h-4 w-4 mr-1 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <span className="flex justify-center items-center">
+                          <svg className="mr-1 w-4 h-4 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                           </svg>

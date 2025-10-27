@@ -222,7 +222,7 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                           {property?.property?.city}
                         </p>
                         <p className="text-primary-500 font-semibold mb-2">
-                          {formatPrice(property?.property?.price) || 'Price on request'}
+                          {formatPrice(property?.property?.price, property?.property?.currency || 'USD') || 'Price on request'}
                         </p>
                         <div className="flex items-center gap-3 text-sm text-neutral-600">
                           <span className="flex items-center gap-1">

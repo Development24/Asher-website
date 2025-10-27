@@ -23,11 +23,22 @@ import {
     signAgreement
 } from "./application"
 
-const keysToInvalidate = ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats"]
+const keysToInvalidate = ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats", "feedback"]
+
+// Utility function to invalidate all related queries
+const invalidateAllRelatedQueries = (queryClient: any) => {
+    keysToInvalidate.forEach(key => {
+        queryClient.invalidateQueries({ queryKey: [key] });
+    });
+}
 
 export const useStartApplication = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { propertyId: string, data: any }) => startApplication(payload.propertyId, payload.data),
+        onSuccess: () => {
+            invalidateAllRelatedQueries(queryClient);
+        }
     })
 }
 
@@ -173,21 +184,18 @@ export const useUpdateInvite = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { id: string, data: UpdateInvitePayload }) => updateInvite(payload.id, payload.data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allInvites"] });
-            queryClient.invalidateQueries({ queryKey: ["getPropertyByInviteId"] });
-            queryClient.invalidateQueries({ queryKey: ["allApplications"] });
-            queryClient.invalidateQueries({ queryKey: ["properties"] });
-            queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
-            queryClient.invalidateQueries({ queryKey: ["milestonesApplication"] });
-            queryClient.invalidateQueries({ queryKey: ["singleApplication"] });
+        onSuccess: (data, variables) => {
+            // Invalidate all related queries
+            invalidateAllRelatedQueries(queryClient);
+            // Also specifically invalidate the property by invite ID
+            queryClient.invalidateQueries({ queryKey: ["getPropertyByInviteId", variables.id] });
         }
     })
 }
 
 export const useGetPropertyByInviteId = (id: string) => {
     return useQuery({
-        queryKey: ["getPropertyByInviteId"],
+        queryKey: ["getPropertyByInviteId", id],
         queryFn: () => getPropertyByInviteId(id),
         retry: false,
     })

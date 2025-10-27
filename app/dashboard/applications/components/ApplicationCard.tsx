@@ -162,7 +162,7 @@ const ApplicationCard = ({
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold">{application?.properties?.name}</h3>
           <span className="text-red-600 font-semibold">
-            {formatPrice(Number(application?.properties?.price))}
+            {formatPrice(Number(application?.properties?.price), application?.properties?.currency || 'USD')}
           </span>
         </div>
         {/* <p className="text-sm text-gray-500 mb-4">{application.properties.location}</p> */}

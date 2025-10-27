@@ -10,6 +10,7 @@ import { Eye, EyeOff, X } from "lucide-react";
 import { useLoginUser } from "@/services/auth/authFn";
 import { toast } from "sonner";
 import { useAuthRedirectStore } from "@/store/authRedirect";
+import { GoogleLoginButton } from "./GoogleLoginButton";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -68,8 +69,14 @@ const LoginModal = ({
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Implement Google login logic here
+  const handleGoogleSuccess = (data: any) => {
+    onClose();
+    if (redirectUrl) {
+      router.push(redirectUrl);
+      setRedirectUrl(null);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -81,28 +88,28 @@ const LoginModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-50 backdrop-blur-sm bg-background/80"
           />
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: "spring", damping: 15, stiffness: 300 }}
-            className="fixed inset-0 flex items-center justify-center z-50"
+            className="flex fixed inset-0 z-50 justify-center items-center"
             role="dialog"
             aria-modal="true"
             aria-label="Login dialog"
           >
-            <div className="bg-background/50 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md">
-              <div className="h-full flex flex-col">
+            <div className="p-6 w-full max-w-md rounded-lg shadow-lg backdrop-blur-md bg-background/50">
+              <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold">Welcome back</h2>
                   <Button variant="ghost" size="icon" onClick={onClose}>
-                    <X className="h-5 w-5" />
+                    <X className="w-5 h-5" />
                   </Button>
                 </div>
                 <div className="max-h-[90vh] overflow-y-auto">
-                  <form onSubmit={handleSubmit} className="space-y-4 flex-grow">
+                  <form onSubmit={handleSubmit} className="flex-grow space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium" htmlFor="email">
                         Email Address
@@ -132,7 +139,7 @@ const LoginModal = ({
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          className="absolute right-3 top-1/2 text-gray-500 -translate-y-1/2 hover:text-gray-700"
                         >
                           {showPassword ? (
                             <EyeOff size={20} />
@@ -152,7 +159,7 @@ const LoginModal = ({
                     </div>
                     <LoadingButton
                       type="submit"
-                      className="w-full bg-primary hover:bg-primary-dark"
+                      className="w-full !bg-primary hover:!bg-primary-dark"
                       disabled={!email || !password}
                       loading={isLoading}
                     >
@@ -161,20 +168,18 @@ const LoginModal = ({
                   </form>
                   <div className="mt-6">
                     <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
+                      <div className="flex absolute inset-0 items-center">
                         <div className="w-full border-t border-gray-300"></div>
                       </div>
-                      <div className="relative flex justify-center text-sm">
+                      <div className="flex relative justify-center text-sm">
                         <span className="px-2 bg-background text-muted-foreground">
                           or
                         </span>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full mt-4"
-                      onClick={handleGoogleLogin}
+                    <GoogleLoginButton
+                      onSuccess={handleGoogleSuccess}
+                      className="mt-4 w-full"
                     >
                       <Image
                         src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -184,14 +189,14 @@ const LoginModal = ({
                         className="mr-2"
                       />
                       Continue with Google
-                    </Button>
+                    </GoogleLoginButton>
                   </div>
-                  <p className="text-center text-sm text-muted-foreground mt-6">
+                  <p className="mt-6 text-sm text-center text-muted-foreground">
                     Don't have an account?{" "}
                     <button
                       type="button"
                       onClick={onSignUpClick}
-                      className="text-primary hover:underline font-semibold"
+                      className="font-semibold text-primary hover:underline"
                     >
                       Sign up
                     </button>

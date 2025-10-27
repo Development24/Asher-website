@@ -39,7 +39,23 @@ export default function FilterPanel({
     minGarage: 0,
     maxGarage: 0,
     addedToSite: "anytime",
-    features: []
+    features: [],
+    hierarchyLevel: undefined,
+    // Simple Yes/No filters
+    hasGarden: false,
+    hasGarage: false,
+    hasParking: false,
+    isFurnished: false,
+    isPetFriendly: false,
+    // High-level amenities
+    hasSwimmingPool: false,
+    hasGym: false,
+    hasSecurity: false,
+    hasAirConditioning: false,
+    hasBalcony: false,
+    nearPublicTransport: false,
+    nearSchools: false,
+    nearShopping: false
   });
 
   const resetFilters = () => {
@@ -56,7 +72,22 @@ export default function FilterPanel({
       maxGarage: 0,
       addedToSite: "anytime",
       propertyType: [],
-      features: []
+      features: [],
+      // Simple Yes/No filters
+      hasGarden: false,
+      hasGarage: false,
+      hasParking: false,
+      isFurnished: false,
+      isPetFriendly: false,
+      // High-level amenities
+      hasSwimmingPool: false,
+      hasGym: false,
+      hasSecurity: false,
+      hasAirConditioning: false,
+      hasBalcony: false,
+      nearPublicTransport: false,
+      nearSchools: false,
+      nearShopping: false
     });
   };
 
@@ -311,48 +342,39 @@ export default function FilterPanel({
             </div>
           </div>
 
-          {/* Must-haves */}
+          {/* Hierarchy Level Filter */}
           <div className="space-y-4">
             <Label className="text-lg font-semibold text-foreground">
-              Must-haves
+              Space Type
             </Label>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { id: "garden", label: "Garden" },
-                { id: "parking", label: "Parking/garage" },
-                { id: "balcony", label: "Balcony/terrace" },
-                { id: "high-rise", label: "High-rise" }
-              ].map((feature) => (
-                <div key={feature.id} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={`must-${feature.id}`}
-                    checked={filters.mustHaves?.includes(feature.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFilters((prev) => ({
-                          ...prev,
-                          mustHaves: [...(prev.mustHaves || []), feature.id]
-                        }));
-                      } else {
-                        setFilters((prev) => ({
-                          ...prev,
-                          mustHaves: prev.mustHaves?.filter(
-                            (f) => f !== feature.id
-                          )
-                        }));
-                      }
-                    }}
-                    className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
-                  />
-                  <Label
-                    htmlFor={`must-${feature.id}`}
-                    className="text-sm text-foreground"
-                  >
-                    {feature.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
+            <RadioGroup
+              value={filters.hierarchyLevel || "all"}
+              onValueChange={(value) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  hierarchyLevel: value === "all" ? undefined : value as any
+                }));
+              }}
+            >
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { id: "all", label: "All Types" },
+                  { id: "property", label: "Properties" },
+                  { id: "unit", label: "Units" },
+                  { id: "room", label: "Rooms" }
+                ].map((level) => (
+                  <div key={level.id} className="flex items-center space-x-3">
+                    <RadioGroupItem value={level.id} id={`hierarchy-${level.id}`} />
+                    <Label
+                      htmlFor={`hierarchy-${level.id}`}
+                      className="text-sm text-foreground cursor-pointer"
+                    >
+                      {level.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </RadioGroup>
           </div>
 
           {/* Property Features */}
@@ -362,29 +384,21 @@ export default function FilterPanel({
             </Label>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { id: "show-all", label: "Show all" },
-                { id: "patio", label: "Patio" },
-                { id: "kitchen-island", label: "Kitchen island" },
-                { id: "smart-home", label: "Smart home integration" }
+                { id: "hasGarden", label: "Has Garden" },
+                { id: "hasGarage", label: "Has Garage" },
+                { id: "hasParking", label: "Has Parking" },
+                { id: "isFurnished", label: "Furnished" },
+                { id: "isPetFriendly", label: "Pet Friendly" }
               ].map((feature) => (
                 <div key={feature.id} className="flex items-center space-x-3">
                   <Checkbox
                     id={`feature-${feature.id}`}
-                    checked={filters.features.includes(feature.id)}
+                    checked={filters[feature.id as keyof PropertyRentalFilter] as boolean}
                     onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFilters((prev) => ({
-                          ...prev,
-                          features: [...prev.features, feature.id]
-                        }));
-                      } else {
-                        setFilters((prev) => ({
-                          ...prev,
-                          features: prev.features.filter(
-                            (f: string) => f !== feature.id
-                          )
-                        }));
-                      }
+                      setFilters((prev) => ({
+                        ...prev,
+                        [feature.id]: checked
+                      }));
                     }}
                     className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
                   />
@@ -393,6 +407,45 @@ export default function FilterPanel({
                     className="text-sm text-foreground"
                   >
                     {feature.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Amenities */}
+          <div className="space-y-4">
+            <Label className="text-lg font-semibold text-foreground">
+              Amenities
+            </Label>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { id: "hasSwimmingPool", label: "Swimming Pool" },
+                { id: "hasGym", label: "Gym/Fitness Center" },
+                { id: "hasSecurity", label: "Security System" },
+                { id: "hasAirConditioning", label: "Air Conditioning" },
+                { id: "hasBalcony", label: "Balcony/Terrace" },
+                { id: "nearPublicTransport", label: "Near Public Transport" },
+                { id: "nearSchools", label: "Near Schools" },
+                { id: "nearShopping", label: "Near Shopping" }
+              ].map((amenity) => (
+                <div key={amenity.id} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={`amenity-${amenity.id}`}
+                    checked={filters[amenity.id as keyof PropertyRentalFilter] as boolean}
+                    onCheckedChange={(checked) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        [amenity.id]: checked
+                      }));
+                    }}
+                    className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
+                  />
+                  <Label
+                    htmlFor={`amenity-${amenity.id}`}
+                    className="text-sm text-foreground"
+                  >
+                    {amenity.label}
                   </Label>
                 </div>
               ))}

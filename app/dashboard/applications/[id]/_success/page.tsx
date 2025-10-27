@@ -334,7 +334,7 @@ export default function SuccessPage() {
             </div>
 
             <div className="text-2xl font-bold mb-6">
-              {`${formatPrice(propertyData?.rentalFee)}`}{" "}
+              {`${formatPrice(propertyData?.rentalFee, propertyData?.currency || 'USD')}`}{" "}
               <span className="text-base font-normal text-gray-600">
                 per month
               </span>
@@ -814,7 +814,8 @@ export default function SuccessPage() {
                         </p>
                         <p className="text-red-600 font-semibold">
                           {formatPrice(
-                            Number(similarProperty?.property?.rentalFee) || 0
+                            Number(similarProperty?.property?.rentalFee) || 0,
+                            similarProperty?.property?.currency || 'USD'
                           )}
                         </p>
                       </div>
