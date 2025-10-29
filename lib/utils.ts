@@ -35,7 +35,7 @@ const currencyMap: { [key: string]: string } = {
   'it-IT': 'EUR', 
 };
 
-export const formatPrice = (value: number | string | null | undefined): string => {
+export const formatPrice = (value: number | string | null | undefined, currency?: string): string => {
   // Handle invalid or zero values
   if (!value || value === '0' || value === 0 || isNaN(Number(value))) {
     return 'Price on request';
@@ -48,15 +48,24 @@ export const formatPrice = (value: number | string | null | undefined): string =
     return 'Price on request';
   }
 
-  const userLocale = typeof navigator !== 'undefined' ? navigator.language || 'en-US' : 'en-US'; 
+  // Use provided currency or fallback to locale-based detection
+  let finalCurrency = currency;
+  let userLocale = 'en-US'; // Default locale
   
-  // Get the currency for the detected locale
-  const currency = currencyMap[userLocale] || 'USD';
+  if (!finalCurrency) {
+    userLocale = typeof navigator !== 'undefined' ? navigator.language || 'en-US' : 'en-US';
+    finalCurrency = currencyMap[userLocale] || 'USD';
+  }
+  
+  // Set appropriate locale based on currency
+  if (finalCurrency === 'GBP') userLocale = 'en-GB';
+  else if (finalCurrency === 'NGN') userLocale = 'en-NG';
+  else if (finalCurrency === 'USD') userLocale = 'en-US';
 
   // Create a new formatter for the currency
   const numberFormat = new Intl.NumberFormat(userLocale, {
     style: 'currency',
-    currency: currency, // Dynamic currency based on user locale
+    currency: finalCurrency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -87,9 +96,12 @@ export const getPropertyPrice = (property: any): string => {
   // Try different price fields in order of preference
   const price = property?.price || property?.rentalFee || property?.marketValue || property?.rentalPrice;
   
-  // If we have a valid price, format it
+  // Get the currency from the property
+  const currency = property?.currency || 'USD';
+  
+  // If we have a valid price, format it with the property's currency
   if (price && price !== '0' && price !== 0) {
-    return formatPrice(price);
+    return formatPrice(price, currency);
   }
   
   // Check for nested property structure

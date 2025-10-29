@@ -11,6 +11,7 @@ import { persist } from 'zustand/middleware';
  */
 interface UserState {
     user: IUser | null;
+    hasHydrated: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ interface UserState {
 interface UserActions {
     setUser: (user: IUser | null) => void;
     clearUser: () => void;
+    setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 /**
@@ -35,7 +37,9 @@ const loadUserFromStorage = (): IUser | null => {
 export const userStore = create<UserStore>()(persist(
     (set) => ({
         user: null,
+        hasHydrated: false,
         setUser: (user: IUser | null) => set({ user }),
+        setHasHydrated: (hasHydrated: boolean) => set({ hasHydrated }),
         clearUser: () => {
             set({ user: null });
             if (typeof window !== 'undefined') {
@@ -49,9 +53,30 @@ export const userStore = create<UserStore>()(persist(
         name: 'user',
         // storage: createJSONStorage(() => localStorage), we dont need to pass this by defualt localstorage is used
         partialize: (state) => ({ user: state.user }),
+        onRehydrateStorage: () => (state) => {
+            state?.setHasHydrated(true);
+        },
     }
 )
 );
+
+/**
+ * Hook to check if user is authenticated
+ * @returns {boolean} authentication status
+ */
+export const useIsAuthenticated = (): boolean => {
+    const user = userStore((state) => state.user);
+    const hasHydrated = userStore((state) => state.hasHydrated);
+    
+    // Wait for hydration to complete
+    if (!hasHydrated) return false;
+    
+    // Check both user in store and access_token in localStorage
+    const hasUser = !!user;
+    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('access_token');
+    
+    return hasUser || hasToken;
+}
 
 /**
  * Hook to log out the user and redirect to home.
