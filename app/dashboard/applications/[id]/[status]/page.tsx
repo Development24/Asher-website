@@ -50,6 +50,8 @@ import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
 import { displayImages } from "@/app/property/[id]/utils";
 import SaveModal from "../../../../components/modals/save-modal";
+import { createPayment } from "@/services/finance/finance";
+import { useCreatePayment } from "@/services/finance/financeFn";
 
 
 
@@ -82,6 +84,7 @@ export default function SuccessPage() {
   const { data: applicationData, isFetching } = useGetSingleApplication(
     idToUse as string
   );
+  const { mutateAsync: createPaymentFn, isPending: isCreatingPayment } = useCreatePayment();
   const { mutateAsync: signAgreement, isPending: isSigningAgreement } =
     useSignAgreement();
   const application = applicationData?.application;
@@ -223,7 +226,7 @@ export default function SuccessPage() {
     const amount = 5000; // $50.00 in cents
     setPaymentAmount(amount);
     
-    createLeasePayment(
+    createPaymentFn(
       {
         amount,
         paymentGateway: "STRIPE",
@@ -237,7 +240,7 @@ export default function SuccessPage() {
           setClientSecret(paymentDetails?.client_secret);
           setShowPaymentModal(true);
         },
-        onError: (error) => {
+        onError: (error: any) => {
           console.error("Lease payment creation failed:", error);
           toast.error("Failed to create payment. Please try again.");
         }
@@ -802,9 +805,9 @@ export default function SuccessPage() {
                 variant="outline"
                 className="mt-4 w-full text-green-600 border-green-500 hover:bg-green-50"
                 onClick={handleCreatePayment}
-                disabled={isCreateLeasePaymentPending}
+                disabled={isCreatingPayment}
               >
-                {isCreateLeasePaymentPending ? "Creating Payment..." : "🧪 Test Stripe Payment"}
+                {isCreatingPayment ? "Creating Payment..." : "Test Stripe Payment"}
               </Button>
 
               <LandlordProfileModal
