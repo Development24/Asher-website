@@ -24,6 +24,7 @@ interface FeedbackModalProps {
     propertysize: number;
     noBedRoom: number;
     noBathRoom: number;
+    currency?: string;
   };
   onComplete?: () => void;
 }
