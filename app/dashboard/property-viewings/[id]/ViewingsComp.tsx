@@ -55,7 +55,13 @@ export const ScheduleDisplay = ({
     </div>
   );
   
-  export const ContactAgentSection = ({ landlord }: { landlord: any }) => (
+  export const ContactAgentSection = ({ 
+    landlord, 
+    onChatClick 
+  }: { 
+    landlord: any;
+    onChatClick: () => void;
+  }) => (
     <div className="bg-gray-50 p-6 rounded-lg">
       <h2 className="text-lg font-semibold mb-4">Contact Agent</h2>
       <div className="flex items-center gap-4 mb-6">
@@ -76,9 +82,10 @@ export const ScheduleDisplay = ({
         </div>
       </div>
       <div className="space-y-3">
-        <Button className="w-full flex items-center justify-center gap-2" onClick={() => {
-          window.open(`https://wa.me/${landlord?.user?.profile?.phoneNumber}`, '_blank');
-        }}>
+        <Button 
+          className="w-full flex items-center justify-center gap-2" 
+          onClick={onChatClick}
+        >
           <MessageSquare className="w-4 h-4" />
           Chat with agent
         </Button>

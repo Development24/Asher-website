@@ -3,7 +3,7 @@
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatName } from "@/lib/utils";
 import {
   useGetPropertyByInviteId,
   useUpdateInvite
@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { userStore } from "@/store/userStore";
 const AcceptInviteModal = dynamic(
   () =>
     import("@/app/dashboard/components/modals/accept-invite-modal").then(
@@ -61,6 +62,13 @@ const CancelViewingModal = dynamic(
     ),
   { ssr: false, loading: () => null }
 );
+const ChatModal = dynamic(
+  () =>
+    import("@/app/components/chat/ChatModal").then(
+      (mod) => mod.ChatModal
+    ),
+  { ssr: false, loading: () => null }
+);
 import { InviteData, Landlord } from "../type";
 import { PropertyViewingDetailSkeleton } from "./PropertyViewingSkeleton";
 import {
@@ -70,6 +78,7 @@ import {
 } from "./ViewingsComp";
 import { displayImages } from "@/app/property/[id]/utils";
 import { MapWithAmenities } from "@/components/maps";
+import { toast } from "sonner";
 
 interface Property {
   id: number;
@@ -125,9 +134,12 @@ export default function PropertyViewingDetailPage() {
   const [similarIndex, setSimilarIndex] = useState(0);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const [rescheduledDate, setRescheduledDate] = useState("");
   const [rescheduledTime, setRescheduledTime] = useState("");
+  
+  const user = userStore((state) => state.user);
   // const [viewingStatus, setViewingStatus] = useState<
   //   "scheduled" | "rescheduled" | "cancelled" | "pending"
   // >("pending"); // Added state for viewing status
@@ -160,6 +172,18 @@ export default function PropertyViewingDetailPage() {
       (prev) => (prev - 1 + similarProperties.length) % similarProperties.length
     );
   };
+  const handleChatClick = () => {
+    if (!user) {
+      toast.info("Please login to continue", {
+        description: "You need to be logged in to chat with the landlord",
+        duration: 3000
+      });
+      return;
+    }
+    // Chat room is created automatically when first message is sent
+    setShowChatModal(true);
+  };
+
   const { mutate: updateInvite, isPending: isUpdatingInvite } =
     useUpdateInvite();
 
@@ -746,7 +770,10 @@ export default function PropertyViewingDetailPage() {
               </div>
             </div>
 
-            <ContactAgentSection landlord={propertyData?.landlord} />
+            <ContactAgentSection 
+              landlord={propertyData?.landlord} 
+              onChatClick={handleChatClick}
+            />
           </div>
         </div>
 
@@ -859,6 +886,22 @@ export default function PropertyViewingDetailPage() {
         onClose={() => setShowCancelModal(false)}
         onConfirm={handleCancel}
         showSuccess={showCancelSuccess}
+      />
+
+      <ChatModal
+        isOpen={showChatModal}
+        onClose={() => setShowChatModal(false)}
+        landlord={{
+          name: formatName(
+            propertyData?.landlord?.user?.profile?.firstName,
+            propertyData?.landlord?.user?.profile?.lastName,
+            propertyData?.landlord?.user?.profile?.fullname
+          ),
+          image: propertyData?.landlord?.user?.profile?.profileUrl || "",
+          role: "Landlord",
+          id: propertyData?.landlord?.id
+        }}
+        propertyId={Number(propertyData?.id)}
       />
     </div>
   );
