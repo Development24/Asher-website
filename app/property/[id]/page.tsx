@@ -81,12 +81,32 @@ export default function PropertyDetails() {
   const { data, isFetching, error } = useGetPropertyByIdForListingId(
     id as string
   );
-  const propertyData = data?.property?.property as Property | undefined;
-  const type = data?.property?.type;
-  const subInfo =
-    type === "SINGLE_UNIT" ? data?.property?.unit : data?.property?.room;
-  const propertyInfo =
-    type === "ENTIRE_PROPERTY" ? data?.property?.property : subInfo;
+  
+  // Handle normalized structure
+  const isNormalized = data?.property?.listingEntity && data?.property?.property;
+  
+  // Get listing data (normalized or legacy)
+  const listing = data?.property;
+  const listingType = isNormalized 
+    ? listing?.listingType 
+    : listing?.type;
+  
+  // Get the entity being listed (room/unit/property)
+  const listingEntity = isNormalized 
+    ? listing?.listingEntity 
+    : (listingType === "SINGLE_UNIT" ? listing?.unit : listingType === "ROOM" ? listing?.room : null);
+  
+  // Get property context
+  const propertyData = isNormalized 
+    ? listing?.property 
+    : (listing?.property as Property | undefined);
+  
+  // Get property info for specs (bedrooms, bathrooms, etc.)
+  const propertyInfo = isNormalized
+    ? (listingType === "ENTIRE_PROPERTY" 
+        ? listing?.property 
+        : listing?.specification?.residential || listing?.property)
+    : (listingType === "ENTIRE_PROPERTY" ? listing?.property : listingEntity);
 
   // Track property view when component mountsy);
   useEffect(() => {
@@ -96,13 +116,29 @@ export default function PropertyDetails() {
     }
   }, [id, propertyData]);
 
+  // Get images for gallery navigation
+  const getImages = () => {
+    if (isNormalized && listing) {
+      const images = listing.listingEntity.images.length > 0 
+        ? listing.listingEntity.images 
+        : listing.property.images;
+      // Return image objects, not URLs - displayImages expects objects
+      return images || [];
+    }
+    return propertyData?.images || [];
+  };
+  
+  const allImages = getImages();
+  const imageUrls = displayImages(allImages);
+  const imageCount = imageUrls.length || propertyImages.length;
+
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % propertyImages.length);
+    setCurrentImageIndex((prev) => (prev + 1) % imageCount);
   };
 
   const prevImage = () => {
     setCurrentImageIndex(
-      (prev) => (prev - 1 + propertyImages.length) % propertyImages.length
+      (prev) => (prev - 1 + imageCount) % imageCount
     );
   };
 
@@ -346,25 +382,38 @@ export default function PropertyDetails() {
         ← Back to search
       </Button>
       {/* Hierarchy Breadcrumb */}
-      {data?.property?.hierarchy ? (
+      {listing?.hierarchy ? (
         <div className="mb-6 bg-white border-b">
           <div className="flex items-center py-3 space-x-2 text-sm">
-            {data.property.hierarchy.breadcrumb.map(
+            {listing.hierarchy.breadcrumb.map(
               (item: any, index: number) => (
                 <React.Fragment key={item.id}>
                   {index > 0 && (
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   )}
-                  <Link
-                    href={item.url}
-                    className={`text-gray-600 hover:text-gray-900 ${
-                      index === data.property.hierarchy.breadcrumb.length - 1
-                        ? "font-medium text-gray-900"
-                        : ""
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
+                  {item.url ? (
+                    <Link
+                      href={item.url}
+                      className={`text-gray-600 hover:text-gray-900 ${
+                        index === listing.hierarchy.breadcrumb.length - 1
+                          ? "font-medium text-gray-900"
+                          : ""
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <span
+                      className={`text-gray-500 ${
+                        index === listing.hierarchy.breadcrumb.length - 1
+                          ? "font-medium text-gray-900"
+                          : ""
+                      }`}
+                      title="Property not listed"
+                    >
+                      {item.name}
+                    </span>
+                  )}
                 </React.Fragment>
               )
             )}
@@ -391,7 +440,7 @@ export default function PropertyDetails() {
         <div className="overflow-hidden relative rounded-lg md:col-span-2">
           <Image
             src={
-              displayImages(propertyData?.images)[currentImageIndex] ||
+              imageUrls[currentImageIndex] ||
               "/placeholder.svg"
             }
             alt="Property main image"
@@ -413,7 +462,7 @@ export default function PropertyDetails() {
           </button>
         </div>
         <div className="grid grid-rows-3 gap-4">
-          {displayImages(propertyData?.images)
+          {imageUrls
             .slice(1, 4)
             .map((image: string, index: number) => (
               <div key={index} className="overflow-hidden relative rounded-lg">
@@ -435,25 +484,32 @@ export default function PropertyDetails() {
           <div className="flex justify-between items-start mb-6">
             <div>
               {/* Context Banner */}
-              {data?.property?.hierarchy && (
+              {listing?.hierarchy && (
                 <div className="flex gap-4 items-center mb-4">
                   <div className="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
-                    {data.property.hierarchy.level.toUpperCase()}
+                    {listing.hierarchy.level.toUpperCase()}
                   </div>
                   <div>
                     <h1 className="mb-2 text-3xl font-bold">
-                      {propertyData?.name}
+                      {isNormalized 
+                        ? listing.listingEntity.name 
+                        : propertyData?.name}
                     </h1>
-                    <p className="text-sm text-gray-600">
-                      {data.property.hierarchy.context}
-                    </p>
+                    {/* Show property context for rooms/units only */}
+                    {listing.hierarchy.level !== 'property' && listing?.property?.name && (
+                      <p className="text-sm text-gray-600">
+                        in {listing.property.name}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
 
-              {!data?.property?.hierarchy && (
+              {!listing?.hierarchy && (
                 <h1 className="mb-2 text-3xl font-bold">
-                  {propertyData?.name}
+                  {isNormalized 
+                    ? listing?.listingEntity?.name 
+                    : propertyData?.name}
                 </h1>
               )}
 
@@ -483,14 +539,18 @@ export default function PropertyDetails() {
           <div className="mb-6 text-3xl font-bold">
             {formatPrice(
               Number(
-                type === "ENTIRE_PROPERTY"
-                  ? propertyData?.price
-                  : propertyInfo?.price
+                isNormalized
+                  ? listing?.price
+                  : (listingType === "ENTIRE_PROPERTY"
+                      ? propertyData?.price
+                      : propertyInfo?.price)
               ),
               propertyData?.currency || "USD"
             )}{" "}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
-              {propertyData?.priceFrequency === "MONTHLY"
+              {(isNormalized 
+                ? listing?.priceFrequency 
+                : propertyData?.priceFrequency) === "MONTHLY"
                 ? "per month"
                 : "per year"}
             </span>
@@ -505,11 +565,17 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex justify-center items-center">
                   <span className="font-medium">
-                    {type
-                      ?.replace(/_/g, " ")
-                      ?.toLowerCase()
-                      ?.replace(/\b\w/g, (l: string) => l.toUpperCase()) ||
-                      "House"}
+                    {isNormalized
+                      ? (listingType
+                          ?.replace(/_/g, " ")
+                          ?.toLowerCase()
+                          ?.replace(/\b\w/g, (l: string) => l.toUpperCase()) ||
+                          "House")
+                      : (listingType
+                          ?.replace(/_/g, " ")
+                          ?.toLowerCase()
+                          ?.replace(/\b\w/g, (l: string) => l.toUpperCase()) ||
+                          "House")}
                   </span>
                 </div>
               </div>
@@ -519,7 +585,9 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex justify-center items-center">
                   <span className="text-2xl font-medium">
-                    {propertyInfo?.bedrooms || 0}
+                    {isNormalized
+                      ? (listing?.specification?.residential?.bedrooms || listing?.property?.bedrooms || 0)
+                      : (propertyInfo?.bedrooms || 0)}
                   </span>
                 </div>
               </div>
@@ -529,7 +597,9 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex justify-center items-center">
                   <span className="text-2xl font-medium">
-                    {propertyInfo?.bathrooms || 0}
+                    {isNormalized
+                      ? (listing?.specification?.residential?.bathrooms || listing?.property?.bathrooms || 0)
+                      : (propertyInfo?.bathrooms || 0)}
                   </span>
                 </div>
               </div>
@@ -539,7 +609,11 @@ export default function PropertyDetails() {
                 </div>
                 <div className="flex justify-center items-center">
                   <span className="font-medium">
-                    {propertyInfo?.area || "N/A"} sqm
+                    {isNormalized
+                      ? (listing?.specification?.residential?.totalArea 
+                          ? `${listing.specification.residential.totalArea} ${listing.specification.residential.areaUnit || 'sqm'}`
+                          : listingEntity?.roomSize || "N/A")
+                      : (propertyInfo?.area || "N/A")} {!isNormalized && "sqm"}
                   </span>
                 </div>
               </div>
@@ -554,7 +628,9 @@ export default function PropertyDetails() {
                   showAllDescription ? "line-clamp-none" : "line-clamp-3"
                 }`}
               >
-                {propertyData?.description}{" "}
+                {isNormalized
+                  ? (listingEntity?.description || listing?.property?.description || "")
+                  : propertyData?.description}{" "}
               </p>
               <span
                 className="text-blue-500 cursor-pointer"
@@ -573,7 +649,11 @@ export default function PropertyDetails() {
                     Let available date:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.availability || "Available now"}
+                    {isNormalized
+                      ? (listing?.availableFrom 
+                          ? new Date(listing.availableFrom).toLocaleDateString()
+                          : "Available now")
+                      : (data?.property?.availability || "Available now")}
                   </div>
                 </div>
                 <div>
@@ -581,13 +661,17 @@ export default function PropertyDetails() {
                     Deposit:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.securityDeposit &&
-                    data.property.securityDeposit !== "0"
-                      ? formatPrice(
-                          Number(data.property.securityDeposit),
-                          data?.property?.currency || "USD"
-                        )
-                      : "Ask agent"}
+                    {(() => {
+                      const deposit = isNormalized
+                        ? listing?.securityDeposit
+                        : data?.property?.securityDeposit;
+                      return deposit && deposit !== "0"
+                        ? formatPrice(
+                            Number(deposit),
+                            propertyData?.currency || "USD"
+                          )
+                        : "Ask agent";
+                    })()}
                   </div>
                 </div>
                 <div>
@@ -595,9 +679,13 @@ export default function PropertyDetails() {
                     Min. Tenancy:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.rentalTerms
-                      ? `${data.property.rentalTerms} months`
-                      : "Ask agent"}
+                    {isNormalized
+                      ? (listing?.specification?.residential?.rentalTerms
+                          ? `${listing.specification.residential.rentalTerms} months`
+                          : "Ask agent")
+                      : (data?.property?.rentalTerms
+                          ? `${data.property.rentalTerms} months`
+                          : "Ask agent")}
                   </div>
                 </div>
                 <div>
@@ -605,9 +693,13 @@ export default function PropertyDetails() {
                     Let type:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.rentalPeriod === "MONTHLY"
-                      ? "Long term"
-                      : "Ask agent"}
+                    {isNormalized
+                      ? (listing?.priceFrequency === "MONTHLY"
+                          ? "Long term"
+                          : "Ask agent")
+                      : (data?.property?.rentalPeriod === "MONTHLY"
+                          ? "Long term"
+                          : "Ask agent")}
                   </div>
                 </div>
                 <div>
@@ -615,7 +707,13 @@ export default function PropertyDetails() {
                     Furnish type:
                   </div>
                   <div className="font-medium">
-                    {data?.property?.furnished ? "Furnished" : "Unfurnished"}
+                    {isNormalized
+                      ? (listingEntity?.furnished !== undefined
+                          ? (listingEntity.furnished ? "Furnished" : "Unfurnished")
+                          : (listing?.specification?.residential?.furnished
+                              ? "Furnished"
+                              : "Unfurnished"))
+                      : (data?.property?.furnished ? "Furnished" : "Unfurnished")}
                   </div>
                 </div>
                 <div>
@@ -623,18 +721,24 @@ export default function PropertyDetails() {
                     Council Tax:
                   </div>
                   <div className="font-medium">
-                    Band {data?.property?.councilTaxBand || "Ask agent"}
+                    Band {isNormalized
+                      ? (listing?.specification?.residential?.councilTaxBand || "Ask agent")
+                      : (data?.property?.councilTaxBand || "Ask agent")}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Key Features */}
-            {data?.property?.keyFeatures?.length > 0 && (
+            {((isNormalized 
+                ? listing?.property?.keyFeatures 
+                : data?.property?.keyFeatures)?.length > 0) && (
               <div className="p-6 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
                 <h2 className="mb-4 text-xl font-semibold">Key features</h2>
                 <div className="grid grid-cols-2 gap-2">
-                  {data?.property?.keyFeatures?.map(
+                  {(isNormalized 
+                    ? listing?.property?.keyFeatures 
+                    : data?.property?.keyFeatures)?.map(
                     (feature: string, index: number) => (
                       <div key={index} className="flex gap-2 items-center">
                         <Check className="flex-shrink-0 w-4 h-4 text-primary" />
@@ -652,24 +756,32 @@ export default function PropertyDetails() {
 
             <div className="p-6 space-y-5 bg-white rounded-lg border border-gray-100 shadow-md dark:bg-gray-800 dark:border-gray-700">
               <h2 className="mb-4 text-xl font-semibold">Location on map</h2>
-              {data?.property?.property?.latitude && data?.property?.property?.longitude ? (
-                <MapWithAmenities
-                  latitude={Number(data?.property?.property?.latitude || 0)}
-                  longitude={Number(data?.property?.property?.longitude || 0)}
-                  zoom={15}
-                  title="Property Location with Nearby Amenities"
-                  amenityTypes={[
-                    "restaurant",
-                    "hospital",
-                    "school",
-                    "shopping_mall",
-                    "gas_station",
-                    "bank"
-                  ]}
-                  radius={2}
-                  height="500px"
-                />
-              ) : (
+              {(() => {
+                const lat = isNormalized 
+                  ? listing?.property?.latitude 
+                  : data?.property?.property?.latitude;
+                const lng = isNormalized 
+                  ? listing?.property?.longitude 
+                  : data?.property?.property?.longitude;
+                
+                return lat && lng ? (
+                  <MapWithAmenities
+                    latitude={Number(lat)}
+                    longitude={Number(lng)}
+                    zoom={15}
+                    title="Property Location with Nearby Amenities"
+                    amenityTypes={[
+                      "restaurant",
+                      "hospital",
+                      "school",
+                      "shopping_mall",
+                      "gas_station",
+                      "bank"
+                    ]}
+                    radius={2}
+                    height="500px"
+                  />
+                ) : (
                 <div className="h-[300px] rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden border border-gray-200 dark:border-gray-700">
                   <div className="flex absolute inset-0 flex-col gap-4 justify-center items-center">
                     <MapPin className="w-8 h-8 text-gray-400" />
@@ -681,7 +793,11 @@ export default function PropertyDetails() {
                       onClick={() =>
                         window.open(
                           `https://www.openstreetmap.org/search?query=${encodeURIComponent(
-                            `${data?.property?.city}, ${data?.property?.country}` ||
+                            `${isNormalized 
+                              ? listing?.property?.city 
+                              : data?.property?.city}, ${isNormalized 
+                              ? listing?.property?.country 
+                              : data?.property?.country}` ||
                               ""
                           )}`,
                           "_blank"
@@ -692,8 +808,9 @@ export default function PropertyDetails() {
                     </button>
                   </div>
                 </div>
-              )}
-              <div className="grid grid-cols-2 gap-4 mt-3 md:grid-cols-3">
+                );
+              })()}
+              {/* <div className="grid grid-cols-2 gap-4 mt-3 md:grid-cols-3">
                 <div>
                   <h3 className="mb-2 font-semibold">Nearest stations</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -715,7 +832,7 @@ export default function PropertyDetails() {
                     <div>Clapham Junction - 0.9 miles</div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -735,10 +852,16 @@ export default function PropertyDetails() {
                 >
                   <Image
                     src={
-                      propertyData?.landlord?.user?.profile?.profileUrl ||
+                      (isNormalized
+                        ? listing?.property?.landlord?.user?.profile?.profileUrl
+                        : propertyData?.landlord?.user?.profile?.profileUrl) ||
                       "/placeholder.svg"
                     }
-                    alt={propertyData?.landlord?.name || ""}
+                    alt={
+                      isNormalized
+                        ? listing?.property?.landlord?.user?.profile?.fullname || ""
+                        : propertyData?.landlord?.name || ""
+                    }
                     fill
                     className="object-cover rounded-full"
                     onError={(e) => {
@@ -754,9 +877,15 @@ export default function PropertyDetails() {
               <div>
                 <div className="font-semibold max-w-[150px] line-clamp-1">
                   {formatName(
-                    propertyData?.landlord?.user?.profile?.firstName,
-                    propertyData?.landlord?.user?.profile?.lastName,
-                    propertyData?.landlord?.user?.profile?.fullname
+                    isNormalized
+                      ? listing?.property?.landlord?.user?.profile?.firstName
+                      : propertyData?.landlord?.user?.profile?.firstName,
+                    isNormalized
+                      ? listing?.property?.landlord?.user?.profile?.lastName
+                      : propertyData?.landlord?.user?.profile?.lastName,
+                    isNormalized
+                      ? listing?.property?.landlord?.user?.profile?.fullname
+                      : propertyData?.landlord?.user?.profile?.fullname
                   )}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -791,16 +920,30 @@ export default function PropertyDetails() {
               onClose={() => setShowLandlordProfile(false)}
               landlord={{
                 name: formatName(
-                  propertyData?.landlord?.user?.profile?.firstName,
-                  propertyData?.landlord?.user?.profile?.lastName,
-                  propertyData?.landlord?.user?.profile?.fullname
+                  isNormalized
+                    ? listing?.property?.landlord?.user?.profile?.firstName
+                    : propertyData?.landlord?.user?.profile?.firstName,
+                  isNormalized
+                    ? listing?.property?.landlord?.user?.profile?.lastName
+                    : propertyData?.landlord?.user?.profile?.lastName,
+                  isNormalized
+                    ? listing?.property?.landlord?.user?.profile?.fullname
+                    : propertyData?.landlord?.user?.profile?.fullname
                 ),
-                email: propertyData?.landlord?.user?.email || null || undefined,
+                email: isNormalized
+                  ? listing?.property?.landlord?.user?.email
+                  : propertyData?.landlord?.user?.email || null || undefined,
                 image:
-                  propertyData?.landlord?.user?.profile?.profileUrl ||
+                  (isNormalized
+                    ? listing?.property?.landlord?.user?.profile?.profileUrl
+                    : propertyData?.landlord?.user?.profile?.profileUrl) ||
                   undefined,
-                id: propertyData?.landlord?.id,
-                isActive: propertyData?.landlord?.isActive
+                id: isNormalized
+                  ? listing?.property?.landlord?.id
+                  : propertyData?.landlord?.id,
+                isActive: isNormalized
+                  ? true // Normalized structure doesn't have isActive, assume true
+                  : propertyData?.landlord?.isActive
               }}
               onChatClick={() => handleContactClick("chat")}
               onEmailClick={() => handleContactClick("email")}
@@ -808,9 +951,9 @@ export default function PropertyDetails() {
           </div>
 
           {/* Related Listings Section */}
-          {data?.property?.hierarchy && (
+          {listing?.hierarchy && (
             <RelatedListingsSection
-              propertyId={data.property.hierarchy.propertyId}
+              propertyId={listing.hierarchy.propertyId}
               excludeListingId={id as string}
               className="mt-6"
             />
@@ -856,9 +999,13 @@ export default function PropertyDetails() {
             }}
           >
             {similarProperties
-              ?.filter((p) => p.id !== propertyData?.id)
+              ?.filter((p) => {
+                const pId = isNormalized ? p.listingId : p.id;
+                const currentId = isNormalized ? listing?.listingId : propertyData?.id;
+                return pId !== currentId;
+              })
               ?.map((similarProperty) => (
-                <div key={similarProperty.id}>
+                <div key={isNormalized ? similarProperty.listingId : similarProperty.id}>
                   <SimilarPropertyCard property={similarProperty} />
                 </div>
               ))}
@@ -877,13 +1024,23 @@ export default function PropertyDetails() {
         onClose={() => setShowChatModal(false)}
         landlord={{
           name: formatName(
-            propertyData?.landlord?.user?.profile?.firstName,
-            propertyData?.landlord?.user?.profile?.lastName,
-            propertyData?.landlord?.user?.profile?.fullname
+            isNormalized
+              ? listing?.property?.landlord?.user?.profile?.firstName
+              : propertyData?.landlord?.user?.profile?.firstName,
+            isNormalized
+              ? listing?.property?.landlord?.user?.profile?.lastName
+              : propertyData?.landlord?.user?.profile?.lastName,
+            isNormalized
+              ? listing?.property?.landlord?.user?.profile?.fullname
+              : propertyData?.landlord?.user?.profile?.fullname
           ),
-          image: propertyData?.landlord?.user?.profile?.profileUrl || "",
+          image: (isNormalized
+            ? listing?.property?.landlord?.user?.profile?.profileUrl
+            : propertyData?.landlord?.user?.profile?.profileUrl) || "",
           role: "Landlord",
-          id: propertyData?.landlord?.id
+          id: isNormalized
+            ? listing?.property?.landlord?.id
+            : propertyData?.landlord?.id
         }}
         propertyId={Number(id)}
       />
@@ -929,12 +1086,20 @@ export default function PropertyDetails() {
       <SaveModal
         isOpen={showSaveModal}
         onClose={() => setShowSaveModal(false)}
-        propertyTitle={propertyData?.name}
+        propertyTitle={
+          isNormalized
+            ? listing?.listingEntity?.name
+            : propertyData?.name
+        }
       />
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
-        propertyTitle={propertyData?.name}
+        propertyTitle={
+          isNormalized
+            ? listing?.listingEntity?.name
+            : propertyData?.name
+        }
         propertyUrl={
           typeof window !== "undefined"
             ? `${window.location.origin}/property/${id}`

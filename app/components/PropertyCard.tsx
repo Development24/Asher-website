@@ -28,17 +28,73 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
   
   const memoizedValues = useMemo(() => {
     const userId = user?.landlords?.userId;
-    const propertyId = property?.property?.propertyId;
-    const propertyLiked = property?.property?.UserLikedProperty?.some(
-      (likedProperty) => likedProperty.userId === userId
-    );
-    // console.log(property?.property?.images, "property images from property card");
-    const imageUrl = displayImages(property?.property?.images)?.[0] || "/placeholder.svg";
-    const propertyName = property?.property?.name || 'Property';
-    const propertyPrice = getPropertyPrice(property?.property);
-    const propertyLocation = getPropertyLocation(property?.property);
-    const bedroomCount = getBedroomCount(property?.property);
-    const bathroomCount = getBathroomCount(property?.property);
+    
+    // Use normalized structure if available, otherwise fallback to legacy
+    const isNormalized = property?.listingEntity && property?.property;
+    
+    // Get property ID for likes
+    // For normalized: use property.id
+    // For legacy: use property.propertyId or property.property?.propertyId
+    let propertyId: string | undefined;
+    if (isNormalized) {
+      propertyId = (property as any)?.property?.id;
+    } else {
+      const legacyProperty = property as any;
+      propertyId = legacyProperty?.property?.propertyId || legacyProperty?.propertyId;
+    }
+    
+    // Check if property is liked (only available in legacy structure)
+    let propertyLiked = false;
+    if (!isNormalized) {
+      const legacyProperty = property as any;
+      propertyLiked = legacyProperty?.property?.UserLikedProperty?.some(
+        (likedProperty: any) => likedProperty.userId === userId
+      ) || false;
+    }
+    
+    // Get images - prefer listingEntity images (room/unit specific), fallback to property images
+    let images: any[] = [];
+    if (isNormalized) {
+      images = property.listingEntity.images.length > 0 
+        ? property.listingEntity.images 
+        : property.property.images;
+    } else {
+      images = property?.property?.images || [];
+    }
+    
+    // Extract URL from image object or use string directly
+    const imageUrl = images.length > 0 
+      ? (typeof images[0] === 'string' 
+          ? images[0] 
+          : images[0]?.url || "/placeholder.svg")
+      : "/placeholder.svg";
+    
+    // Get display name - use listingEntity name (room name for rooms, unit name for units, property name for properties)
+    const propertyName = isNormalized
+      ? property.listingEntity.name
+      : property?.property?.name || 'Property';
+    
+    // Get price - use normalized price from root level
+    const propertyPrice = isNormalized
+      ? formatPrice(property.price, property.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD')
+      : getPropertyPrice(property?.property);
+    
+    // Get location from property context
+    const propertyLocation = isNormalized
+      ? getPropertyLocation(property.property)
+      : getPropertyLocation(property?.property);
+    
+    // Get bedroom/bathroom count from specification or property
+    const bedroomCount = isNormalized
+      ? String(property.specification?.residential?.bedrooms || property.property.bedrooms || 'N/A')
+      : getBedroomCount(property?.property);
+    
+    const bathroomCount = isNormalized
+      ? String(property.specification?.residential?.bathrooms || property.property.bathrooms || 'N/A')
+      : getBathroomCount(property?.property);
+    
+    // Get listing ID for navigation
+    const listingId = isNormalized ? property.listingId : property?.id;
     
     return {
       userId,
@@ -49,7 +105,8 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
       propertyPrice,
       propertyLocation,
       bedroomCount,
-      bathroomCount
+      bathroomCount,
+      listingId
     };
   }, [property, user]);
 
@@ -70,10 +127,10 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
   }
 
   return (
-    <Link href={`/property/${property?.id}`}>
+    <Link href={`/property/${memoizedValues.listingId || property?.id || property?.listingId}`}>
       <motion.div
         className={cn(
-          "group bg-white rounded-lg shadow-sm transition-shadow duration-200 min-w-[300px] sm:min-w-0 sm:text-base sm:p-2",
+          "bg-white rounded-lg shadow-sm transition-shadow duration-200 group !min-w-[300px] min-h-[400px] sm:min-w-0 sm:text-base sm:p-2",
           className
         )}
         whileHover={{ scale: 1.03, boxShadow: "0 8px 30px rgba(0,0,0,0.18)" }}
@@ -82,11 +139,11 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative aspect-[4/3] rounded-t-lg overflow-hidden">
+        <div className="overflow-hidden relative rounded-t-lg aspect-square">
           {/* Hierarchy Badge */}
           {property?.hierarchy && (
             <div className="absolute top-2 left-2 z-10">
-              <div className="bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium">
+              <div className="px-2 py-1 text-xs font-medium text-white rounded-md bg-black/70">
                 {property.hierarchy.level.toUpperCase()}
               </div>
             </div>
@@ -125,33 +182,34 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
           </Button>
         </div>
 
-        <div className="p-4 sm:p-2">
-          {/* Context Information */}
-          {property?.hierarchy && property.hierarchy.context !== property?.property?.name && (
-            <div className="mb-2">
-              <p className="text-xs text-gray-500 mb-1">{property.hierarchy.context}</p>
-            </div>
-          )}
-          
+        <div className="flex flex-col justify-between p-4 sm:p-2">
           <div className="flex justify-between items-start mb-1 sm:mb-0.5">
-            <h3 className="font-semibold text-lg sm:text-base line-clamp-1 text-neutral-900">
-              {memoizedValues.propertyName}
-            </h3>
-            <span className="text-primary-500 font-semibold sm:text-base ml-2 whitespace-nowrap">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold sm:text-base line-clamp-1 text-neutral-900">
+                {memoizedValues.propertyName}
+              </h3>
+              {/* Show property name for rooms/units only - more subtle */}
+              {property?.hierarchy && property.hierarchy.level !== 'property' && property?.property?.name && (
+                <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">
+                  in {property.property.name}
+                </p>
+              )}
+            </div>
+            <span className="ml-2 font-semibold whitespace-nowrap text-primary-500 sm:text-base">
               {memoizedValues.propertyPrice}
             </span>
           </div>
 
-          <p className="text-neutral-600 text-sm sm:text-xs mb-2 sm:mb-1 line-clamp-2">
+          <p className="mb-2 text-sm text-neutral-600 sm:text-xs sm:mb-1 line-clamp-2">
             {memoizedValues.propertyLocation}
           </p>
 
-          <div className="flex items-center gap-4 sm:gap-2 text-sm sm:text-xs text-neutral-600">
-            <span className="flex items-center gap-1">
+          <div className="flex gap-4 items-center text-sm sm:gap-2 sm:text-xs text-neutral-600">
+            <span className="flex gap-1 items-center">
               <Bed className="w-4 h-4 sm:w-3 sm:h-3" />
               {memoizedValues.bedroomCount} bedroom{memoizedValues.bedroomCount !== '1' ? 's' : ''}
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex gap-1 items-center">
               <Bath className="w-4 h-4 sm:w-3 sm:h-3" />
               {memoizedValues.bathroomCount} bathroom{memoizedValues.bathroomCount !== '1' ? 's' : ''}
             </span>
@@ -159,7 +217,7 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
           
           {/* Related Listings Preview */}
           {property?.relatedListings && property.relatedListings.totalCount > 0 && (
-            <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="pt-3 mt-3 border-t border-gray-100">
               <p className="text-xs text-gray-500">
                 {property.relatedListings.totalCount} other space{property.relatedListings.totalCount !== 1 ? 's' : ''} available in this building
               </p>

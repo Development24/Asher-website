@@ -63,17 +63,35 @@ export function PropertyCard({
   showEnquiryStatus
 }: PropertyCardProps) {
   const { isPropertySaved, toggleSaveProperty } = useSavedProperties();
-  const propertyData = property?.properties ?? property?.property;
+  
+  // Handle normalized structure
+  const isNormalized = property?.listingEntity && property?.property;
+  
+  // Get property data (normalized or legacy)
+  const propertyData = isNormalized
+    ? property?.property
+    : (property?.properties ?? property?.property);
+  
+  // Get listing entity (for normalized structure)
+  const listingEntity = isNormalized ? property?.listingEntity : null;
+  
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
-  const propertyId = property?.propertyId;
+  
+  // Get property ID for likes (normalized or legacy)
+  const propertyId = isNormalized
+    ? property?.property?.id
+    : property?.propertyId;
+  
   const {
     mutate: likeProperty,
     isPending: isLikePending,
     isSuccess: isLikeSuccess
-  } = useLikeProperty(String(propertyId));
-  const propertyLiked = propertyData?.UserLikedProperty?.some(
+  } = useLikeProperty(String(propertyId || property?.listingId || property?.id));
+  
+  // Check if property is liked (legacy structure only)
+  const propertyLiked = !isNormalized && propertyData?.UserLikedProperty?.some(
     (likedProperty) => likedProperty?.userId === userId
   );
 
@@ -97,8 +115,18 @@ export function PropertyCard({
       <div className="relative">
         <div className="relative h-48 w-full">
           <Image
-            src={displayImages(propertyData?.images)[0] || "/placeholder.svg"}
-            alt={propertyData?.name || "Property placeholder"}
+            src={
+              displayImages(
+                isNormalized && listingEntity?.images?.length > 0
+                  ? listingEntity.images
+                  : propertyData?.images
+              )[0] || "/placeholder.svg"
+            }
+            alt={
+              isNormalized
+                ? listingEntity?.name || propertyData?.name || "Property placeholder"
+                : propertyData?.name || "Property placeholder"
+            }
             fill
             className="object-cover rounded-lg"
             onError={(e) => { 
@@ -130,7 +158,12 @@ export function PropertyCard({
         {(showViewProperty ||
           viewType === "invite" ||
           viewType === "schedule") && (
-          <Link href={viewLink || `/property/${property?.id}`}>
+          <Link href={
+            viewLink || 
+            (isNormalized 
+              ? `/property/${property?.listingId || property?.id}` 
+              : `/property/${property?.id}`)
+          }>
             <Button
               variant="secondary"
               size="sm"
@@ -147,11 +180,25 @@ export function PropertyCard({
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-neutral-900 flex-1 line-clamp-2">
-            {propertyData?.name || 'Property name not available'}
-          </h3>
+          <div className="flex-1">
+            <h3 className="font-semibold text-neutral-900 line-clamp-2">
+              {isNormalized
+                ? listingEntity?.name || propertyData?.name || 'Property name not available'
+                : propertyData?.name || 'Property name not available'}
+            </h3>
+            {/* Show property context for rooms/units */}
+            {isNormalized && property?.hierarchy && property.hierarchy.level !== 'property' && property?.property?.name && (
+              <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">
+                in {property.property.name}
+              </p>
+            )}
+          </div>
           <span className="text-primary-500 font-semibold ml-2 whitespace-nowrap">
-            {getPropertyPrice(propertyData)}
+            {isNormalized
+              ? (property?.price 
+                  ? formatPrice(Number(property.price), propertyData?.currency || 'USD')
+                  : getPropertyPrice(propertyData))
+              : getPropertyPrice(propertyData)}
           </span>
         </div>
         <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
@@ -160,11 +207,19 @@ export function PropertyCard({
         <div className="flex items-center gap-4 text-sm text-neutral-600">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
-            {getBedroomCount(propertyData)} bed{propertyData?.bedrooms !== 1 ? 's' : ''}
+            {isNormalized
+              ? (property?.specification?.residential?.bedrooms || propertyData?.bedrooms || 0)
+              : getBedroomCount(propertyData)} bed{(isNormalized
+                ? (property?.specification?.residential?.bedrooms || propertyData?.bedrooms || 0)
+                : propertyData?.bedrooms) !== 1 ? 's' : ''}
           </span>
           <span className="flex items-center gap-1">
             <Bath className="h-4 w-4" />
-            {getBathroomCount(propertyData)} bath{propertyData?.bathrooms !== 1 ? 's' : ''}
+            {isNormalized
+              ? (property?.specification?.residential?.bathrooms || propertyData?.bathrooms || 0)
+              : getBathroomCount(propertyData)} bath{(isNormalized
+                ? (property?.specification?.residential?.bathrooms || propertyData?.bathrooms || 0)
+                : propertyData?.bathrooms) !== 1 ? 's' : ''}
           </span>
         </div>
         {showFeedback && onFeedbackClick && (

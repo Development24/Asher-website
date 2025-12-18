@@ -129,32 +129,32 @@ export default function SearchPage() {
     return (
       <div className="layout">
         {/* Search Filters Skeleton */}
-        <div className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex flex-col gap-4 items-end md:flex-row">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="w-full">
               <Skeleton className="h-4 w-24 mb-1.5" /> {/* Label */}
-              <Skeleton className="h-10 w-full" /> {/* Input/Select */}
+              <Skeleton className="w-full h-10" /> {/* Input/Select */}
             </div>
           ))}
-          <Skeleton className="h-10 w-24" /> {/* Filter button */}
+          <Skeleton className="w-24 h-10" /> {/* Filter button */}
         </div>
 
         <div className="mt-12">
           {/* Header and Sort Skeleton */}
           <div className="flex justify-between items-center mb-6">
-            <Skeleton className="h-7 w-64" /> {/* Title */}
+            <Skeleton className="w-64 h-7" /> {/* Title */}
             <Skeleton className="h-10 w-[180px]" /> {/* Sort select */}
           </div>
 
           {/* Properties Grid Skeleton */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <Skeleton key={index} className="h-[400px] w-full rounded-xl" />
             ))}
           </div>
 
           {/* Pagination Skeleton */}
-          <div className="flex justify-center gap-2 mt-8">
+          <div className="flex gap-2 justify-center mt-8">
             {Array.from({ length: 8 }).map((_, index) => (
               <Skeleton key={index} className="w-10 h-10 rounded" />
             ))}
@@ -167,7 +167,7 @@ export default function SearchPage() {
   return (
     <div className="layout">
       <div className="">
-        <div className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex flex-col gap-4 items-end md:flex-row">
           <div className="w-full md:w-1/4">
             <label className="text-sm font-medium mb-1.5 block">
               Enter a location
@@ -179,7 +179,7 @@ export default function SearchPage() {
                 defaultValue="Lagos"
                 className="pl-10"
               />
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <MapPin className="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2" />
             </div>
           </div>
           <div className="w-full md:w-1/4">
@@ -230,7 +230,7 @@ export default function SearchPage() {
             </Select>
           </div>
           <Button
-            className="bg-red-600 hover:bg-red-700 px-8"
+            className="px-8 bg-red-600 hover:bg-red-700"
             onClick={() => setIsFilterPanelOpen(true)}
           >
             Filters
@@ -245,7 +245,7 @@ export default function SearchPage() {
                   ? `Properties for rent in ${currentLocation}`
                   : "All Properties"}
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-gray-500">
                 {isFetching
                   ? "Searching..."
                   : error
@@ -270,7 +270,7 @@ export default function SearchPage() {
 
           {/* Loading State */}
           {isFetching && (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <Skeleton
                   key={`skeleton-${index}`}
@@ -282,14 +282,14 @@ export default function SearchPage() {
 
           {/* Error State */}
           {error && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-red-100 p-3 mb-4">
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <div className="p-3 mb-4 bg-red-100 rounded-full">
                 <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="mb-2 text-lg font-semibold">
                 Failed to load properties
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="mb-4 text-gray-500">
                 There was an error loading the properties. Please try again.
               </p>
               <Button
@@ -311,14 +311,14 @@ export default function SearchPage() {
           {!isFetching &&
             !error &&
             (!propertiesData || propertiesData.length === 0) && (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="rounded-full bg-gray-100 p-3 mb-4">
+              <div className="flex flex-col justify-center items-center py-12 text-center">
+                <div className="p-3 mb-4 bg-gray-100 rounded-full">
                   <Home className="w-6 h-6 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="mb-2 text-lg font-semibold">
                   No properties found
                 </h3>
-                <p className="text-gray-500 mb-4">
+                <p className="mb-4 text-gray-500">
                   {currentLocation
                     ? `We couldn't find any properties in ${currentLocation} matching your criteria.`
                     : "We couldn't find any properties matching your criteria."}
@@ -356,21 +356,25 @@ export default function SearchPage() {
             !error &&
             propertiesData &&
             propertiesData.length > 0 && (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
-                {propertiesData?.map((property, index) => (
-                  <motion.div
-                    key={Number(property.id)}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    <PropertyCard
-                      {...property}
-                      showViewProperty
-                      property={property}
-                    />
-                  </motion.div>
-                ))}
+              <div className="grid gap-6 w-full md:grid-cols-2 xl:grid-cols-3">
+                {propertiesData?.map((property, index) => {
+                  // Use listingId for normalized structure, fallback to id
+                  const keyId = property?.listingId || property?.id;
+                  return (
+                    <motion.div
+                      key={keyId}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                    >
+                      <PropertyCard
+                        {...property}
+                        showViewProperty
+                        property={property}
+                      />
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
 
@@ -378,14 +382,14 @@ export default function SearchPage() {
             !error &&
             propertiesData &&
             propertiesData.length > 0 && (
-              <div className="flex justify-center gap-2 mt-8">
+              <div className="flex gap-2 justify-center mt-8">
                 <Button
                   variant="outline"
-                  className="w-10 h-10 p-0"
+                  className="p-0 w-10 h-10"
                   onClick={() => handlePageChange(filters.page! - 1)}
                   disabled={filters.page === 1}
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="w-6 h-6" />
                 </Button>
                 {getPaginationRange(
                   filters.page || 1,
@@ -409,11 +413,11 @@ export default function SearchPage() {
                 ))}
                 <Button
                   variant="outline"
-                  className="w-10 h-10 p-0"
+                  className="p-0 w-10 h-10"
                   onClick={() => handlePageChange(filters.page! + 1)}
                   disabled={filters.page === pagination?.totalPages}
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="w-6 h-6" />
                 </Button>
               </div>
             )}

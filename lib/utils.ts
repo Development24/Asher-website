@@ -93,6 +93,12 @@ export const formatName = (firstName?: string | null, lastName?: string | null, 
 export const getPropertyPrice = (property: any): string => {
   if (!property) return 'Price on request';
   
+  // Handle normalized listing structure (has listingEntity and price at root)
+  if (property?.listingEntity && property?.price) {
+    const currency = property?.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD';
+    return formatPrice(property.price, currency);
+  }
+  
   // Try different price fields in order of preference
   const price = property?.price || property?.rentalFee || property?.marketValue || property?.rentalPrice;
   

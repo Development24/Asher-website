@@ -71,14 +71,17 @@ export default function EditProfilePage() {
   });
 
   useEffect(() => {
-    if (profile?.profile) {
+    const profileResponse = profile as any;
+    const profileData = profileResponse?.data?.data || profileResponse?.data || profileResponse?.profile || profileResponse?.user?.profile;
+    
+    if (profileData) {
       setFormData((prev) => ({
         ...prev,
-        ...profile.profile,
-        dateOfBirth: profile.profile.dateOfBirth?.split("T")[0] || ""
+        ...profileData,
+        dateOfBirth: profileData.dateOfBirth?.split("T")[0] || ""
       }));
-      if (profile.profile.profileUrl) {
-        setImagePreview(profile.profile.profileUrl);
+      if (profileData.profileUrl) {
+        setImagePreview(profileData.profileUrl);
       }
     }
   }, [profile]);
@@ -115,26 +118,30 @@ export default function EditProfilePage() {
         toast.success("Profile updated");
         setShowSuccessModal(true);
         refetch();
-        setUser({
-          ...user,
-          profile: data?.user
-        } as IUser);
+        // Handle different response structures
+        const updatedProfile = data?.data?.data || data?.data || data?.user || data?.profile;
+        if (updatedProfile) {
+          setUser({
+            ...user,
+            profile: updatedProfile
+          } as IUser);
+        }
       }
     });
   };
 
   if (isFetching) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center gap-6 mb-8">
+      <div className="container px-4 py-8 mx-auto">
+        <div className="mx-auto space-y-6 max-w-4xl">
+          <div className="flex gap-6 items-center mb-8">
             <Skeleton className="w-24 h-24 rounded-full" />
             <div className="space-y-2">
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-32" />
+              <Skeleton className="w-48 h-8" />
+              <Skeleton className="w-32 h-4" />
             </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <Skeleton className="h-20" />
             <Skeleton className="h-20" />
           </div>
@@ -146,9 +153,9 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container px-4 py-8 mx-auto">
       {/* Breadcrumb navigation */}
-      <div className="flex items-center gap-2 mb-6 text-sm">
+      <div className="flex gap-2 items-center mb-6 text-sm">
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
           Home
         </Link>
@@ -163,15 +170,15 @@ export default function EditProfilePage() {
         <span className="text-gray-900">Edit Profile</span>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="mx-auto max-w-4xl">
         {/* Profile Header */}
-        <div className="flex items-center gap-6 mb-8">
+        <div className="flex gap-6 items-center mb-8">
           <div className="relative w-24 h-24">
             <Image
               src={imagePreview || "https://github.com/shadcn.png"}
               alt="Profile"
               fill
-              className="rounded-full object-cover"
+              className="object-cover rounded-full"
               sizes="96px"
               onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder-user.jpg"; }}
             />
@@ -188,7 +195,7 @@ export default function EditProfilePage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => imageRef.current?.click()}
-                className="absolute bottom-0 right-0 rounded-full cursor-pointer"
+                className="absolute right-0 bottom-0 rounded-full cursor-pointer"
               >
                 Edit
               </Button>
@@ -203,7 +210,7 @@ export default function EditProfilePage() {
         {/* Edit Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Select
@@ -226,7 +233,7 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name</Label>
               <Input
@@ -268,7 +275,7 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select
@@ -312,7 +319,7 @@ export default function EditProfilePage() {
           </div>
 
           {/* Contact Information */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="phoneNumber">Phone number</Label>
               <Input
@@ -356,7 +363,7 @@ export default function EditProfilePage() {
             />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
               <Input
@@ -405,7 +412,7 @@ export default function EditProfilePage() {
           </div>
 
           {/* Tax Information */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="taxType">Tax Type</Label>
               <Input
@@ -433,7 +440,7 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex gap-4 justify-end">
             <Button
               type="button"
               variant="outline"

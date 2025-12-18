@@ -166,12 +166,12 @@ function SearchPageContent() {
   }, [propertyResults, filters.page, pagination?.totalPages, getPaginationRange, isLoading, error]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <SearchHeader />
 
       <div className="layout">
         {/* Search Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           <div>
             <label className="text-sm font-medium mb-1.5 block text-gray-500">
               Enter a location
@@ -184,7 +184,7 @@ function SearchPageContent() {
                 onChange={(e) => setCurrentLocation(e.target.value)}
                 className="pl-10"
               />
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <MapPin className="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2" />
             </div>
           </div>
           <div>
@@ -268,7 +268,7 @@ function SearchPageContent() {
 
         {/* Map View */}
         <div className="h-[300px] rounded-lg mb-4 bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
+          <div className="flex absolute inset-0 flex-col gap-4 justify-center items-center">
             <MapPin className="w-8 h-8 text-gray-400" />
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {currentLocation || "Property location"}
@@ -299,7 +299,7 @@ function SearchPageContent() {
                   'All Properties'
                 }
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-gray-500">
                 {isLoading ? 'Searching...' : 
                  error ? 'Error loading properties' :
                  `${propertyResults?.length || 0} properties found`}
@@ -322,7 +322,7 @@ function SearchPageContent() {
 
           {/* Loading State */}
           {isLoading && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <Skeleton
                   key={`skeleton-${index}`}
@@ -334,12 +334,12 @@ function SearchPageContent() {
 
           {/* Error State */}
           {error && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-red-100 p-3 mb-4">
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <div className="p-3 mb-4 bg-red-100 rounded-full">
                 <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Failed to load properties</h3>
-              <p className="text-gray-500 mb-4">
+              <h3 className="mb-2 text-lg font-semibold">Failed to load properties</h3>
+              <p className="mb-4 text-gray-500">
                 There was an error loading the properties. Please try again.
               </p>
               <Button 
@@ -359,12 +359,12 @@ function SearchPageContent() {
 
           {/* Empty State */}
           {!isLoading && !error && (!propertyResults || propertyResults.length === 0) && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-gray-100 p-3 mb-4">
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <div className="p-3 mb-4 bg-gray-100 rounded-full">
                 <Home className="w-6 h-6 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No properties found</h3>
-              <p className="text-gray-500 mb-4">
+              <h3 className="mb-2 text-lg font-semibold">No properties found</h3>
+              <p className="mb-4 text-gray-500">
                 {currentLocation
                   ? `We couldn't find any properties in ${currentLocation} matching your criteria.`
                   : "We couldn't find any properties matching your criteria."}
@@ -399,7 +399,7 @@ function SearchPageContent() {
 
           {/* Results Grid */}
           {!isLoading && !error && propertyResults && propertyResults.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
               {propertyResults?.map((property: any, index: number) => (
                 <motion.div
                   key={property.id}
@@ -410,7 +410,13 @@ function SearchPageContent() {
                   <PropertyCard
                     {...property}
                     showViewProperty
-                    isSaved={property?.propertyId ? isPropertySaved(Number(property.propertyId)) : false}
+                    isSaved={
+                      property?.listingId 
+                        ? isPropertySaved(property.listingId) 
+                        : property?.propertyId 
+                        ? isPropertySaved(Number(property.propertyId)) 
+                        : false
+                    }
                     property={property}
                   />
                 </motion.div>
@@ -420,14 +426,14 @@ function SearchPageContent() {
 
           {/* Pagination - Only show if we have results */}
           {!isLoading && !error && propertyResults && propertyResults.length > 0 && (
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="flex gap-2 justify-center mt-8">
               <Button
                 variant="outline"
-                className="w-8 h-8 p-0"
+                className="p-0 w-8 h-8"
                 onClick={() => handlePageChange(filters.page! - 1)}
                 disabled={filters.page === 1}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="w-4 h-4" />
               </Button>
 
               {getPaginationRange(
@@ -451,11 +457,11 @@ function SearchPageContent() {
 
               <Button
                 variant="outline"
-                className="w-8 h-8 p-0"
+                className="p-0 w-8 h-8"
                 onClick={() => handlePageChange(filters.page! + 1)}
                 disabled={filters.page === pagination?.totalPages}
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           )}

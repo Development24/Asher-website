@@ -116,22 +116,111 @@ export interface RelatedListings {
     totalCount: number;
 }
 
-export interface Listing {
+// Normalized Listing Entity
+export interface ListingEntity {
+    type: 'property' | 'unit' | 'room';
     id: string;
-    payApplicationFee: boolean;
+    name: string;
+    roomName?: string;
+    roomSize?: string;
+    unitType?: string;
+    unitNumber?: string;
+    images: Array<{ id: string; url: string; caption: string; isPrimary?: boolean }>;
+    entityPrice?: string;
+    entityPriceFrequency?: string;
+    ensuite?: boolean;
+    furnished?: boolean;
+    description?: string | null;
+    availability?: string;
+}
+
+// Normalized Property Context
+export interface PropertyContext {
+    id: string;
+    name: string;
+    description: string | null;
+    address: string;
+    city: string;
+    state: { id: string; name: string };
+    country: string;
+    zipcode: string;
+    longitude: string | null;
+    latitude: string | null;
+    images: Array<{ id: string; url: string; caption: string; isPrimary?: boolean }>;
+    videos: Array<{ id: string; url: string; caption: string }>;
+    bedrooms?: number;
+    bathrooms?: number;
+    propertySubType?: string | null;
+    specificationType: 'RESIDENTIAL' | 'COMMERCIAL' | 'SHORTLET';
+    keyFeatures: string[];
+    customKeyFeatures: string[];
+    landlord: {
+        id: string;
+        landlordCode: string;
+        user: {
+            email: string;
+            profile: {
+                fullname: string;
+                firstName: string;
+                lastName: string;
+                profileUrl: string | null;
+            };
+        };
+    };
+}
+
+// Normalized Listing (matches backend response)
+export interface Listing {
+    listingId: string;
+    listingType: 'ENTIRE_PROPERTY' | 'SINGLE_UNIT' | 'ROOM';
     isActive: boolean;
-    isShortlet: boolean;
-    shortletDuration: string;
     onListing: boolean;
-    type: string;
-    propertyId: string;
-    apartmentId: string | null;
-    createdAt: string;
+    createdAt: string | Date;
+    price: string;
+    priceFrequency: string | null;
+    securityDeposit: string;
+    applicationFeeAmount: string | null;
+    payApplicationFee: boolean;
+    availableFrom: string | Date | null;
+    availableTo: string | Date | null;
+    listingEntity: ListingEntity;
+    property: PropertyContext;
+    specification: {
+        type: 'RESIDENTIAL' | 'COMMERCIAL' | 'SHORTLET';
+        residential?: {
+            bedrooms: number;
+            bathrooms: number;
+            status: string;
+            furnished: boolean | null;
+            tenure: string | null;
+            totalArea: string | null;
+            areaUnit: string | null;
+            buildingAmenityFeatures: string[];
+            safetyFeatures: string[];
+            epcRating: string | null;
+            heatingTypes: string[];
+            coolingTypes: string[];
+            glazingTypes: string | null;
+            sharedFacilities?: {
+                kitchen: boolean;
+                bathroom: boolean;
+                livingRoom: boolean;
+                garden: boolean;
+                garage: boolean;
+                laundry: boolean;
+                parking: boolean;
+            };
+        };
+        commercial?: any;
+    };
+    hierarchy: HierarchyInfo;
+    relatedListings: RelatedListings;
+    
+    // Legacy fields for backward compatibility (deprecated)
+    id?: string;
+    type?: string;
+    propertyId?: string;
     property?: Property;
     properties?: Property;
-    apartment: any | null;
-    // New hierarchy fields
-    hierarchy?: HierarchyInfo;
-    relatedListings?: RelatedListings;
-  }
+}
   

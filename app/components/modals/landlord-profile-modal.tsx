@@ -75,8 +75,8 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[830px] p-0">
-        <div className="p-3">
+      <DialogContent className="sm:max-w-[830px] p-0 overflow-hidden max-h-[90vh]">
+        <div className="p-3 overflow-hidden max-h-[90vh] overflow-y-auto">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -159,7 +159,7 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
               </div>
             </div>
 
-            <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden px-1">
               {properties && properties.length > 0 ? (
                 <div className="flex gap-3 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentIndex * 50}%)` }}>
                   {properties.map((property: any, index: number) => (
@@ -167,12 +167,13 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                       key={property?.property.id} 
                       className="relative group bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden transition-shadow duration-200 w-[calc(50%-10px)] flex-shrink-0"
                       whileHover={{ 
-                        scale: 1.02, 
+                        scale: 1.01, 
                         boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
                         y: -2
                       }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      style={{ willChange: 'transform' }}
                     >
                       <div className="relative h-48 overflow-hidden">
                         <Image
