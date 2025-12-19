@@ -104,6 +104,12 @@ function SearchPageContent() {
   const handlePriceChange = useCallback((value: string) => {
     if (value === "any") {
       handleApplyFilters({ minRentalFee: undefined, maxRentalFee: undefined });
+    } else if (value.includes("+")) {
+      const min = parseInt(value.replace("+", ""));
+      handleApplyFilters({
+        minRentalFee: min,
+        maxRentalFee: undefined
+      });
     } else {
       const [min, max] = value.split("-").map((v) => parseInt(v));
       handleApplyFilters({
@@ -113,9 +119,6 @@ function SearchPageContent() {
     }
   }, [handleApplyFilters]);
 
-  const handleHierarchyLevelChange = useCallback((value: string) => {
-    handleApplyFilters({ hierarchyLevel: value === "all" ? undefined : value as any });
-  }, [handleApplyFilters]);
 
   const handlePageChange = useCallback((newPage: number) => {
     setFilters((prev) => ({
@@ -171,7 +174,7 @@ function SearchPageContent() {
 
       <div className="layout">
         {/* Search Filters */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           <div>
             <label className="text-sm font-medium mb-1.5 block text-gray-500">
               Enter a location
@@ -191,7 +194,7 @@ function SearchPageContent() {
             <label className="text-sm font-medium mb-1.5 block text-gray-500">
               Property type
             </label>
-            <Select defaultValue="all" value={filters.type} onValueChange={handlePropertyTypeChange}>
+            <Select defaultValue="all" value={filters.type || "all"} onValueChange={handlePropertyTypeChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Show all" />
               </SelectTrigger>
@@ -199,8 +202,6 @@ function SearchPageContent() {
                 <SelectItem value="all">Show all</SelectItem>
                 <SelectItem value="SINGLE_UNIT">Single Unit</SelectItem>
                 <SelectItem value="MULTI_UNIT">Multi Unit</SelectItem>
-                <SelectItem value="HOUSE">House</SelectItem>
-                <SelectItem value="villa">Villa</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -235,22 +236,6 @@ function SearchPageContent() {
                   ₦200,000 - ₦400,000
                 </SelectItem>
                 <SelectItem value="400000+">₦400,000+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1.5 block text-gray-500">
-              Space Type
-            </label>
-            <Select defaultValue="all" value={filters.hierarchyLevel || "all"} onValueChange={handleHierarchyLevelChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="property">Properties</SelectItem>
-                <SelectItem value="unit">Units</SelectItem>
-                <SelectItem value="room">Rooms</SelectItem>
               </SelectContent>
             </Select>
           </div>

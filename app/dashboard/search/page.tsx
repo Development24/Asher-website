@@ -90,6 +90,12 @@ export default function SearchPage() {
   const handlePriceChange = (value: string) => {
     if (value === "any") {
       handleApplyFilters({ minRentalFee: undefined, maxRentalFee: undefined });
+    } else if (value.includes("+")) {
+      const min = parseInt(value.replace("+", ""));
+      handleApplyFilters({
+        minRentalFee: min,
+        maxRentalFee: undefined
+      });
     } else {
       const [min, max] = value.split("-").map((v) => parseInt(v));
       handleApplyFilters({
@@ -186,7 +192,7 @@ export default function SearchPage() {
             <label className="text-sm font-medium mb-1.5 block">
               Property type
             </label>
-            <Select defaultValue="all" value={filters.type} onValueChange={handlePropertyTypeChange}>
+            <Select defaultValue="all" value={filters.type || "all"} onValueChange={handlePropertyTypeChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Show all" />
               </SelectTrigger>
@@ -194,14 +200,12 @@ export default function SearchPage() {
                 <SelectItem value="all">Show all</SelectItem>
                 <SelectItem value="SINGLE_UNIT">Single Unit</SelectItem>
                 <SelectItem value="MULTI_UNIT">Multi Unit</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-                <SelectItem value="villa">Villa</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="w-full md:w-1/4">
             <label className="text-sm font-medium mb-1.5 block">Bedrooms</label>
-            <Select defaultValue="any" value={filters.minBedRoom?.toString()} onValueChange={handleBedroomChange}>
+            <Select value={filters.minBedRoom ? filters.minBedRoom.toString() : "any"} onValueChange={handleBedroomChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Any beds" />
               </SelectTrigger>
@@ -215,7 +219,7 @@ export default function SearchPage() {
           </div>
           <div className="w-full md:w-1/4">
             <label className="text-sm font-medium mb-1.5 block">Price</label>
-            <Select defaultValue="any" value={filters.minRentalFee?.toString()} onValueChange={handlePriceChange}>
+            <Select value={filters.minRentalFee ? `${filters.minRentalFee}-${filters.maxRentalFee || ""}` : "any"} onValueChange={handlePriceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Any price" />
               </SelectTrigger>

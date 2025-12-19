@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -27,20 +26,17 @@ export default function FilterPanel({
   onApplyFilters
 }: FilterPanelProps) {
   const [filters, setFilters] = useState<PropertyRentalFilter>({
-    area: "this-area",
-    propertyType: [],
-    minBedRoom: 0,
-    maxBedRoom: 0,
-    minBathRoom: 0,
-    maxBathRoom: 0,
-    minRentalFee: 0,
-    maxRentalFee: 0,
+    type: undefined,
+    minBedRoom: undefined,
+    maxBedRoom: undefined,
+    minBathRoom: undefined,
+    maxBathRoom: undefined,
+    minRentalFee: undefined,
+    maxRentalFee: undefined,
     mustHaves: [],
-    minGarage: 0,
-    maxGarage: 0,
-    addedToSite: "anytime",
+    minGarage: undefined,
+    maxGarage: undefined,
     features: [],
-    hierarchyLevel: undefined,
     // Simple Yes/No filters
     hasGarden: false,
     hasGarage: false,
@@ -60,18 +56,16 @@ export default function FilterPanel({
 
   const resetFilters = () => {
     setFilters({
-      area: "this-area",
-      minBedRoom: 0,
-      maxBedRoom: 0,
-      minBathRoom: 0,
-      maxBathRoom: 0,
-      minRentalFee: 0,
-      maxRentalFee: 0,
+      type: undefined,
+      minBedRoom: undefined,
+      maxBedRoom: undefined,
+      minBathRoom: undefined,
+      maxBathRoom: undefined,
+      minRentalFee: undefined,
+      maxRentalFee: undefined,
       mustHaves: [],
-      minGarage: 0,
-      maxGarage: 0,
-      addedToSite: "anytime",
-      propertyType: [],
+      minGarage: undefined,
+      maxGarage: undefined,
       features: [],
       // Simple Yes/No filters
       hasGarden: false,
@@ -115,61 +109,40 @@ export default function FilterPanel({
         isOpen ? "translate-x-0" : "translate-x-full"
       } z-50`}
     >
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-foreground/10">
+      <div className="flex flex-col h-full">
+        <div className="flex justify-between items-center p-6 border-b border-foreground/10">
           <h2 className="text-2xl font-semibold text-foreground">
             Filter your results
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-foreground/10 rounded-full transition-colors"
+            className="p-2 rounded-full transition-colors hover:bg-foreground/10"
           >
             <X className="w-6 h-6 text-foreground" />
           </button>
         </div>
 
-        <div className="flex-1 p-6 space-y-8 overflow-y-auto">
-          {/* Location Filter */}
-          <div className="space-y-4">
-            <Label className="text-lg font-semibold text-foreground">
-              This area only
-            </Label>
-            <Select
-              value={filters.area}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, area: value }))
-              }
-            >
-              <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
-                <SelectValue placeholder="Select area" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="this-area">This area only</SelectItem>
-                <SelectItem value="nearby">Include nearby areas</SelectItem>
-                <SelectItem value="all">All areas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
+        <div className="overflow-y-auto flex-1 p-6 space-y-8">
           {/* Bedrooms Filter */}
           <div className="space-y-4">
             <Label className="text-lg font-semibold text-foreground">
               Bedrooms
             </Label>
-            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
               <Select
-                value={filters.minBedRoom?.toString() || "0"}
+                value={filters.minBedRoom?.toString() || "none"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    minBedRoom: parseInt(value)
+                    minBedRoom: value === "none" ? undefined : parseInt(value)
                   }))
                 }
               >
-                <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
                   <SelectValue placeholder="No min" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No min</SelectItem>
                   {[1, 2, 3, 4, 5].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       {num}+
@@ -178,18 +151,19 @@ export default function FilterPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={filters.maxBedRoom?.toString() || "0"}
+                value={filters.maxBedRoom?.toString() || "none"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    maxBedRoom: parseInt(value)
+                    maxBedRoom: value === "none" ? undefined : parseInt(value)
                   }))
                 }
               >
-                <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
                   <SelectValue placeholder="No max" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No max</SelectItem>
                   {[1, 2, 3, 4, 5].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       {num}
@@ -205,20 +179,21 @@ export default function FilterPanel({
             <Label className="text-lg font-semibold text-foreground">
               Bathrooms
             </Label>
-            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
               <Select
-                value={filters.minBathRoom?.toString() || "0"}
+                value={filters.minBathRoom?.toString() || "none"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    minBathRoom: parseInt(value)
+                    minBathRoom: value === "none" ? undefined : parseInt(value)
                   }))
                 }
               >
-                <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
                   <SelectValue placeholder="No min" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No min</SelectItem>
                   {[1, 2, 3, 4, 5].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       {num}+
@@ -227,18 +202,19 @@ export default function FilterPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={filters.maxBathRoom?.toString() || "0"}
+                value={filters.maxBathRoom?.toString() || "none"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    maxBathRoom: parseInt(value)
+                    maxBathRoom: value === "none" ? undefined : parseInt(value)
                   }))
                 }
               >
-                <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
                   <SelectValue placeholder="No max" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No max</SelectItem>
                   {[1, 2, 3, 4, 5].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       {num}
@@ -256,18 +232,19 @@ export default function FilterPanel({
             </Label>
             <div className="grid grid-cols-2 gap-4">
               <Select
-                value={filters.minRentalFee?.toString() || "0"}
+                value={filters.minRentalFee?.toString() || "none"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    minRentalFee: parseInt(value)
+                    minRentalFee: value === "none" ? undefined : parseInt(value)
                   }))
                 }
               >
-                <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
                   <SelectValue placeholder="No min" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No min</SelectItem>
                   {[100000, 200000, 300000, 400000, 500000].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       ₦{num.toLocaleString()}
@@ -276,18 +253,19 @@ export default function FilterPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={filters.maxRentalFee?.toString() || "0"}
+                value={filters.maxRentalFee?.toString() || "none"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    maxRentalFee: parseInt(value)
+                    maxRentalFee: value === "none" ? undefined : parseInt(value)
                   }))
                 }
               >
-                <SelectTrigger className="w-full bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
                   <SelectValue placeholder="No max" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No max</SelectItem>
                   {[200000, 300000, 400000, 500000, 1000000].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       ₦{num.toLocaleString()}
@@ -303,78 +281,24 @@ export default function FilterPanel({
             <Label className="text-lg font-semibold text-foreground">
               Property type
             </Label>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { id: "show-all", label: "Show all" },
-                { id: "single-unit", label: "Single-unit" },
-                { id: "multi-unit", label: "Multi-unit" },
-                { id: "high-rise", label: "High-rise" }
-              ].map((type) => (
-                <div key={type.id} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={`type-${type.id}`}
-                    checked={filters.propertyType.includes(type.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFilters((prev) => ({
-                          ...prev,
-                          propertyType: [...(prev.propertyType || []), type.id]
-                        }));
-                      } else {
-                        setFilters((prev) => ({
-                          ...prev,
-                          propertyType: prev.propertyType?.filter(
-                            (t: string) => t !== type.id
-                          )
-                        }));
-                      }
-                    }}
-                    className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
-                  />
-                  <Label
-                    htmlFor={`type-${type.id}`}
-                    className="text-sm text-foreground"
-                  >
-                    {type.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Hierarchy Level Filter */}
-          <div className="space-y-4">
-            <Label className="text-lg font-semibold text-foreground">
-              Space Type
-            </Label>
-            <RadioGroup
-              value={filters.hierarchyLevel || "all"}
-              onValueChange={(value) => {
+            <Select
+              value={filters.type || "all"}
+              onValueChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
-                  hierarchyLevel: value === "all" ? undefined : value as any
-                }));
-              }}
+                  type: value === "all" ? undefined : value
+                }))
+              }
             >
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { id: "all", label: "All Types" },
-                  { id: "property", label: "Properties" },
-                  { id: "unit", label: "Units" },
-                  { id: "room", label: "Rooms" }
-                ].map((level) => (
-                  <div key={level.id} className="flex items-center space-x-3">
-                    <RadioGroupItem value={level.id} id={`hierarchy-${level.id}`} />
-                    <Label
-                      htmlFor={`hierarchy-${level.id}`}
-                      className="text-sm text-foreground cursor-pointer"
-                    >
-                      {level.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </RadioGroup>
+              <SelectTrigger className="w-full border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600">
+                <SelectValue placeholder="Show all" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Show all</SelectItem>
+                <SelectItem value="SINGLE_UNIT">Single Unit</SelectItem>
+                <SelectItem value="MULTI_UNIT">Multi Unit</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Property Features */}
@@ -400,7 +324,7 @@ export default function FilterPanel({
                         [feature.id]: checked
                       }));
                     }}
-                    className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
+                    className="border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600"
                   />
                   <Label
                     htmlFor={`feature-${feature.id}`}
@@ -439,7 +363,7 @@ export default function FilterPanel({
                         [amenity.id]: checked
                       }));
                     }}
-                    className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
+                    className="border border-gray-200 bg-white/50 dark:bg-gray-700/50 dark:border-gray-600"
                   />
                   <Label
                     htmlFor={`amenity-${amenity.id}`}
@@ -452,50 +376,14 @@ export default function FilterPanel({
             </div>
           </div>
 
-          {/* Added to site */}
-          <div className="space-y-4">
-            <Label className="text-lg font-semibold text-foreground">
-              Added to site
-            </Label>
-            <RadioGroup
-              value={filters.addedToSite}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, addedToSite: value }))
-              }
-              className="grid grid-cols-2 gap-4"
-            >
-              {[
-                { value: "anytime", label: "Anytime" },
-                { value: "last-24h", label: "Last 24 hours" },
-                { value: "last-3d", label: "Last 3 days" },
-                { value: "last-7d", label: "Last 7 days" },
-                { value: "last-14d", label: "Last 14 days" },
-                { value: "last-30d", label: "Last 30 days" }
-              ].map((option) => (
-                <div key={option.value} className="flex items-center space-x-3">
-                  <RadioGroupItem
-                    value={option.value}
-                    id={`time-${option.value}`}
-                    className="bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
-                  />
-                  <Label
-                    htmlFor={`time-${option.value}`}
-                    className="text-sm text-foreground"
-                  >
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
         </div>
 
-        <div className="p-6 border-t border-foreground/10 flex gap-4">
+        <div className="flex gap-4 p-6 border-t border-foreground/10">
           <Button variant="outline" className="flex-1" onClick={resetFilters}>
             Reset filters
           </Button>
           <Button
-            className="flex-1 bg-primary hover:bg-primary-dark text-white"
+            className="flex-1 text-white bg-primary hover:bg-primary-dark"
             onClick={handleApplyFilters}
           >
             Apply filters
