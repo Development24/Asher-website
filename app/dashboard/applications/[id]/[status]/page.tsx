@@ -222,16 +222,55 @@ export default function SuccessPage() {
   };
 
   const handleCreatePayment = () => {
-    // Set a default amount for lease agreement payment (you can adjust this)
-    const amount = 5000; // $50.00 in cents
-    setPaymentAmount(amount);
+    // Get actual rent amount and security deposit from application/property data
+    const getRentAmount = () => {
+      // Try to get from application properties first
+      if (application?.properties?.rentalFee) {
+        const rentFee = parseFloat(application.properties.rentalFee);
+        if (!isNaN(rentFee) && rentFee > 0) {
+          return rentFee;
+        }
+      }
+      
+      // Try security deposit as fallback
+      if (application?.securityDeposit) {
+        const deposit = parseFloat(application.securityDeposit);
+        if (!isNaN(deposit) && deposit > 0) {
+          return deposit;
+        }
+      }
+      
+      // Try initial deposit from properties
+      if (application?.properties?.initialDeposit) {
+        const initialDeposit = parseFloat(application.properties.initialDeposit);
+        if (!isNaN(initialDeposit) && initialDeposit > 0) {
+          return initialDeposit;
+        }
+      }
+      
+      // Fallback to default (should not happen in production)
+      console.warn("No rent amount found, using default");
+      return 5000; // $50.00 in cents as fallback
+    };
+
+    const rentAmount = getRentAmount();
+    const currency = application?.properties?.currency || "USD";
+    
+    // Convert to cents/kobo based on currency
+    const amountInSmallestUnit = currency === "NGN" 
+      ? Math.round(rentAmount * 100) // Convert to kobo
+      : Math.round(rentAmount * 100); // Convert to cents for USD, etc.
+    
+    setPaymentAmount(amountInSmallestUnit);
+    
+    console.log(`Creating payment for rent: ${amountInSmallestUnit} ${currency} (${rentAmount} in base units)`);
     
     createPaymentFn(
       {
-        amount,
+        amount: amountInSmallestUnit,
         paymentGateway: "STRIPE",
         payment_method_types: "card",
-        currency: "USD"
+        currency: currency
       },
       {
         onSuccess: (data: any) => {

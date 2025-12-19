@@ -34,21 +34,47 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     setIsProcessing(true);
     setError(null);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/applications/payment-success` : '/dashboard/applications/payment-success'
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        setError(submitError.message || "Please check your payment details.");
+        setIsProcessing(false);
+        return;
       }
-    });
 
-    if (error) {
-      console.error("Payment error:", error);
-      setError(error.message || "Payment failed. Please try again.");
+      // Confirm payment without redirect to handle success in the same page
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/applications/payment-success` : '/dashboard/applications/payment-success'
+        },
+        redirect: "if_required" // Only redirect if required (e.g., 3D Secure)
+      });
+
+      if (confirmError) {
+        console.error("Payment error:", confirmError);
+        setError(confirmError.message || "Payment failed. Please try again.");
+        setIsProcessing(false);
+        onPaymentError?.(confirmError);
+      } else {
+        // Check payment intent status
+        if (paymentIntent?.status === 'succeeded') {
+          // Payment successful - call success callback
+          onPaymentSuccess?.();
+        } else if (paymentIntent?.status === 'requires_action') {
+          // Payment requires additional action (e.g., 3D Secure)
+          // Stripe will handle the redirect automatically
+          // The return_url will handle the success case
+        } else {
+          setError("Payment is being processed. Please wait...");
+          setIsProcessing(false);
+        }
+      }
+    } catch (err: any) {
+      console.error("Unexpected payment error:", err);
+      setError(err.message || "An unexpected error occurred. Please try again.");
       setIsProcessing(false);
-      onPaymentError?.(error);
-    } else {
-      // Payment successful
-      onPaymentSuccess?.();
+      onPaymentError?.(err);
     }
   };
 
