@@ -43,9 +43,9 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
   if (!propertyId) {
     return (
       <div className="layout">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-4">Error</h1>
-          <p className="text-gray-600 mb-6">
+        <div className="py-12 text-center">
+          <h1 className="mb-4 text-2xl font-bold">Error</h1>
+          <p className="mb-6 text-gray-600">
             Property information is missing. Please go back and try again.
           </p>
           <Button asChild>
@@ -106,7 +106,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
   if (isAlreadyEnquired) {
     return (
       <div className="layout">
-        <div className="flex items-center gap-2 mb-6 text-sm">
+        <div className="flex gap-2 items-center mb-6 text-sm">
           <Link href="/search" className="text-gray-600 hover:text-gray-900">
             Home
           </Link>
@@ -121,13 +121,13 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
           <span className="text-gray-900">Email agent</span>
         </div>
 
-        <div className="max-w-2xl mx-auto text-center py-12">
+        <div className="py-12 mx-auto max-w-2xl text-center">
           <EnquiryStatusIndicator 
             propertyId={propertyId} 
             variant="button" 
             showDate={true}
           />
-          <p className="text-gray-600 mt-4 mb-6">
+          <p className="mt-4 mb-6 text-gray-600">
             You have already sent an enquiry for this property. The landlord will get back to you soon.
           </p>
           <Button asChild>
@@ -142,7 +142,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
 
   return (
     <div className="layout">
-      <div className="flex items-center gap-2 mb-6 text-sm">
+      <div className="flex gap-2 items-center mb-6 text-sm">
         <Link href="/search" className="text-gray-600 hover:text-gray-900">
           Home
         </Link>
@@ -157,9 +157,9 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         <span className="text-gray-900">Email agent</span>
       </div>
 
-      <div className="flex items-center justify-between gap-8 flex-col md:flex-row">
+      <div className="flex flex-col gap-8 justify-between items-center md:flex-row">
         <div className="w-full md:w-1/2">
-          <h1 className="text-2xl font-bold mb-6">Send Enquiry to Landlord</h1>
+          <h1 className="mb-6 text-2xl font-bold">Send Enquiry to Landlord</h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="fullName">Full name</Label>
@@ -236,8 +236,8 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
               </Button>
               <LoadingButton loading={isPending} type="submit" className="bg-red-600 hover:bg-red-700" disabled={isPending}>
                 {isPending ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <span className="flex justify-center items-center">
+                    <svg className="mr-2 w-5 h-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
@@ -251,7 +251,7 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
           </form>
         </div>
 
-        <div className="bg-white rounded-lg border overflow-hidden w-full md:w-1/3">
+        <div className="overflow-hidden w-full bg-white rounded-lg border md:w-1/3">
           <div className="relative h-48">
             <Image
               src={propertyDetails?.property?.images[0]?.url || "/placeholder.svg"}
@@ -261,16 +261,16 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
             />
           </div>
           <div className="p-4">
-            <h2 className="text-xl font-semibold mb-2">
+            <h2 className="mb-2 text-xl font-semibold">
               {propertyDetails?.property?.name}
             </h2>
-            <p className="text-gray-600 mb-2">{`${propertyDetails?.property?.city} ${propertyDetails?.property?.state?.name} ${propertyDetails?.property?.country}`}</p>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span className="flex items-center gap-1">
+            <p className="mb-2 text-gray-600">{`${propertyDetails?.property?.city} ${propertyDetails?.property?.state?.name} ${propertyDetails?.property?.country}`}</p>
+            <div className="flex gap-4 items-center text-sm text-gray-600">
+              <span className="flex gap-1 items-center">
                 <Bed className="w-4 h-4" />
                 {propertyDetails?.property?.bedrooms} bedrooms
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex gap-1 items-center">
                 <Bath className="w-4 h-4" />
                 {propertyDetails?.property?.bathrooms} bathrooms
               </span>

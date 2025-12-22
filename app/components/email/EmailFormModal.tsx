@@ -60,10 +60,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
 
     // The property data structure is: data?.property?.property
     // So propertyDetails should contain the property object
-    const propertyListingId = propertyDetails?.id || 
-                             propertyDetails?.propertyId || 
-                             propertyDetails?.property?.id || 
-                             propertyDetails?.property?.propertyId;
+    const propertyListingId = propertyDetails?.listingId
 
     // Also try to get the propertyId field
     const propertyIdForAPI = propertyDetails?.property?.id || 
@@ -120,35 +117,35 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50"
             onClick={handleClose}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+              className="p-6 w-full max-w-md bg-white rounded-lg shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Enquiry Status</h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleClose}
-                  className="h-8 w-8 p-0"
+                  className="p-0 w-8 h-8"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
               
-              <div className="text-center py-6">
+              <div className="py-6 text-center">
                 <EnquiryStatusIndicator 
                   propertyId={propertyId} 
                   variant="button" 
                   showDate={true}
                 />
-                <p className="text-gray-600 mt-4 mb-6">
+                <p className="mt-4 mb-6 text-gray-600">
                   You have already sent an enquiry for this property. The landlord will get back to you soon.
                 </p>
                 <Button onClick={handleClose} className="w-full">
@@ -169,7 +166,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50"
           onClick={handleClose}
         >
           <motion.div
@@ -180,23 +177,23 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-xl font-semibold">Send Enquiry to Landlord</h2>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
-                className="h-8 w-8 p-0"
+                className="p-0 w-8 h-8"
                 disabled={isPending}
               >
-                <X className="h-4 w-4" />
+                <X className="w-4 h-4" />
               </Button>
             </div>
 
             <div className="p-6">
               {/* Property Preview */}
-              <div className="flex items-start gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                <div className="relative h-20 w-20 flex-shrink-0">
+              <div className="flex gap-4 items-start p-4 mb-6 bg-gray-50 rounded-lg">
+                <div className="relative flex-shrink-0 w-20 h-20">
                   <Image
                     src={displayImages(propertyDetails?.property?.images || propertyDetails?.images)[0] || "/placeholder.svg"}
                     alt={propertyDetails?.property?.name || propertyDetails?.name || "Property"}
@@ -211,13 +208,13 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
                   <p className="text-sm text-gray-600 truncate">
                     {propertyDetails?.property?.location || propertyDetails?.location || "Location"}
                   </p>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <Bed className="h-4 w-4" />
+                  <div className="flex gap-4 items-center mt-2 text-sm text-gray-600">
+                    <span className="flex gap-1 items-center">
+                      <Bed className="w-4 h-4" />
                       {propertyDetails?.property?.noBedRoom || propertyDetails?.noBedRoom || 0} bed
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Bath className="h-4 w-4" />
+                    <span className="flex gap-1 items-center">
+                      <Bath className="w-4 h-4" />
                       {propertyDetails?.property?.noBathRoom || propertyDetails?.noBathRoom || 0} bath
                     </span>
                     <span className="font-semibold text-primary-600">
@@ -229,7 +226,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="fullName">Full name</Label>
                     <Input
@@ -258,7 +255,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="phone">Phone number</Label>
                     <Input
