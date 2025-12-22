@@ -59,6 +59,11 @@ export interface SignAgreementResponse {
   message: string;
 }
 
+export interface UpdateMoveInDateResponse {
+  message: string;
+  application?: ApplicationData;
+}
+
 const URL = "api/application"
 // /application/milestones/cm284qnxt0003tffzo49gvmfl
 const applicationURL = {
@@ -81,7 +86,8 @@ const applicationURL = {
     dashboardStats: "/applicant/stats",
     completeApplication: "/complete/:applicationId",
     getReferenceDetails: "/references/:applicationId",
-    signAgreement: "/sign/:applicationId"
+    signAgreement: "/sign/:applicationId",
+    moveInDate: "/move-in-date/:applicationId"
 }
 
 export const startApplication = async (propertyId: string, payload: any): Promise<ApplicationResponse> => {
@@ -189,6 +195,15 @@ export const getReferenceDetails = async (applicationId: string): Promise<GetRef
 
 export const signAgreement = async (applicationId: string, payload: any): Promise<SignAgreementResponse> => {
     const response = await apiFormData.post(URL + applicationURL.signAgreement.replace(":applicationId", applicationId), payload)
+    return response.data
+}
+
+export interface UpdateMoveInDatePayload {
+    moveInDate: string; // Accepts formats: "2025-02-15", "2025-02-15T00:00:00Z", "2025-02-15T14:30:00.000Z"
+}
+
+export const updateMoveInDate = async (applicationId: string, payload: UpdateMoveInDatePayload): Promise<UpdateMoveInDateResponse> => {
+    const response = await api.patch(URL + applicationURL.moveInDate.replace(":applicationId", applicationId), payload)
     return response.data
 }
 

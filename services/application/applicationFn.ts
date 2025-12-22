@@ -20,7 +20,9 @@ import {
     dashboardStats,
     completeApplication,
     getReferenceDetails,
-    signAgreement
+    signAgreement,
+    updateMoveInDate,
+    UpdateMoveInDatePayload
 } from "./application"
 
 const keysToInvalidate = ["allApplications", "properties", "application", "milestonesApplication", "singleApplication", "allInvites", "getPropertyByInviteId", "dashboardStats", "feedback"]
@@ -231,6 +233,18 @@ export const useSignAgreement = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => signAgreement(payload.applicationId, payload.data),
+        onSuccess: () => {
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: [key] });
+            });
+        }
+    })
+}
+
+export const useUpdateMoveInDate = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (payload: { applicationId: string, data: UpdateMoveInDatePayload }) => updateMoveInDate(payload.applicationId, payload.data),
         onSuccess: () => {
             keysToInvalidate.forEach(key => {
                 queryClient.invalidateQueries({ queryKey: [key] });

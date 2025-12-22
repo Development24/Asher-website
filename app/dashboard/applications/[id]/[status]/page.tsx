@@ -45,6 +45,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { LeaseAgreementModal } from "./lease-agreement-modal";
+import { MoveInDateModal } from "./move-in-date-modal";
 import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
@@ -78,6 +79,7 @@ export default function SuccessPage() {
     "idle" | "success" | "failure"
   >("idle");
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showMoveInDateModal, setShowMoveInDateModal] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const idToUse = id ?? applicationId;
@@ -212,6 +214,13 @@ export default function SuccessPage() {
     setShowPaymentModal(false);
     setPaymentStatus("success");
     toast.success("Payment successful! Your lease agreement has been submitted.");
+    // Show move-in date modal after payment success
+    setShowMoveInDateModal(true);
+  };
+
+  const handleMoveInDateSuccess = () => {
+    // Optionally refresh application data or navigate
+    // The modal will close automatically
   };
 
   const handlePaymentFailure = (error?: any) => {
@@ -1027,6 +1036,14 @@ export default function SuccessPage() {
         >
           Payment failed. Please try again or contact support.
         </motion.div>
+      )}
+      {idToUse && (
+        <MoveInDateModal
+          isOpen={showMoveInDateModal}
+          onClose={() => setShowMoveInDateModal(false)}
+          onSuccess={handleMoveInDateSuccess}
+          applicationId={idToUse}
+        />
       )}
     </div>
   );

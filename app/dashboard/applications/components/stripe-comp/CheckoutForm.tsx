@@ -44,12 +44,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
       // Confirm payment without redirect to handle success in the same page
       const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/applications/payment-success` : '/dashboard/applications/payment-success'
+      elements,
+      confirmParams: {
+        return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/applications/payment-success` : '/dashboard/applications/payment-success'
         },
         redirect: "if_required" // Only redirect if required (e.g., 3D Secure)
-      });
+    });
 
       if (confirmError) {
         console.error("Payment error:", confirmError);
