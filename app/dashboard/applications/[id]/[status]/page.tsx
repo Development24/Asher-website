@@ -16,7 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, formatPrice, formatName } from "@/lib/utils";
+import { cn, formatName } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import {
   useGetSingleApplication,
   useSignAgreement
@@ -507,7 +508,10 @@ export default function SuccessPage() {
             </div>
 
             <div className="mb-6 text-2xl font-bold">
-              {`${formatPrice(propertyData?.price, propertyData?.currency || 'USD')}`}{" "}
+              <FormattedPrice
+                amount={propertyData?.price}
+                currency={propertyData?.currency || 'USD'}
+              />{" "}
               <span className="text-base font-normal text-gray-600">
                 per month
               </span>
@@ -943,12 +947,11 @@ export default function SuccessPage() {
                           {similarProperty?.property?.state?.name},{" "}
                           {similarProperty?.property?.country}
                         </p>
-                        <p className="font-semibold text-red-600">
-                          {formatPrice(
-                            Number(similarProperty?.property?.price) || 0,
-                            similarProperty?.property?.currency || 'USD'
-                          )}
-                        </p>
+                        <FormattedPrice
+                          amount={Number(similarProperty?.property?.price) || 0}
+                          currency={similarProperty?.property?.currency || 'USD'}
+                          className="font-semibold text-red-600"
+                        />
                       </div>
                     </Card>
                   </div>

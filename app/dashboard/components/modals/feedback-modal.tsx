@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { useCreateFeedback } from "@/services/property/propertyFn";
 import { toast } from "sonner";
 
@@ -108,10 +108,11 @@ const FeedbackModal = ({
   const propertyImage = data?.images?.[0] || "/placeholder.jpg";
   const propertyName = data?.name || "Property";
   const propertyAddress = data?.address || "N/A";
-  const propertyPrice =
-    typeof data?.rentalFee === "number" && !isNaN(data.rentalFee)
-      ? formatPrice(data.rentalFee, data?.currency || 'USD')
-      : "—";
+  // Property price values for FormattedPrice component
+  const propertyPriceValue = typeof data?.rentalFee === "number" && !isNaN(data.rentalFee)
+      ? data.rentalFee
+      : null;
+  const propertyPriceCurrency = data?.currency || 'USD';
   const bedrooms = data?.noBedRoom ?? "—";
   const bathrooms = data?.noBathRoom ?? "—";
   const propertySize = data?.propertysize ? `${data.propertysize} sqft` : null;
@@ -160,7 +161,16 @@ const FeedbackModal = ({
                     <span>•</span>
                     <span>{bathrooms} bathrooms</span>
                   </div>
-                  <div className="text-lg font-semibold text-primary-600">{propertyPrice}</div>
+                  <div className="text-lg font-semibold text-primary-600">
+                    {propertyPriceValue ? (
+                      <FormattedPrice
+                        amount={propertyPriceValue}
+                        currency={propertyPriceCurrency}
+                      />
+                    ) : (
+                      "—"
+                    )}
+                  </div>
                 </div>
               </div>
 

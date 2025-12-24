@@ -9,7 +9,7 @@ import { Bed, Bath, X } from "lucide-react";
 import { EmailSuccessModal } from "./EmailSuccessModal";
 import { useCreateEnquiry } from "@/services/property/propertyFn";
 import { Property } from "@/services/property/types";
-import { formatPrice } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { userStore } from "@/store/userStore";
 import { useEnquiryStore } from "@/store/enquiryStore";
 import { EnquiryStatusIndicator } from "@/components/EnquiryStatusIndicator";
@@ -217,9 +217,11 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
                       <Bath className="w-4 h-4" />
                       {propertyDetails?.property?.noBathRoom || propertyDetails?.noBathRoom || 0} bath
                     </span>
-                    <span className="font-semibold text-primary-600">
-                      {formatPrice(propertyDetails?.property?.rentalFee || propertyDetails?.rentalFee || 0, propertyDetails?.property?.currency || propertyDetails?.currency || 'USD')}
-                    </span>
+                    <FormattedPrice
+                      amount={propertyDetails?.property?.rentalFee || propertyDetails?.rentalFee || 0}
+                      currency={propertyDetails?.property?.currency || propertyDetails?.currency || 'USD'}
+                      className="font-semibold text-primary-600"
+                    />
                   </div>
                 </div>
               </div>

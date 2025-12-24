@@ -6,11 +6,12 @@ import { GeistSans } from 'geist/font/sans';
 import { SavedPropertiesProvider } from "./contexts/saved-properties-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { initCurrency } from "@/lib/initCurrency";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,11 @@ export default function RootLayout({
         }
       })
   );
+
+  // Initialize currency detection on app load
+  useEffect(() => {
+    initCurrency().catch(console.error);
+  }, []);
 
   return (
     <html lang="en" className="scroll-smooth">

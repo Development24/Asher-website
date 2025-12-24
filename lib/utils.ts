@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+// Currency formatting - now uses location-based detection
+import { formatPriceSync, formatPrice as formatPriceAsync } from './currencyFormatters';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -21,57 +23,34 @@ export const updateDate = (part: 'year' | 'month' | 'day', value: string, field:
   console.log("Date updated:", newDate)
 }
 
-
-// utils/formatPrice.ts
-
-const currencyMap: { [key: string]: string } = {
-  'en-US': 'USD',
-  'en-GB': 'GBP',
-  'fr-FR': 'EUR',
-  'de-DE': 'EUR',
-  'ja-JP': 'JPY',
-  'en-NG': 'NGN', 
-  'es-ES': 'EUR', 
-  'it-IT': 'EUR', 
-};
-
+/**
+ * Format price - synchronous version (uses cached currency, no conversion)
+ * For backward compatibility and immediate formatting needs
+ * 
+ * NOTE: This does NOT convert currencies - it only formats in the detected/cached currency.
+ * For currency conversion, use formatPriceWithConversion() from currencyFormatters.ts
+ * 
+ * @param value - The amount to format
+ * @param currency - Optional currency override (uses detected currency if not provided)
+ * @returns Formatted currency string
+ */
 export const formatPrice = (value: number | string | null | undefined, currency?: string): string => {
-  // Handle invalid or zero values
-  if (!value || value === '0' || value === 0 || isNaN(Number(value))) {
-    return 'Price on request';
-  }
-
-  const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-  
-  // Handle NaN or zero after conversion
-  if (isNaN(numericValue) || numericValue === 0) {
-    return 'Price on request';
-  }
-
-  // Use provided currency or fallback to locale-based detection
-  let finalCurrency = currency;
-  let userLocale = 'en-US'; // Default locale
-  
-  if (!finalCurrency) {
-    userLocale = typeof navigator !== 'undefined' ? navigator.language || 'en-US' : 'en-US';
-    finalCurrency = currencyMap[userLocale] || 'USD';
-  }
-  
-  // Set appropriate locale based on currency
-  if (finalCurrency === 'GBP') userLocale = 'en-GB';
-  else if (finalCurrency === 'NGN') userLocale = 'en-NG';
-  else if (finalCurrency === 'USD') userLocale = 'en-US';
-
-  // Create a new formatter for the currency
-  const numberFormat = new Intl.NumberFormat(userLocale, {
-    style: 'currency',
-    currency: finalCurrency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
-  return numberFormat.format(numericValue);
+  // Use the synchronous formatter with cached currency
+  return formatPriceSync(value, currency);
 };
+
+/**
+ * Format price with automatic currency conversion (async)
+ * Use this when you need to convert property prices to user's detected currency
+ * 
+ * @param value - The amount to format
+ * @param fromCurrency - Property's currency (will convert to user's currency)
+ * @returns Promise that resolves to formatted currency string
+ * 
+ * @example
+ * const formatted = await formatPriceWithConversion(3000000, 'NGN');
+ */
+export const formatPriceWithConversion = formatPriceAsync;
 
 // Helper function to safely format names
 export const formatName = (firstName?: string | null, lastName?: string | null, fullName?: string | null): string => {
@@ -89,33 +68,61 @@ export const formatName = (firstName?: string | null, lastName?: string | null, 
   return `${first} ${last}`.trim();
 };
 
+// Helper function to extract price value from property (checks all possible fields)
+const extractPriceValue = (property: any): number | null => {
+  if (!property) return null;
+  
+  // Check all possible price fields in order of preference
+  const priceFields = [
+    property?.price,
+    property?.rentalFee,
+    property?.rentalPrice,
+    property?.marketValue,
+    property?.listingEntity?.price,
+    property?.property?.price,
+    property?.property?.rentalFee,
+    property?.property?.rentalPrice,
+    property?.property?.marketValue,
+  ];
+  
+  for (const price of priceFields) {
+    // Accept 0 as a valid price value
+    if (price !== null && price !== undefined && price !== '') {
+      const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+      if (!isNaN(numPrice)) {
+        return numPrice; // Return even if 0
+      }
+    }
+  }
+  
+  return null;
+};
+
+// Helper function to extract currency from property
+const extractCurrency = (property: any): string => {
+  return property?.currency 
+    || property?.property?.currency
+    || property?.listingEntity?.currency
+    || (property?.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD')
+    || 'USD';
+};
+
 // Helper function to get property price with fallbacks
 export const getPropertyPrice = (property: any): string => {
   if (!property) return 'Price on request';
   
-  // Handle normalized listing structure (has listingEntity and price at root)
-  if (property?.listingEntity && property?.price) {
-    const currency = property?.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD';
-    return formatPrice(property.price, currency);
+  // Extract price value from all possible locations
+  const priceValue = extractPriceValue(property);
+  
+  if (priceValue === null) {
+    return 'Price on request';
   }
   
-  // Try different price fields in order of preference
-  const price = property?.price || property?.rentalFee || property?.marketValue || property?.rentalPrice;
+  // Get currency
+  const currency = extractCurrency(property);
   
-  // Get the currency from the property
-  const currency = property?.currency || 'USD';
-  
-  // If we have a valid price, format it with the property's currency
-  if (price && price !== '0' && price !== 0) {
-    return formatPrice(price, currency);
-  }
-  
-  // Check for nested property structure
-  if (property?.property) {
-    return getPropertyPrice(property.property);
-  }
-  
-  return 'Price on request';
+  // Format the price
+  return formatPrice(priceValue, currency);
 };
 
 // Helper function to safely get bedroom count

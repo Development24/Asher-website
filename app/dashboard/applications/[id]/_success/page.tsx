@@ -25,11 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { Listing } from "@/services/property/types";
 import { useGetProperties } from "@/services/property/propertyFn";
 import { useGetPropertyById } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 const LandlordProfileModal = dynamic(() => import("@/app/components/modals/landlord-profile-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { userStore } from "@/store/userStore";
@@ -334,7 +335,10 @@ export default function SuccessPage() {
             </div>
 
             <div className="text-2xl font-bold mb-6">
-              {`${formatPrice(propertyData?.rentalFee, propertyData?.currency || 'USD')}`}{" "}
+              <FormattedPrice
+                amount={propertyData?.rentalFee}
+                currency={propertyData?.currency || 'USD'}
+              />{" "}
               <span className="text-base font-normal text-gray-600">
                 per month
               </span>
@@ -812,12 +816,11 @@ export default function SuccessPage() {
                         <p className="text-gray-600 text-sm mb-2">
                           {similarProperty?.property?.location}
                         </p>
-                        <p className="text-red-600 font-semibold">
-                          {formatPrice(
-                            Number(similarProperty?.property?.rentalFee) || 0,
-                            similarProperty?.property?.currency || 'USD'
-                          )}
-                        </p>
+                        <FormattedPrice
+                          amount={Number(similarProperty?.property?.rentalFee) || 0}
+                          currency={similarProperty?.property?.currency || 'USD'}
+                          className="text-red-600 font-semibold"
+                        />
                       </div>
                     </Card>
                   </div>

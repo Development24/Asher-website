@@ -7,7 +7,8 @@ import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Heart, Home } from "lucide-react";
-import { cn, formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount } from "@/lib/utils";
+import { cn, getPropertyPrice, getBedroomCount, getBathroomCount } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { displayImages } from "@/app/property/[id]/utils";
 import { animations } from "@/lib/animations";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
@@ -222,9 +223,11 @@ const LandlordProfileModal = ({ isOpen, onClose, landlord, onChatClick, onEmailC
                         <p className="text-sm text-neutral-600 mb-2 line-clamp-1">
                           {property?.property?.city}
                         </p>
-                        <p className="text-primary-500 font-semibold mb-2">
-                          {formatPrice(property?.property?.price, property?.property?.currency || 'USD') || 'Price on request'}
-                        </p>
+                        <FormattedPrice
+                          amount={property?.property?.price}
+                          currency={property?.property?.currency || 'USD'}
+                          className="text-primary-500 font-semibold mb-2"
+                        />
                         <div className="flex items-center gap-3 text-sm text-neutral-600">
                           <span className="flex items-center gap-1">
                             <span className="w-1 h-1 bg-neutral-400 rounded-full"></span>

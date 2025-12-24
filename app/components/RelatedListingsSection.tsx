@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useGetRelatedListings } from "@/services/property/propertyFn";
-import { formatPrice } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface RelatedListingsSectionProps {
@@ -59,9 +59,11 @@ export const RelatedListingsSection = ({
                 >
                   <div className="flex justify-between items-center">
                     <span className="font-medium">{unit.name}</span>
-                    <span className="text-primary-500 font-semibold">
-                      {formatPrice(unit.price, unit.currency)}
-                    </span>
+                    <FormattedPrice 
+                      amount={unit.price} 
+                      currency={unit.currency}
+                      className="text-primary-500 font-semibold"
+                    />
                   </div>
                 </Link>
               ))}
@@ -82,9 +84,11 @@ export const RelatedListingsSection = ({
                 >
                   <div className="flex justify-between items-center">
                     <span className="font-medium">{room.name}</span>
-                    <span className="text-primary-500 font-semibold">
-                      {formatPrice(room.price, room.currency)}
-                    </span>
+                    <FormattedPrice 
+                      amount={room.price} 
+                      currency={room.currency}
+                      className="text-primary-500 font-semibold"
+                    />
                   </div>
                 </Link>
               ))}

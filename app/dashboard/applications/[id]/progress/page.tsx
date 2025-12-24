@@ -8,6 +8,7 @@ import { useApplicationForm } from "@/contexts/application-form-context";
 import { useMilestonesApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
 import { Bath, Bed, Check, MapPin } from "lucide-react";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -15,7 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const FeedbackModal = dynamic(() => import("@/app/dashboard/components/modals/feedback-modal").then(mod => mod.default), { ssr: false, loading: () => null });
 import { completedStep } from "../../components/ApplicationCard";
-import { formatPrice } from "../../../../../lib/utils";
+// formatPrice removed - using FormattedPrice component instead
 import { format } from "date-fns";
 import { useReuseAbleStore } from "@/store/reuseAble";
 
@@ -342,7 +343,10 @@ export default function ApplicationProgressPage() {
                     </p>
                   </div>
                   <div className="text-lg font-semibold text-red-600">
-                    {formatPrice(Number(propertyData.properties.rentalFee), propertyData.properties.currency || 'USD')}
+                    <FormattedPrice
+                      amount={Number(propertyData.properties.rentalFee)}
+                      currency={propertyData.properties.currency || 'USD'}
+                    />
                     <span className="text-sm font-normal text-gray-500">
                       {" "}
                       / month

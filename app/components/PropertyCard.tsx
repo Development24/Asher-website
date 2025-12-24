@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { cn, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { useCurrencyFormat } from "@/hooks/useCurrencyFormat";
 import { Listing } from "@/services/property/types";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,10 +75,14 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
       ? property.listingEntity.name
       : property?.property?.name || 'Property';
     
-    // Get price - use normalized price from root level
-    const propertyPrice = isNormalized
-      ? formatPrice(property.price, property.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD')
-      : getPropertyPrice(property?.property);
+    // Get price and currency for conversion
+    const propertyPriceValue = isNormalized
+      ? property.price
+      : (property?.property?.price || property?.property?.rentalFee || property?.property?.marketValue || property?.property?.rentalPrice || 0);
+    
+    const priceCurrency = isNormalized
+      ? (property.property?.currency || (property.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD'))
+      : (property?.property?.currency || 'USD');
     
     // Get location from property context
     const propertyLocation = isNormalized
@@ -102,7 +107,8 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
       propertyLiked,
       imageUrl,
       propertyName,
-      propertyPrice,
+      propertyPriceValue,
+      priceCurrency,
       propertyLocation,
       bedroomCount,
       bathroomCount,
@@ -115,6 +121,12 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
     isPending: isLikePending,
     isSuccess: isLikeSuccess
   } = useLikeProperty(String(memoizedValues.propertyId));
+
+  // Format price with currency conversion
+  const propertyPrice = useCurrencyFormat(
+    memoizedValues.propertyPriceValue,
+    memoizedValues.priceCurrency
+  );
 
   const handleSaveClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -196,7 +208,7 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
               )}
             </div>
             <span className="ml-2 font-semibold whitespace-nowrap text-primary-500 sm:text-base">
-              {memoizedValues.propertyPrice}
+              {propertyPrice}
             </span>
           </div>
 

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Bed, Bath } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { useReuseAbleStore } from "@/store/reuseAble";
 import { ApplicationStatus } from "../page";
 import { displayImages } from "@/app/property/[id]/utils";
@@ -161,9 +161,11 @@ const ApplicationCard = ({
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold">{application?.properties?.name}</h3>
-          <span className="text-red-600 font-semibold">
-            {formatPrice(Number(application?.properties?.price), application?.properties?.currency || 'USD')}
-          </span>
+          <FormattedPrice
+            amount={Number(application?.properties?.price)}
+            currency={application?.properties?.currency || 'USD'}
+            className="text-red-600 font-semibold"
+          />
         </div>
         {/* <p className="text-sm text-gray-500 mb-4">{application.properties.location}</p> */}
         <p className="text-sm text-gray-500 mb-4">

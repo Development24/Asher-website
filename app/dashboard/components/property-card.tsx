@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
 import { Listing } from "@/services/property/types";
-import { formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { useState } from "react";
 import { userStore } from "@/store/userStore";
@@ -193,13 +194,13 @@ export function PropertyCard({
               </p>
             )}
           </div>
-          <span className="text-primary-500 font-semibold ml-2 whitespace-nowrap">
-            {isNormalized
-              ? (property?.price 
-                  ? formatPrice(Number(property.price), propertyData?.currency || 'USD')
-                  : getPropertyPrice(propertyData))
-              : getPropertyPrice(propertyData)}
-          </span>
+          <FormattedPrice
+            amount={isNormalized
+              ? (property?.price ? Number(property.price) : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0))
+              : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0)}
+            currency={propertyData?.currency || 'USD'}
+            className="text-primary-500 font-semibold ml-2 whitespace-nowrap"
+          />
         </div>
         <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
           {getPropertyLocation(propertyData)}

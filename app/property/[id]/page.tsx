@@ -14,7 +14,8 @@ import SaveModal from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatName } from "@/lib/utils";
+import { formatName } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import {
   useGetProperties,
   useGetPropertyById,
@@ -537,16 +538,16 @@ export default function PropertyDetails() {
           </div>
 
           <div className="mb-6 text-3xl font-bold">
-            {formatPrice(
-              Number(
+            <FormattedPrice
+              amount={Number(
                 isNormalized
                   ? listing?.price
                   : (listingType === "ENTIRE_PROPERTY"
                       ? propertyData?.price
                       : propertyInfo?.price)
-              ),
-              propertyData?.currency || "USD"
-            )}{" "}
+              )}
+              currency={propertyData?.currency || "USD"}
+            />{" "}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
               {(isNormalized 
                 ? listing?.priceFrequency 
@@ -665,12 +666,14 @@ export default function PropertyDetails() {
                       const deposit = isNormalized
                         ? listing?.securityDeposit
                         : data?.property?.securityDeposit;
-                      return deposit && deposit !== "0"
-                        ? formatPrice(
-                            Number(deposit),
-                            propertyData?.currency || "USD"
-                          )
-                        : "Ask agent";
+                      return deposit && deposit !== "0" ? (
+                        <FormattedPrice
+                          amount={Number(deposit)}
+                          currency={propertyData?.currency || "USD"}
+                        />
+                      ) : (
+                        "Ask agent"
+                      );
                     })()}
                   </div>
                 </div>

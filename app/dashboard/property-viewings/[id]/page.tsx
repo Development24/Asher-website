@@ -3,7 +3,8 @@
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { formatPrice, formatName } from "@/lib/utils";
+import { formatName } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import {
   useGetPropertyByInviteId,
   useUpdateInvite
@@ -411,10 +412,10 @@ export default function PropertyViewingDetailPage() {
                   </p>
                 </div>
                 <div className="mt-4 text-2xl font-bold text-red-600">
-                  {formatPrice(
-                    Number(propertyData?.price),
-                    propertyData?.currency || "USD"
-                  )}{" "}
+                  <FormattedPrice
+                    amount={Number(propertyData?.price)}
+                    currency={propertyData?.currency || "USD"}
+                  />{" "}
                   <span className="text-sm font-normal text-gray-600">
                     per month
                   </span>

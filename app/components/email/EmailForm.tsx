@@ -12,7 +12,7 @@ import { Bed, Bath } from "lucide-react";
 import { EmailSuccessModal } from "./EmailSuccessModal";
 import { useSendEmail } from "@/services/email/emailFn";
 import { Property } from "@/services/property/types";
-import { formatPrice } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import { userStore } from "@/store/userStore";
 import { useCreateEnquiry } from "@/services/property/propertyFn";
 import { useEnquiryStore } from "@/store/enquiryStore";
@@ -275,10 +275,11 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
                 {propertyDetails?.property?.bathrooms} bathrooms
               </span>
             </div>
-            <div className="mt-4 text-xl font-bold text-red-600">{`${formatPrice(
-              Number(propertyDetails?.property?.price),
-              propertyDetails?.property?.currency || 'USD'
-            )}`}</div>
+            <FormattedPrice
+              amount={Number(propertyDetails?.property?.price)}
+              currency={propertyDetails?.property?.currency || 'USD'}
+              className="mt-4 text-xl font-bold text-red-600"
+            />
           </div>
         </div>
       </div>

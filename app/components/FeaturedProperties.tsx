@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, formatPrice, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { cn, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { FormattedPrice } from "@/components/FormattedPrice";
 import Link from "next/link";
 import type React from "react";
 import { useGetProperties } from "@/services/property/propertyFn";
@@ -213,12 +214,12 @@ export function FeaturedProperties() {
               ? listingEntity?.name || propertyData?.name
               : propertyData?.name;
             
-            // Get price
-            const propertyPrice = isNormalized
-              ? (property.price 
-                  ? formatPrice(Number(property.price), propertyData?.currency || 'USD')
-                  : getPropertyPrice(propertyData))
-              : getPropertyPrice(propertyData);
+            // Get price value and currency for conversion
+            const propertyPriceValue = isNormalized
+              ? (property.price ? Number(property.price) : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0))
+              : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0);
+            
+            const propertyPriceCurrency = propertyData?.currency || 'USD';
             
             // Get bedrooms/bathrooms
             const bedrooms = isNormalized
@@ -304,9 +305,11 @@ export function FeaturedProperties() {
                           </p>
                         )}
                       </div>
-                      <span className="ml-2 font-semibold whitespace-nowrap text-primary-500">
-                        {propertyPrice}
-                      </span>
+                      <FormattedPrice 
+                        amount={propertyPriceValue} 
+                        currency={propertyPriceCurrency}
+                        className="ml-2 font-semibold whitespace-nowrap text-primary-500"
+                      />
                     </div>
                     <p className="mb-2 text-sm text-neutral-600">
                       {getPropertyLocation(propertyData) || 'Location not available'}
