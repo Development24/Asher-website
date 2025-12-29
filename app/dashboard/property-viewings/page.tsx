@@ -223,29 +223,34 @@ export default function PropertyViewingsPage() {
         />
                  {expandedSections.has('pending') && (
            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-             {pendingInvites?.map((property: any) => (
-              <motion.div
-                key={property.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                {isUpdatingInvite ? (
-                  <PropertyCardSkeleton />
-                ) : (
-                  <PropertyCard
-                    {...property}
-                    property={property as any}
-                    viewType="invite"
-                    viewLink={`/dashboard/property-viewings/${property?.id}/?schedule_date=${property?.scheduleDate}&invitationId=${property?.id}`}
-                    isInvite
-                    onAcceptInvite={() =>
-                      handleAcceptInvite(property?.id as string)
-                    }
-                  />
-                )}
-              </motion.div>
-            ))}
+             {pendingInvites?.map((invite: any) => {
+              // Use normalized listing if available, otherwise fallback to property
+              const listing = invite?.listing || null;
+              const propertyData = invite?.property || invite?.properties || null;
+              
+              return (
+                <motion.div
+                  key={invite.inviteId || invite.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {isUpdatingInvite ? (
+                    <PropertyCardSkeleton />
+                  ) : (
+                    <PropertyCard
+                      property={listing || propertyData}
+                      viewType="invite"
+                      viewLink={`/dashboard/property-viewings/${invite?.inviteId || invite?.id}/?schedule_date=${invite?.scheduleDate}&invitationId=${invite?.inviteId || invite?.id}`}
+                      isInvite
+                      onAcceptInvite={() =>
+                        handleAcceptInvite(invite?.inviteId || invite?.id as string)
+                      }
+                    />
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </section>
@@ -259,22 +264,26 @@ export default function PropertyViewingsPage() {
         />
         {expandedSections.has('scheduled') && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {acceptedInvites.map((property: any) => (
-              <motion.div
-                key={property.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <PropertyCard
-                  {...property}
-                  property={property as any}
-                  viewType="schedule"
-                  viewLink={`/dashboard/property-viewings/${property?.id}/?schedule_date=${property?.scheduleDate}&invitationId=${property?.id}`}
-                  isScheduled
-                />
-              </motion.div>
-            ))}
+            {acceptedInvites.map((invite: any) => {
+              const listing = invite?.listing || null;
+              const propertyData = invite?.property || invite?.properties || null;
+              
+              return (
+                <motion.div
+                  key={invite.inviteId || invite.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <PropertyCard
+                    property={listing || propertyData}
+                    viewType="schedule"
+                    viewLink={`/dashboard/property-viewings/${invite?.inviteId || invite?.id}/?schedule_date=${invite?.scheduleDate}&invitationId=${invite?.inviteId || invite?.id}`}
+                    isScheduled
+                  />
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </section>
@@ -288,33 +297,45 @@ export default function PropertyViewingsPage() {
         />
                  {expandedSections.has('feedback') && (
            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-             {feedbackInvites.map((property: any) => {
+             {feedbackInvites.map((invite: any) => {
+              const listing = invite?.listing || null;
+              const propertyData = invite?.property || invite?.properties || null;
+              
               return (
                 <motion.div
-                  key={property.id}
+                  key={invite.inviteId || invite.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >
                   <PropertyCard
-                    {...property}
+                    property={listing || propertyData}
                     viewType="property"
-                    property={property as any}
                     showFeedback
-                    onFeedbackClick={() =>
+                    onFeedbackClick={() => {
+                      // Extract data from normalized listing or fallback to property
+                      const images = listing?.listingEntity?.images?.length > 0 
+                        ? listing.listingEntity.images 
+                        : listing?.property?.images || propertyData?.images || [];
+                      const name = listing?.listingEntity?.name || propertyData?.name || '';
+                      const address = listing?.property?.address || propertyData?.address || '';
+                      const price = listing?.price || propertyData?.price || propertyData?.rentalFee || '0';
+                      const bedrooms = listing?.specification?.residential?.bedrooms || listing?.property?.bedrooms || propertyData?.bedrooms || 0;
+                      const bathrooms = listing?.specification?.residential?.bathrooms || listing?.property?.bathrooms || propertyData?.bathrooms || 0;
+                      
                       handleFeedbackClick({
-                        propertyId: property?.properties?.id,
-                        applicantInviteId: property?.id,
-                        scheduleDate: property?.scheduleDate,
-                        images: displayImages(property?.properties?.images),
-                        name: property?.properties?.name,
-                        address: property?.properties?.location,
-                        rentalFee: property?.properties?.rentalFee as any || property?.properties?.price as any,
-                        propertysize: property?.properties?.propertysize,
-                        noBedRoom: property?.properties?.bedrooms,
-                        noBathRoom: property?.properties?.bathrooms
-                      })
-                    }
+                        propertyId: propertyData?.id || invite?.propertiesId,
+                        applicantInviteId: invite?.inviteId || invite?.id,
+                        scheduleDate: invite?.scheduleDate,
+                        images: displayImages(images),
+                        name: name,
+                        address: address,
+                        rentalFee: Number(price),
+                        propertysize: listing?.specification?.residential?.totalArea ? Number(listing.specification.residential.totalArea) : (propertyData?.propertySize ? Number(propertyData.propertySize) : 0),
+                        noBedRoom: bedrooms,
+                        noBathRoom: bathrooms
+                      });
+                    }}
                     showViewProperty
                   />
                 </motion.div>
@@ -333,22 +354,26 @@ export default function PropertyViewingsPage() {
         />
                  {expandedSections.has('completed') && (
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-             {allCompletedInvites.map((property: any) => (
-              <motion.div
-                key={property.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <PropertyCard
-                  {...property}
-                  property={property as any}
-                  viewType="schedule"
-                  viewLink={`/dashboard/property-viewings/${property.id}`}
-                  isScheduled
-                />
-              </motion.div>
-            ))}
+             {allCompletedInvites.map((invite: any) => {
+              const listing = invite?.listing || null;
+              const propertyData = invite?.property || invite?.properties || null;
+              
+              return (
+                <motion.div
+                  key={invite.inviteId || invite.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <PropertyCard
+                    property={listing || propertyData}
+                    viewType="schedule"
+                    viewLink={`/dashboard/property-viewings/${invite?.inviteId || invite?.id}`}
+                    isScheduled
+                  />
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </section>

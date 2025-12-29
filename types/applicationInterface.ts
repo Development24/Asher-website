@@ -69,6 +69,7 @@ export interface MainApplicationInterface {
     submittedApplications: ApplicationData[];
     completedApps: ApplicationData[];
     invites: ApplicationData[];
+    activeApps: any
 }
 
 export interface User {

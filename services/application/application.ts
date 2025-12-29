@@ -11,7 +11,7 @@ export interface ApplicationResponse {
 }
 
 export interface AllApplicationsResponse {
-  applications: ApplicationData[];
+  applications: MainApplicationInterface;
   message?: string;
 }
 
@@ -27,7 +27,13 @@ export interface SingleApplicationResponse {
 }
 
 export interface AllInvitesResponse {
-  invites: ApplicationData[];
+  pendingInvites?: any[];
+  acceptInvites?: any[];
+  otherInvites?: any[];
+  awaitingFeedbackInvites?: any[];
+  rejectedInvites?: any[];
+  rescheduledInvites?: any[];
+  approvedinvites?: any[];
   message?: string;
 }
 

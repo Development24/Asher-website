@@ -110,29 +110,139 @@ const ApplicationCard = ({
     application: ApplicationData,
     sectionType: string
   ) => {
+    // CRITICAL: These are different IDs for different purposes:
+    // - id/applicationId = The actual application ID (for existing applications)
+    // - applicationInviteId = The invite ID (for starting new applications)
+    // - propertiesId = The property ID (for URL path)
+    
+    // Get application ID (the actual application.id - used for existing applications)
+    const applicationId = (application as any)?.id || (application as any)?.applicationId;
+    
+    // Get applicationInviteId (the invite ID - used for starting new applications)
+    const applicationInviteId = (application as any)?.applicationInviteId || null;
+    
+    // Get property ID - prioritize propertiesId (preserved from original), then normalized listing, then fallback
+    const propertyId = (application as any)?.propertiesId || // Preserved from original
+                       application?.listing?.property?.id || // From normalized listing
+                       application?.property?.id || // From normalized property
+                       application?.properties?.id; // From raw properties
+    
+    if (!propertyId) {
+      console.warn('Missing propertyId for application navigation:', application);
+    }
+    
     switch (application.status) {
       case ApplicationStatus.SUBMITTED:
-        return `/dashboard/applications/${application.id}/submitted?applicationId=${application.id}`;
+        // Submitted: use applicationId in both path and query
+        return `/dashboard/applications/${applicationId}/submitted?applicationId=${applicationId}`;
       case ApplicationStatus.COMPLETED:
       case ApplicationStatus.APPROVED:
-        return `/dashboard/applications/${application.id}/completed?applicationId=${application.id}`;
+        // Completed/Approved: use applicationId in both path and query
+        return `/dashboard/applications/${applicationId}/completed?applicationId=${applicationId}`;
       case ApplicationStatus.DECLINED:
-        return `/dashboard/applications/${application.id}/declined?applicationId=${application.id}`;
+        // Declined: use applicationId in both path and query
+        return `/dashboard/applications/${applicationId}/declined?applicationId=${applicationId}`;
       case ApplicationStatus.AGREEMENTS:
       case ApplicationStatus.AGREEMENTS_SIGNED:
-        return `/dashboard/applications/${application.id}/agreements?applicationId=${application.id}`;
+        // Agreements: use applicationId in both path and query
+        return `/dashboard/applications/${applicationId}/agreements?applicationId=${applicationId}`;
       case ApplicationStatus.PENDING:
-        if (sectionType === "ongoing") {
-          return `/dashboard/applications/${application?.properties?.id}/progress?applicationId=${application?.id}`;
+        if (sectionType === "ongoing" || sectionType === "continue") {
+          // For pending/ongoing applications: use propertyId in path, applicationId in query
+          // This is for continuing an existing application
+          if (!propertyId) {
+            console.warn('Missing propertyId for ongoing application:', application);
+            return `/dashboard/applications/${applicationId}/progress?applicationId=${applicationId}`;
+          }
+          if (!applicationId) {
+            console.error('Missing applicationId for ongoing application:', application);
+            return `/dashboard/applications/${propertyId}/progress`;
+          }
+          return `/dashboard/applications/${propertyId}/progress?applicationId=${applicationId}`;
         }
+        // Fall through for pending invites
       default:
-        return `/dashboard/applications/${
-          application.properties?.id
-        }/apply?applicationInviteId=${
-          application.applicationInviteId || application.id
-        }`;
+        // For invites/new applications: use propertyId in path, applicationInviteId in query
+        // This is for starting a new application from an invite
+        if (!propertyId) {
+          console.warn('Missing propertyId for application invite:', application);
+          return `/dashboard/applications/${applicationId || 'new'}/apply?applicationInviteId=${applicationInviteId || applicationId || ''}`;
+        }
+        if (!applicationInviteId && !applicationId) {
+          console.error('Missing both applicationInviteId and applicationId for invite:', application);
+          return `/dashboard/applications/${propertyId}/apply`;
+        }
+        // Use applicationInviteId if available (for new applications), otherwise fallback to applicationId
+        return `/dashboard/applications/${propertyId}/apply?applicationInviteId=${applicationInviteId || applicationId}`;
     }
   };
+
+  // Handle normalized structure
+  const listing = application?.listing || null;
+  const propertyData = application?.property || application?.properties || null;
+  const isNormalized = listing?.listingEntity && listing?.property;
+  
+  // Extract data from normalized listing or fallback to property
+  const images = isNormalized && listing?.listingEntity?.images?.length > 0
+    ? listing.listingEntity.images
+    : (isNormalized ? listing?.property?.images : null) || propertyData?.images || [];
+  const name = isNormalized
+    ? (listing.listingEntity?.name || listing.property?.name)
+    : propertyData?.name || '';
+  const price = isNormalized
+    ? listing.price
+    : (propertyData?.price || propertyData?.rentalFee || '0');
+  const currency = isNormalized
+    ? listing.property?.currency || 'USD'
+    : propertyData?.currency || 'USD';
+  const city = isNormalized
+    ? listing.property?.city
+    : propertyData?.city || '';
+  const stateName = isNormalized
+    ? listing.property?.state?.name
+    : propertyData?.state?.name || '';
+  const country = isNormalized
+    ? listing.property?.country
+    : propertyData?.country || '';
+  // Extract bedrooms/bathrooms - check multiple paths for normalized listings
+  // For normalized listings, check property context first (works for all types),
+  // then specification (for entire properties), then fallback
+  const bedrooms = isNormalized && listing
+    ? (listing.property?.bedrooms ?? 
+       listing.specification?.residential?.bedrooms ?? 
+       propertyData?.bedrooms ?? 
+       0)
+    : (() => {
+        // For legacy property data, check specification array or object
+        const spec = propertyData?.specification;
+        const residential = Array.isArray(spec) 
+          ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
+          : spec?.residential;
+        return residential?.bedrooms ?? 
+               propertyData?.residential?.bedrooms ?? 
+               propertyData?.bedrooms ?? 
+               propertyData?.noBedRoom ?? 
+               propertyData?.bedRooms ?? 
+               0;
+      })();
+  const bathrooms = isNormalized && listing
+    ? (listing.property?.bathrooms ?? 
+       listing.specification?.residential?.bathrooms ?? 
+       propertyData?.bathrooms ?? 
+       0)
+    : (() => {
+        // For legacy property data, check specification array or object
+        const spec = propertyData?.specification;
+        const residential = Array.isArray(spec) 
+          ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
+          : spec?.residential;
+        return residential?.bathrooms ?? 
+               propertyData?.residential?.bathrooms ?? 
+               propertyData?.bathrooms ?? 
+               propertyData?.noBathRoom ?? 
+               propertyData?.bathRooms ?? 
+               0;
+      })();
 
   return (
     // NOTE: application is the application object
@@ -140,10 +250,10 @@ const ApplicationCard = ({
       <div className="relative h-48">
         <Image
           src={
-            displayImages(application?.properties?.images)?.[0] ||
+            displayImages(images)?.[0] ||
             "https://cdn.pixabay.com/photo/2016/06/24/10/47/house-1477041_1280.jpg"
           }
-          alt={application?.properties?.name}
+          alt={name}
           fill
           className="object-cover"
         />
@@ -160,26 +270,25 @@ const ApplicationCard = ({
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold">{application?.properties?.name}</h3>
+          <h3 className="font-semibold">{name}</h3>
           <FormattedPrice
-            amount={Number(application?.properties?.price)}
-            currency={application?.properties?.currency || 'USD'}
+            amount={Number(price)}
+            currency={currency}
             className="text-red-600 font-semibold"
           />
         </div>
         {/* <p className="text-sm text-gray-500 mb-4">{application.properties.location}</p> */}
         <p className="text-sm text-gray-500 mb-4">
-          {application?.properties?.city}, {application?.properties?.state?.name}{" "}
-          {application?.properties?.country}
+          {city}{stateName ? `, ${stateName}` : ''}{country ? ` ${country}` : ''}
         </p>
         <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
-            {application?.properties?.bedrooms}
+            {bedrooms}
           </span>
           <span className="flex items-center gap-1">
             <Bath className="h-4 w-4" />
-            {application?.properties?.bathrooms}
+            {bathrooms}
           </span>
         </div>
         {sectionType === "continue" && (

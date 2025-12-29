@@ -121,44 +121,267 @@ const PropertyCardSkeleton = () => (
   </Card>
 );
 
+/**
+ * Application Progress Page
+ * 
+ * Displays the progress of a property rental application, including:
+ * - Property details (image, name, location, price, specs)
+ * - Application completion status
+ * - Application milestones/timeline (from API milestones or Log array)
+ * 
+ * Data Sources:
+ * - Milestones: API endpoint returns milestones array, falls back to application.Log if empty
+ * - Property: Can be normalized (listing.property) or raw (properties) structure
+ */
 export default function ApplicationProgressPage() {
-  const { id } = useParams();
+  // ==================== Route & Query Parameters ====================
+  const { id } = useParams(); // Property ID from URL path
   const router = useRouter();
   const searchParams = useSearchParams();
-  const applicationId = searchParams.get("applicationId");
-  // const applicationId = useReuseAbleStore((state: any) => state.applicationId);
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const applicationId = searchParams.get("applicationId"); // Application ID from query params
+  
+  // ==================== Component State ====================
+  const [milestones, setMilestones] = useState<Milestone[]>([]); // Default milestones if no API data
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { loadDraft } = useApplicationForm();
 
+  // ==================== Data Fetching ====================
+  /**
+   * Fetch application milestones and application data
+   * Endpoint: /api/application/milestones/:propertyId/:applicationId
+   * Returns: { milestones: [], application: ApplicationData }
+   */
   const { data: milestonesData, isFetching: isMilestonesFetching } =
     useMilestonesApplication(id as string, applicationId as string);
 
   const propertyData = milestonesData?.application as ApplicationData;
 
-  const milestonesApplication = milestonesData?.milestones as MileStoneData[];
+  // ==================== Milestones Data Processing ====================
+  /**
+   * Extract milestones with fallback strategy:
+   * 1. Use API milestones array if available and non-empty
+   * 2. Fallback to application.Log array (activity log)
+   * 3. Map Log entries to MileStoneData format for consistent rendering
+   * 4. Return empty array if neither source has data
+   */
+  const milestonesApplication = (() => {
+    // Priority 1: Use API milestones if available
+    if (milestonesData?.milestones && milestonesData.milestones.length > 0) {
+      return milestonesData.milestones as MileStoneData[];
+    }
+    
+    // Priority 2: Fallback to application Log array
+    if (propertyData?.Log && propertyData.Log.length > 0) {
+      return propertyData.Log.map((log: any) => ({
+        id: log.id || '',
+        subjects: log.subjects || null,
+        viewAgain: log.viewAgain || null,
+        considerRenting: log.considerRenting || null,
+        events: log.events || log.type || 'Activity',
+        type: log.type || '',
+        status: log.status || null,
+        createdAt: log.createdAt || log.timestamp || new Date().toISOString(),
+        propertyId: log.propertyId || id as string,
+        applicationId: log.applicationId || applicationId || '',
+        transactionId: log.transactionId || null,
+        createdById: log.createdById || '',
+      })) as MileStoneData[];
+    }
+    
+    // No milestones available
+    return [];
+  })();
 
+  // ==================== Property Data Normalization ====================
+  /**
+   * Handle both normalized and raw property data structures:
+   * - Normalized: { listing: { listingEntity, property } } (from normalizers)
+   * - Raw: { properties: { ... } } (direct from API)
+   * 
+   * This ensures compatibility with both data structures throughout the component
+   */
+  const listing = (propertyData as any)?.listing || null;
+  const isNormalized = listing?.listingEntity && listing?.property;
+  const property = isNormalized 
+    ? listing.property 
+    : propertyData?.properties || null;
+  
+  // ==================== Property Details Extraction ====================
+  
+  /**
+   * Extract property name with fallbacks
+   */
+  const propertyName = property?.name || property?.title || '';
+  
+  /**
+   * Extract property image with comprehensive handling:
+   * - Handles both string arrays and object arrays (with url property)
+   * - Falls back to placeholder.co with property name first letter
+   * - Format: Black background (000000), white text (FFFFFF)
+   */
+  const propertyImages = property?.images || property?.imageUrls || [];
+  let propertyImage = '';
+  if (propertyImages.length > 0) {
+    const firstImage = propertyImages[0];
+    // Handle both string and object formats
+    propertyImage = typeof firstImage === 'string' 
+      ? firstImage 
+      : firstImage?.url || firstImage?.imageUrl || '';
+  }
+  
+  // Generate placeholder if no image available
+  if (!propertyImage && propertyName) {
+    const firstLetter = propertyName.charAt(0).toUpperCase();
+    propertyImage = `https://placehold.co/400x300/000000/FFFFFF?text=${encodeURIComponent(firstLetter)}`;
+  } else if (!propertyImage) {
+    propertyImage = 'https://placehold.co/400x300/000000/FFFFFF?text=P';
+  }
+  
+  /**
+   * Extract location details
+   */
+  const propertyCity = property?.city || '';
+  const propertyCountry = property?.country || '';
+  const propertyState = property?.state || '';
+  
+  /**
+   * Extract pricing information
+   */
+  const propertyRentalFee = property?.rentalFee || property?.price || 0;
+  const propertyCurrency = property?.currency || 'USD';
+  
+  /**
+   * Extract bedrooms count with comprehensive fallback strategy
+   * Priority order:
+   * 1. Normalized listing property context (works for all listing types)
+   * 2. Normalized listing specification (for entire properties)
+   * 3. Raw property direct fields (noBedRoom, bedrooms)
+   * 4. Raw property nested specification (residential.bedrooms)
+   * 5. Default to 0 if not found
+   */
+  const bedrooms = (() => {
+    // Check normalized listing data first (if available)
+    if (listing?.property?.bedrooms != null) {
+      return listing.property.bedrooms;
+    }
+    if (listing?.specification?.residential?.bedrooms != null) {
+      return listing.specification.residential.bedrooms;
+    }
+    
+    // Check raw property direct fields (most common in API responses)
+    if (property?.noBedRoom != null) {
+      return property.noBedRoom;
+    }
+    if (property?.bedrooms != null) {
+      return property.bedrooms;
+    }
+    
+    // Check nested specification (can be array or object)
+    if (property?.specification) {
+      const spec = property.specification;
+      const residential = Array.isArray(spec)
+        ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
+        : spec?.residential;
+      if (residential?.bedrooms != null) {
+        return residential.bedrooms;
+      }
+    }
+    
+    // Check direct residential object
+    if (property?.residential?.bedrooms != null) {
+      return property.residential.bedrooms;
+    }
+    
+    // Default fallback
+    return 0;
+  })();
+
+  /**
+   * Extract bathrooms count with comprehensive fallback strategy
+   * Same priority order as bedrooms
+   */
+  const bathrooms = (() => {
+    // Check normalized listing data first (if available)
+    if (listing?.property?.bathrooms != null) {
+      return listing.property.bathrooms;
+    }
+    if (listing?.specification?.residential?.bathrooms != null) {
+      return listing.specification.residential.bathrooms;
+    }
+    
+    // Check raw property direct fields (most common in API responses)
+    if (property?.noBathRoom != null) {
+      return property.noBathRoom;
+    }
+    if (property?.bathrooms != null) {
+      return property.bathrooms;
+    }
+    
+    // Check nested specification (can be array or object)
+    if (property?.specification) {
+      const spec = property.specification;
+      const residential = Array.isArray(spec)
+        ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
+        : spec?.residential;
+      if (residential?.bathrooms != null) {
+        return residential.bathrooms;
+      }
+    }
+    
+    // Check direct residential object
+    if (property?.residential?.bathrooms != null) {
+      return property.residential.bathrooms;
+    }
+    
+    // Default fallback
+    return 0;
+  })();
+
+  /**
+   * Extract property size with fallbacks
+   * Handles both propertysize (API format) and size (alternative format)
+   */
+  const propertySize = property?.propertysize || property?.size || '';
+
+  // ==================== Event Handlers ====================
+  
+  /**
+   * Open feedback modal for the property
+   * Only enabled if property data is available
+   */
   const openFeedbackModal = useCallback(() => {
-    if (propertyData?.properties) {
+    if (property) {
       setShowFeedbackModal(true);
     }
-  }, [propertyData]);
+  }, [property]);
 
+  // ==================== Effects ====================
+  
+  /**
+   * Initialize default milestones and load application draft
+   * 
+   * Default milestones are only set if:
+   * - No milestones from API
+   * - No Log entries available
+   * - Property data is available
+   */
   useEffect(() => {
-    if (milestones.length === 0 && propertyData) {
+    // Set default milestones as fallback if no API/Log data available
+    if (milestones.length === 0 && milestonesApplication.length === 0 && propertyData && propertyName) {
       setMilestones([
         {
           title: "Application Started",
-          date: "January 22, 2024",
-          description: `Application in progress for ${propertyData.properties?.name}.`,
+          date: propertyData.createdAt 
+            ? format(new Date(propertyData.createdAt), "MMM d, yyyy") 
+            : "Pending",
+          description: `Application in progress for ${propertyName}.`,
           completed: true
         },
         {
           title: "Property Viewed",
-          date: "January 25, 2024",
-          description:
-            "You viewed the property. Don't forget to leave your feedback!",
-          completed: true,
+          date: "Pending",
+          description: "You viewed the property. Don't forget to leave your feedback!",
+          completed: false,
           action: {
             label: "Leave feedback",
             onClick: openFeedbackModal
@@ -166,16 +389,14 @@ export default function ApplicationProgressPage() {
         },
         {
           title: "Documents Submitted",
-          date: "January 28, 2024",
-          description:
-            "All required documents have been uploaded and submitted.",
+          date: "Pending",
+          description: "All required documents have been uploaded and submitted.",
           completed: false
         },
         {
           title: "Application Review",
           date: "Pending",
-          description:
-            "Your application is under review by the property manager.",
+          description: "Your application is under review by the property manager.",
           completed: false
         },
         {
@@ -187,6 +408,7 @@ export default function ApplicationProgressPage() {
       ]);
     }
 
+    // Load application draft form data if applicationId is available
     if (applicationId) {
       loadDraft(Number(applicationId));
     }
@@ -195,10 +417,16 @@ export default function ApplicationProgressPage() {
     applicationId,
     loadDraft,
     propertyData,
+    propertyName,
     milestones.length,
+    milestonesApplication.length,
     openFeedbackModal
   ]);
 
+  /**
+   * Handle feedback submission completion
+   * Updates the "Property Viewed" milestone to reflect feedback was submitted
+   */
   const handleFeedbackComplete = () => {
     setMilestones((prevMilestones) =>
       prevMilestones.map((milestone) =>
@@ -206,7 +434,7 @@ export default function ApplicationProgressPage() {
           ? {
               ...milestone,
               description: "You viewed the property and left feedback.",
-              action: undefined
+              action: undefined // Remove action button after feedback is submitted
             }
           : milestone
       )
@@ -214,11 +442,20 @@ export default function ApplicationProgressPage() {
     setShowFeedbackModal(false);
   };
 
+  /**
+   * Navigate to application form to resume/continue application
+   */
   const handleResumeApplication = () => {
     router.push(`/dashboard/applications/${id}/apply`);
   };
 
-  if (!propertyData?.properties || isMilestonesFetching) {
+  // ==================== Loading State ====================
+  /**
+   * Show skeleton loading state while:
+   * - Property data is not available, OR
+   * - Milestones are still being fetched
+   */
+  if (!property || isMilestonesFetching) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-6 text-sm">
@@ -319,33 +556,35 @@ export default function ApplicationProgressPage() {
           {isMilestonesFetching ? (
             <PropertyCardSkeleton />
           ) : (
-            propertyData?.properties && (
+            property && (
               <Card className="h-full">
-                <div className="relative h-64">
+                <div className="relative h-64 bg-gray-200">
                   <Image
-                    src={
-                      propertyData.properties.images[0] ||
-                      "https://cdn.pixabay.com/photo/2016/11/18/17/46/house-1836070_1280.jpg"
-                    }
-                    alt={propertyData.properties.name}
+                    src={propertyImage}
+                    alt={propertyName || 'Property'}
                     fill
                     className="object-cover rounded-t-lg"
+                    unoptimized
                   />
                 </div>
                 <div className="p-4 flex flex-col gap-5">
                   <div>
                     <h3 className="font-semibold text-lg">
-                      {propertyData.properties.name}
+                      {propertyName}
                     </h3>
                     <p className="text-sm text-gray-500 flex items-center mt-1">
                       <MapPin className="w-4 h-4 mr-1" />
-                      {`${propertyData.properties.city}, ${propertyData.properties.country}`}
+                      {propertyCity && propertyCountry 
+                        ? `${propertyCity}, ${propertyCountry}`
+                        : propertyState && propertyCountry
+                        ? `${propertyState}, ${propertyCountry}`
+                        : propertyCountry || 'Location not available'}
                     </p>
                   </div>
                   <div className="text-lg font-semibold text-red-600">
                     <FormattedPrice
-                      amount={Number(propertyData.properties.rentalFee)}
-                      currency={propertyData.properties.currency || 'USD'}
+                      amount={Number(propertyRentalFee)}
+                      currency={propertyCurrency}
                     />
                     <span className="text-sm font-normal text-gray-500">
                       {" "}
@@ -353,29 +592,38 @@ export default function ApplicationProgressPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
+                    {/* Bedrooms display - only show if value > 0, otherwise show N/A */}
                     <span className="flex items-center">
-                      <Bed className="w-4 h-4 mr-1" />{" "}
-                      {propertyData.properties.noBedRoom} beds
+                      <Bed className="w-4 h-4 mr-1" />
+                      {bedrooms > 0 
+                        ? `${bedrooms} bed${bedrooms !== 1 ? 's' : ''}` 
+                        : 'N/A'}
                     </span>
+                    {/* Bathrooms display - only show if value > 0, otherwise show N/A */}
                     <span className="flex items-center">
-                      <Bath className="w-4 h-4 mr-1" />{" "}
-                      {propertyData.properties.noBathRoom} baths
+                      <Bath className="w-4 h-4 mr-1" />
+                      {bathrooms > 0 
+                        ? `${bathrooms} bath${bathrooms !== 1 ? 's' : ''}` 
+                        : 'N/A'}
                     </span>
-                    <span>{propertyData.properties.propertysize}</span>
+                    {/* Property size - only display if available */}
+                    {propertySize && <span>{propertySize}</span>}
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {propertyData.properties.description}
-                  </p>
+                  {property?.description && (
+                    <p className="text-sm text-gray-600">
+                      {property.description}
+                    </p>
+                  )}
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">
                       Application completion
                     </div>
                     <Progress
-                      value={completedStep(propertyData.completedSteps.length)}
+                      value={completedStep(propertyData?.completedSteps?.length || 0)}
                       className="h-2"
                     />
                     <div className="text-sm font-medium">
-                      {completedStep(propertyData.completedSteps.length)}%
+                      {completedStep(propertyData?.completedSteps?.length || 0)}%
                       complete
                     </div>
                   </div>
@@ -399,8 +647,9 @@ export default function ApplicationProgressPage() {
                 ? Array.from({ length: 5 }).map((_, index) => (
                     <MilestoneSkeleton key={index} />
                   ))
-                : milestonesApplication?.map((milestone, index) => (
-                    <div key={index} className="flex gap-4 mb-8">
+                : milestonesApplication && milestonesApplication.length > 0
+                ? milestonesApplication.map((milestone, index) => (
+                    <div key={milestone.id || index} className="flex gap-4 mb-8">
                       <div className="relative">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -411,25 +660,68 @@ export default function ApplicationProgressPage() {
                         >
                           <Check className="w-4 h-4" />
                         </div>
-                        {index < milestonesApplication?.length - 1 && (
+                        {index < milestonesApplication.length - 1 && (
                           <div className="absolute top-8 left-1/2 bottom-[-32px] w-0.5 -translate-x-1/2 bg-gray-200" />
                         )}
                       </div>
                       <div className="flex-1 pt-1">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <h3 className="font-medium">{milestone?.events}</h3>
+                            <h3 className="font-medium">{milestone?.events || milestone?.type || 'Activity'}</h3>
                             <div className="text-sm text-gray-500">
                               <span>on</span>
                               <span className="ml-1">
-                                {format(
-                                  new Date(milestone?.createdAt),
-                                  "MMM d, yyyy"
-                                )}
+                                {milestone?.createdAt
+                                  ? format(new Date(milestone.createdAt), "MMM d, yyyy")
+                                  : 'Pending'}
                               </span>
                             </div>
+                            {milestone?.subjects && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                {milestone.subjects}
+                              </p>
+                            )}
+                          </div>
+                          {milestone.action && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => milestone.action?.onClick()}
+                              className="shrink-0"
+                            >
+                              {milestone.action.label}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                : milestones && milestones.length > 0
+                ? milestones.map((milestone, index) => (
+                    <div key={index} className="flex gap-4 mb-8">
+                      <div className="relative">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            milestone.completed
+                              ? "bg-red-600 text-white"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <Check className="w-4 h-4" />
+                        </div>
+                        {index < milestones.length - 1 && (
+                          <div className="absolute top-8 left-1/2 bottom-[-32px] w-0.5 -translate-x-1/2 bg-gray-200" />
+                        )}
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <h3 className="font-medium">{milestone.title}</h3>
+                            <div className="text-sm text-gray-500">
+                              <span>{milestone.date}</span>
+                            </div>
                             <p className="text-sm text-gray-600 mt-1">
-                              {milestone?.events}
+                              {milestone.description}
                             </p>
                           </div>
                           {milestone.action && (
@@ -445,18 +737,23 @@ export default function ApplicationProgressPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No milestones available yet.</p>
+                  </div>
+                )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Feedback Modal */}
-      {propertyData?.properties && (
+      {property && (
         <FeedbackModal
           isOpen={showFeedbackModal}
           onClose={() => setShowFeedbackModal(false)}
-          property={propertyData?.properties as any}
+          property={property as any}
           onComplete={handleFeedbackComplete}
         />
       )}

@@ -76,6 +76,9 @@ export function PropertyCard({
   // Get listing entity (for normalized structure)
   const listingEntity = isNormalized ? property?.listingEntity : null;
   
+  // Get the listing object (for normalized structure)
+  const listing = isNormalized ? property : null;
+  
   const [isHovered, setIsHovered] = useState(false);
   const user = userStore((state) => state.user);
   const userId = user?.landlords?.userId;
@@ -208,19 +211,59 @@ export function PropertyCard({
         <div className="flex items-center gap-4 text-sm text-neutral-600">
           <span className="flex items-center gap-1">
             <Bed className="h-4 w-4" />
-            {isNormalized
-              ? (property?.specification?.residential?.bedrooms || propertyData?.bedrooms || 0)
-              : getBedroomCount(propertyData)} bed{(isNormalized
-                ? (property?.specification?.residential?.bedrooms || propertyData?.bedrooms || 0)
-                : propertyData?.bedrooms) !== 1 ? 's' : ''}
+            {(() => {
+              if (isNormalized && listing) {
+                // For normalized listings, check property context first (works for all types),
+                // then specification (for entire properties), then fallback
+                const bedrooms = listing.property?.bedrooms ?? 
+                                 listing.specification?.residential?.bedrooms ?? 
+                                 propertyData?.bedrooms ?? 
+                                 0;
+                return bedrooms > 0 ? `${bedrooms} bed${bedrooms !== 1 ? 's' : ''}` : 'N/A';
+              }
+              // For legacy property data, check multiple paths for bedrooms
+              // Specification can be an array or object
+              const spec = propertyData?.specification;
+              const residential = Array.isArray(spec) 
+                ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
+                : spec?.residential;
+              
+              const bedrooms = residential?.bedrooms ?? 
+                               propertyData?.residential?.bedrooms ?? 
+                               propertyData?.bedrooms ?? 
+                               propertyData?.noBedRoom ?? 
+                               propertyData?.bedRooms ?? 
+                               0;
+              return bedrooms > 0 ? `${bedrooms} bed${bedrooms !== 1 ? 's' : ''}` : 'N/A';
+            })()}
           </span>
           <span className="flex items-center gap-1">
             <Bath className="h-4 w-4" />
-            {isNormalized
-              ? (property?.specification?.residential?.bathrooms || propertyData?.bathrooms || 0)
-              : getBathroomCount(propertyData)} bath{(isNormalized
-                ? (property?.specification?.residential?.bathrooms || propertyData?.bathrooms || 0)
-                : propertyData?.bathrooms) !== 1 ? 's' : ''}
+            {(() => {
+              if (isNormalized && listing) {
+                // For normalized listings, check property context first (works for all types),
+                // then specification (for entire properties), then fallback
+                const bathrooms = listing.property?.bathrooms ?? 
+                                  listing.specification?.residential?.bathrooms ?? 
+                                  propertyData?.bathrooms ?? 
+                                  0;
+                return bathrooms > 0 ? `${bathrooms} bath${bathrooms !== 1 ? 's' : ''}` : 'N/A';
+              }
+              // For legacy property data, check multiple paths for bathrooms
+              // Specification can be an array or object
+              const spec = propertyData?.specification;
+              const residential = Array.isArray(spec) 
+                ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
+                : spec?.residential;
+              
+              const bathrooms = residential?.bathrooms ?? 
+                                propertyData?.residential?.bathrooms ?? 
+                                propertyData?.bathrooms ?? 
+                                propertyData?.noBathRoom ?? 
+                                propertyData?.bathRooms ?? 
+                                0;
+              return bathrooms > 0 ? `${bathrooms} bath${bathrooms !== 1 ? 's' : ''}` : 'N/A';
+            })()}
           </span>
         </div>
         {showFeedback && onFeedbackClick && (
