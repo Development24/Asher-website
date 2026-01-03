@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApplicationForm } from "@/contexts/application-form-context";
 import { useMilestonesApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
 import { Bath, Bed, Check, MapPin } from "lucide-react";
@@ -408,14 +407,9 @@ export default function ApplicationProgressPage() {
       ]);
     }
 
-    // Load application draft form data if applicationId is available
-    if (applicationId) {
-      loadDraft(Number(applicationId));
-    }
   }, [
     id,
     applicationId,
-    loadDraft,
     propertyData,
     propertyName,
     milestones.length,

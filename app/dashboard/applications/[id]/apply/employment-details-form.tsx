@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +11,8 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import {
   Select,
@@ -28,6 +30,7 @@ import {
 import DatePicker from "@/app/components/DatePicker";
 import { useEmployerApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
+import { getCachedUserCurrency, getUserCurrencyCached } from "@/lib/locationCurrency";
 interface EmploymentDetailsFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -47,6 +50,21 @@ export function EmploymentDetailsForm({
 }: EmploymentDetailsFormProps) {
   const { formData, updateFormData } = useApplicationFormStore();
   const { mutate: employerApplication, isPending } = useEmployerApplication();
+  
+  // Get user's preference currency (preferences override everything)
+  const [userCurrency, setUserCurrency] = useState<string>('USD');
+  
+  useEffect(() => {
+    // Get cached currency first (faster), then fetch if needed
+    const cached = getCachedUserCurrency();
+    if (cached) {
+      setUserCurrency(cached);
+    } else {
+      getUserCurrencyCached().then(setUserCurrency).catch(() => {
+        setUserCurrency('USD'); // Fallback
+      });
+    }
+  }, []);
 
   const form = useForm<EmploymentDetailsFormValues>({
     resolver: zodResolver(employmentDetailsSchema),
@@ -189,9 +207,22 @@ export function EmploymentDetailsForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Monthly/Annual Income</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter income" {...field} />
-                    </FormControl>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input placeholder="Enter income" {...field} className="flex-1" />
+                      </FormControl>
+                      <FormControl>
+                        <Input 
+                          value={userCurrency} 
+                          disabled 
+                          className="w-20 bg-gray-100 cursor-not-allowed"
+                          readOnly
+                        />
+                      </FormControl>
+                    </div>
+                    <FormDescription className="text-xs text-gray-500">
+                      Currency is set based on your preferences
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -314,9 +345,19 @@ export function EmploymentDetailsForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tax Credit</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter amount" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="Enter amount" {...field} className="flex-1" />
+                        </FormControl>
+                        <FormControl>
+                          <Input 
+                            value={userCurrency} 
+                            disabled 
+                            className="w-20 bg-gray-100 cursor-not-allowed"
+                            readOnly
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -328,9 +369,19 @@ export function EmploymentDetailsForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Child Benefit</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter amount" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="Enter amount" {...field} className="flex-1" />
+                        </FormControl>
+                        <FormControl>
+                          <Input 
+                            value={userCurrency} 
+                            disabled 
+                            className="w-20 bg-gray-100 cursor-not-allowed"
+                            readOnly
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -342,9 +393,19 @@ export function EmploymentDetailsForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Child Maintenance</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter amount" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="Enter amount" {...field} className="flex-1" />
+                        </FormControl>
+                        <FormControl>
+                          <Input 
+                            value={userCurrency} 
+                            disabled 
+                            className="w-20 bg-gray-100 cursor-not-allowed"
+                            readOnly
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -356,9 +417,19 @@ export function EmploymentDetailsForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Disability Benefit</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter amount" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="Enter amount" {...field} className="flex-1" />
+                        </FormControl>
+                        <FormControl>
+                          <Input 
+                            value={userCurrency} 
+                            disabled 
+                            className="w-20 bg-gray-100 cursor-not-allowed"
+                            readOnly
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -370,9 +441,19 @@ export function EmploymentDetailsForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Housing Benefit</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter amount" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="Enter amount" {...field} className="flex-1" />
+                        </FormControl>
+                        <FormControl>
+                          <Input 
+                            value={userCurrency} 
+                            disabled 
+                            className="w-20 bg-gray-100 cursor-not-allowed"
+                            readOnly
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -384,9 +465,19 @@ export function EmploymentDetailsForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Pension</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter amount" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="Enter amount" {...field} className="flex-1" />
+                        </FormControl>
+                        <FormControl>
+                          <Input 
+                            value={userCurrency} 
+                            disabled 
+                            className="w-20 bg-gray-100 cursor-not-allowed"
+                            readOnly
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

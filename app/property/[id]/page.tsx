@@ -109,13 +109,14 @@ export default function PropertyDetails() {
         : listing?.specification?.residential || listing?.property)
     : (listingType === "ENTIRE_PROPERTY" ? listing?.property : listingEntity);
 
-  // Track property view when component mountsy);
-  useEffect(() => {
-    if (id && propertyData) {
-      // Track property view for analytics
-      trackPropertyView(id as string);
-    }
-  }, [id, propertyData]);
+  // Track property view when component mounts
+  // Note: Commented out until backend endpoint is available
+  // useEffect(() => {
+  //   if (id && propertyData) {
+  //     // Track property view for analytics
+  //     trackPropertyView(id as string);
+  //   }
+  // }, [id, propertyData]);
 
   // Get images for gallery navigation
   const getImages = () => {
@@ -659,16 +660,48 @@ export default function PropertyDetails() {
                 </div>
                 <div>
                   <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
-                    Deposit:
+                    Security Deposit:
                   </div>
                   <div className="font-medium">
                     {(() => {
+                      // Use listing securityDeposit if it exists, otherwise fallback to property's securityDeposit
                       const deposit = isNormalized
-                        ? listing?.securityDeposit
-                        : data?.property?.securityDeposit;
-                      return deposit && deposit !== "0" ? (
+                        ? (listing?.securityDeposit !== undefined && listing?.securityDeposit !== null
+                            ? listing.securityDeposit 
+                            : listing?.property?.securityDeposit)
+                        : (data?.property?.securityDeposit !== undefined && data?.property?.securityDeposit !== null
+                            ? data.property.securityDeposit
+                            : data?.property?.property?.securityDeposit);
+
+                      return deposit && deposit !== "0" && deposit !== "0.00" ? (
                         <FormattedPrice
                           amount={Number(deposit)}
+                          currency={propertyData?.currency || "USD"}
+                        />
+                      ) : (
+                        "Ask agent"
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                    Initial Deposit / Application Fee:
+                  </div>
+                  <div className="font-medium">
+                    {(() => {
+                      // Use listing applicationFeeAmount if it exists, otherwise check other possible fields
+                      const initialDeposit = isNormalized
+                        ? (listing?.applicationFeeAmount !== undefined && listing?.applicationFeeAmount !== null
+                            ? listing.applicationFeeAmount
+                            : listing?.property?.applicationFeeAmount || listing?.property?.initialDeposit)
+                        : (data?.property?.applicationFeeAmount !== undefined && data?.property?.applicationFeeAmount !== null
+                            ? data.property.applicationFeeAmount
+                            : data?.property?.initialDeposit || data?.property?.property?.applicationFeeAmount);
+                      
+                      return initialDeposit && initialDeposit !== "0" && initialDeposit !== "0.00" ? (
+                        <FormattedPrice
+                          amount={Number(initialDeposit)}
                           currency={propertyData?.currency || "USD"}
                         />
                       ) : (

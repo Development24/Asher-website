@@ -196,6 +196,31 @@ export function ApplicationForm({
   const completedSteps = applicationData?.completedSteps;
   // Initialize with a default value
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // Clear any saved drafts on mount to prevent draft modal from showing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('application-form-storage');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.state?.savedDrafts?.length > 0) {
+            // Clear saved drafts
+            const updated = {
+              ...parsed,
+              state: {
+                ...parsed.state,
+                savedDrafts: []
+              }
+            };
+            localStorage.setItem('application-form-storage', JSON.stringify(updated));
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to clear drafts:', error);
+      }
+    }
+  }, []);
 
   // Update currentStep when applicationData is available
   useEffect(() => {
@@ -351,11 +376,6 @@ export function ApplicationForm({
     }
   };
 
-  // Save draft
-  const handleSaveDraft = () => {
-    updateFormData({ propertyId }); // Ensure propertyId is saved with the form data
-    router.push("/dashboard/applications");
-  };
 
   // Previous step
   const handlePreviousStep = () => {
@@ -407,9 +427,6 @@ export function ApplicationForm({
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Tenant Application Form</h1>
-          <Button variant="outline" onClick={handleSaveDraft}>
-            Save Draft
-          </Button>
         </div>
         <div className="flex overflow-x-auto justify-between items-center mb-4">
           {steps.map((step, index) => (

@@ -143,7 +143,7 @@ export const useApplicationFormStore = create<ApplicationFormState>()(
       formData: initialFormData,
       currentStep: 0,
       isValid: false,
-      savedDrafts: [],
+      savedDrafts: [], // Drafts are disabled - always empty
 
       updateFormData: (data) =>
         set((state) => ({
@@ -157,18 +157,9 @@ export const useApplicationFormStore = create<ApplicationFormState>()(
         set({ isValid: valid }),
 
       saveDraft: () => {
-        const state = get()
-        const newDraft: SavedDraft = {
-          id: Date.now(),
-          propertyId: state.formData.propertyId || "",
-          lastUpdated: new Date().toISOString(),
-          completionStatus: calculateCompletionStatus(state.formData),
-          formData: state.formData,
-        }
-
-        set((state) => ({
-          savedDrafts: [...state.savedDrafts, newDraft]
-        }))
+        // Draft functionality is disabled - do nothing
+        // This prevents any draft modals from appearing
+        return;
       },
 
       loadDraft: (draftId) => {

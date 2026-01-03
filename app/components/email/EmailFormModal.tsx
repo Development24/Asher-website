@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,13 +35,61 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
   
   const isAlreadyEnquired = hasEnquired(propertyId);
 
+  // Extract listing information based on hierarchy
+  const isNormalized = !!propertyDetails?.hierarchy || !!propertyDetails?.listingEntity;
+  const listingEntity = propertyDetails?.listingEntity;
+  const hierarchy = propertyDetails?.hierarchy;
+  const property = propertyDetails?.property;
+  
+  // Get the correct name: listingEntity name for rooms/units, property name for properties
+  const listingName = isNormalized 
+    ? (listingEntity?.name || hierarchy?.context?.split(' in ')[0] || property?.name)
+    : (propertyDetails?.name || property?.name);
+  
+  // Get property name for context (show "in {property.name}" for rooms/units)
+  const propertyName = property?.name;
+  const isRoomOrUnit = hierarchy?.level === 'room' || hierarchy?.level === 'unit';
+  
+  // Get images: listingEntity images for rooms/units, property images for properties
+  const listingImages = isNormalized && listingEntity?.images 
+    ? listingEntity.images 
+    : (property?.images || propertyDetails?.images || []);
+  
+  // Get price: listingEntity price for rooms/units, property/listing price for properties
+  const listingPrice = isNormalized && listingEntity?.entityPrice
+    ? Number(listingEntity.entityPrice)
+    : (propertyDetails?.price ? Number(propertyDetails.price) : (property?.price ? Number(property.price) : (property?.rentalFee ? Number(property.rentalFee) : 0)));
+  
+  // Get currency
+  const listingCurrency = property?.currency || propertyDetails?.currency || 'USD';
+  
+  // Get bedrooms/bathrooms: from listingEntity for rooms, from property/specification for properties
+  const bedrooms = isNormalized && isRoomOrUnit
+    ? (listingEntity?.bedrooms ?? 0)
+    : (property?.bedrooms ?? propertyDetails?.specification?.residential?.bedrooms ?? propertyDetails?.noBedRoom ?? 0);
+  
+  const bathrooms = isNormalized && isRoomOrUnit
+    ? (listingEntity?.bathrooms ?? (listingEntity?.ensuite ? 1 : 0))
+    : (property?.bathrooms ?? propertyDetails?.specification?.residential?.bathrooms ?? propertyDetails?.noBathRoom ?? 0);
+  
+  // Get location
+  const location = property?.city && property?.state?.name && property?.country
+    ? `${property.city}, ${property.state.name}, ${property.country}`
+    : (propertyDetails?.location || property?.address || 'Location');
+
+
+  // Get listingId for form initialization
+  const initialListingId = propertyDetails?.listingId || 
+                           (isNormalized ? propertyDetails?.id : null) ||
+                           propertyDetails?.id;
+
   const [formData, setFormData] = useState({
     fullName: user?.profile?.firstName + " " + user?.profile?.lastName || "",
     email: user?.email || "",
     phone: user?.profile?.phoneNumber || "",
     address: "",
     message: "",
-    propertyListingId: propertyDetails?.id,
+    propertyListingId: initialListingId,
   });
   
   const { mutate: createEnquiry, isPending } = useCreateEnquiry();
@@ -54,27 +102,21 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
       return; // Prevent duplicate submissions
     }
 
-    // Debug logging to understand the property structure
-    console.log('EmailFormModal propertyDetails:', propertyDetails);
-    console.log('EmailFormModal propertyId:', propertyId);
+    // Get listingId: for normalized data, it's at the top level (listingId or id)
+    // For non-normalized, it might be id or listingId
+    const propertyListingId = propertyDetails?.listingId || 
+                              (isNormalized ? propertyDetails?.id : null) ||
+                              propertyDetails?.id;
 
-    // The property data structure is: data?.property?.property
-    // So propertyDetails should contain the property object
-    const propertyListingId = propertyDetails?.listingId
-
-    // Also try to get the propertyId field
-    const propertyIdForAPI = propertyDetails?.property?.id || 
+    // Get propertyId: the actual property ID (not the listing ID)
+    const propertyIdForAPI = property?.id || 
+                            propertyDetails?.property?.id || 
                             propertyDetails?.property?.propertyId || 
-                            propertyDetails?.id || 
+                            (hierarchy?.propertyId) ||
                             propertyDetails?.propertyId;
 
-    console.log('EmailFormModal propertyListingId being sent:', propertyListingId);
-    console.log('EmailFormModal propertyIdForAPI being sent:', propertyIdForAPI);
-
-    // If we don't have a valid property ID, show an error
+    // If we don't have a valid listing ID, show an error
     if (!propertyListingId) {
-      console.error('No valid property ID found in propertyDetails:', propertyDetails);
-      // You might want to show an error message to the user here
       return;
     }
 
@@ -91,8 +133,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
         });
       },
       onError: (error) => {
-        console.error('Enquiry submission failed:', error);
-        // You might want to show an error message to the user here
+        // Error handling - could show user-friendly error message here
       }
     });
   };
@@ -195,31 +236,37 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
               <div className="flex gap-4 items-start p-4 mb-6 bg-gray-50 rounded-lg">
                 <div className="relative flex-shrink-0 w-20 h-20">
                   <Image
-                    src={displayImages(propertyDetails?.property?.images || propertyDetails?.images)[0] || "/placeholder.svg"}
-                    alt={propertyDetails?.property?.name || propertyDetails?.name || "Property"}
+                    src={displayImages(listingImages)[0] || "/placeholder.svg"}
+                    alt={listingName || "Property"}
                     fill
                     className="object-cover rounded-md"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 truncate">
-                    {propertyDetails?.property?.name || propertyDetails?.name || "Property"}
+                    {listingName || "Property"}
                   </h3>
+                  {/* Show property context for rooms/units */}
+                  {isNormalized && isRoomOrUnit && propertyName && (
+                    <p className="text-xs text-gray-500 truncate">
+                      in {propertyName}
+                    </p>
+                  )}
                   <p className="text-sm text-gray-600 truncate">
-                    {propertyDetails?.property?.location || propertyDetails?.location || "Location"}
+                    {location}
                   </p>
                   <div className="flex gap-4 items-center mt-2 text-sm text-gray-600">
                     <span className="flex gap-1 items-center">
                       <Bed className="w-4 h-4" />
-                      {propertyDetails?.property?.noBedRoom || propertyDetails?.noBedRoom || 0} bed
+                      {bedrooms} bed{bedrooms !== 1 ? 's' : ''}
                     </span>
                     <span className="flex gap-1 items-center">
                       <Bath className="w-4 h-4" />
-                      {propertyDetails?.property?.noBathRoom || propertyDetails?.noBathRoom || 0} bath
+                      {bathrooms} bath{bathrooms !== 1 ? 's' : ''}
                     </span>
                     <FormattedPrice
-                      amount={propertyDetails?.property?.rentalFee || propertyDetails?.rentalFee || 0}
-                      currency={propertyDetails?.property?.currency || propertyDetails?.currency || 'USD'}
+                      amount={listingPrice}
+                      currency={listingCurrency}
                       className="font-semibold text-primary-600"
                     />
                   </div>

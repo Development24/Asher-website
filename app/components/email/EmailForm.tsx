@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,9 +36,48 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
   
   const isAlreadyEnquired = hasEnquired(propertyId);
 
-  // Debug logging to understand the structure
-  console.log('EmailForm propertyDetails:', propertyDetails);
-  console.log('EmailForm propertyId:', propertyId);
+  // Extract listing information based on hierarchy
+  const isNormalized = !!propertyDetails?.hierarchy || !!propertyDetails?.listingEntity;
+  const listingEntity = propertyDetails?.listingEntity;
+  const hierarchy = propertyDetails?.hierarchy;
+  const property = propertyDetails?.property;
+  
+  // Get the correct name: listingEntity name for rooms/units, property name for properties
+  const listingName = isNormalized 
+    ? (listingEntity?.name || hierarchy?.context?.split(' in ')[0] || property?.name)
+    : (propertyDetails?.name || property?.name);
+  
+  // Get property name for context (show "in {property.name}" for rooms/units)
+  const propertyName = property?.name;
+  const isRoomOrUnit = hierarchy?.level === 'room' || hierarchy?.level === 'unit';
+  
+  // Get images: listingEntity images for rooms/units, property images for properties
+  const listingImages = isNormalized && listingEntity?.images 
+    ? listingEntity.images 
+    : (property?.images || propertyDetails?.images || []);
+  
+  // Get price: listingEntity price for rooms/units, property/listing price for properties
+  const listingPrice = isNormalized && listingEntity?.entityPrice
+    ? Number(listingEntity.entityPrice)
+    : (propertyDetails?.price ? Number(propertyDetails.price) : (property?.price ? Number(property.price) : (property?.rentalFee ? Number(property.rentalFee) : 0)));
+  
+  // Get currency
+  const listingCurrency = property?.currency || propertyDetails?.currency || 'USD';
+  
+  // Get bedrooms/bathrooms: from listingEntity for rooms, from property/specification for properties
+  const bedrooms = isNormalized && isRoomOrUnit
+    ? (listingEntity?.bedrooms ?? 0)
+    : (property?.bedrooms ?? propertyDetails?.specification?.residential?.bedrooms ?? propertyDetails?.noBedRoom ?? 0);
+  
+  const bathrooms = isNormalized && isRoomOrUnit
+    ? (listingEntity?.bathrooms ?? (listingEntity?.ensuite ? 1 : 0))
+    : (property?.bathrooms ?? propertyDetails?.specification?.residential?.bathrooms ?? propertyDetails?.noBathRoom ?? 0);
+  
+  // Get location
+  const location = property?.city && property?.state?.name && property?.country
+    ? `${property.city}, ${property.state.name}, ${property.country}`
+    : (propertyDetails?.location || property?.address || 'Location');
+
 
   if (!propertyId) {
     return (
@@ -56,13 +95,18 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
     );
   }
 
+  // Get listingId for form initialization
+  const initialListingId = propertyDetails?.listingId || 
+                           (isNormalized ? propertyDetails?.id : null) ||
+                           propertyDetails?.id;
+
   const [formData, setFormData] = useState({
     fullName: user?.profile?.firstName + " " + user?.profile?.lastName || "",
     email: user?.email || "",
     phone: user?.profile?.phoneNumber || "",
     address: "",
     message: "",
-    propertyListingId: propertyDetails?.id,
+    propertyListingId: initialListingId,
     // unitId: propertyDetails?.unit?.id,
     // roomId: propertyDetails?.room?.id,
   });
@@ -77,6 +121,18 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
       return; // Prevent duplicate submissions
     }
 
+    // Get listingId: for normalized data, it's at the top level (listingId or id)
+    const propertyListingId = propertyDetails?.listingId || 
+                              (isNormalized ? propertyDetails?.id : null) ||
+                              propertyDetails?.id ||
+                              formData.propertyListingId;
+
+    // Get propertyId: the actual property ID (not the listing ID)
+    const propertyIdForAPI = property?.id || 
+                            propertyDetails?.property?.id || 
+                            (hierarchy?.propertyId) ||
+                            propertyDetails?.propertyId;
+
     // Here you would typically send the email
     createEnquiry({
       // event: "sendEmail",
@@ -84,7 +140,8 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
       // receiverEmail: propertyDetails?.landlord?.user?.email,
       // subject: "Email from " + formData.fullName,
       message: formData.message,
-      propertyListingId: propertyDetails?.id,
+      propertyListingId: propertyListingId,
+      propertyId: propertyIdForAPI,
 
     }, {
       onSuccess: () => {
@@ -254,30 +311,36 @@ export function EmailForm({ propertyDetails }: EmailFormProps) {
         <div className="overflow-hidden w-full bg-white rounded-lg border md:w-1/3">
           <div className="relative h-48">
             <Image
-              src={propertyDetails?.property?.images[0]?.url || "/placeholder.svg"}
-              alt={propertyDetails?.property?.name}
+              src={listingImages[0]?.url || listingImages[0] || "/placeholder.svg"}
+              alt={listingName || "Property"}
               fill
               className="object-cover"
             />
           </div>
           <div className="p-4">
             <h2 className="mb-2 text-xl font-semibold">
-              {propertyDetails?.property?.name}
+              {listingName || "Property"}
             </h2>
-            <p className="mb-2 text-gray-600">{`${propertyDetails?.property?.city} ${propertyDetails?.property?.state?.name} ${propertyDetails?.property?.country}`}</p>
+            {/* Show property context for rooms/units */}
+            {isNormalized && isRoomOrUnit && propertyName && (
+              <p className="mb-1 text-sm text-gray-500">
+                in {propertyName}
+              </p>
+            )}
+            <p className="mb-2 text-gray-600">{location}</p>
             <div className="flex gap-4 items-center text-sm text-gray-600">
               <span className="flex gap-1 items-center">
                 <Bed className="w-4 h-4" />
-                {propertyDetails?.property?.bedrooms} bedrooms
+                {bedrooms} bedroom{bedrooms !== 1 ? 's' : ''}
               </span>
               <span className="flex gap-1 items-center">
                 <Bath className="w-4 h-4" />
-                {propertyDetails?.property?.bathrooms} bathrooms
+                {bathrooms} bathroom{bathrooms !== 1 ? 's' : ''}
               </span>
             </div>
             <FormattedPrice
-              amount={Number(propertyDetails?.property?.price)}
-              currency={propertyDetails?.property?.currency || 'USD'}
+              amount={listingPrice}
+              currency={listingCurrency}
               className="mt-4 text-xl font-bold text-red-600"
             />
           </div>

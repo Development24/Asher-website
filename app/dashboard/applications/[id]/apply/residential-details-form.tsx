@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
+import { useEffect } from "react"
 import { Button, LoadingButton } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -40,6 +41,32 @@ interface ResidentialDetailsFormProps {
 export function ResidentialDetailsForm({ onNext, onPrevious, params, applicationData, isStepCompleted, continueButtonClass, applicationId }: ResidentialDetailsFormProps) {
   const { formData, updateFormData } = useApplicationFormStore()
   const { mutate: residentApplication, isPending } = useResidentApplication();
+  
+  // Clear any saved drafts on mount to prevent draft modal from showing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('application-form-storage');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.state?.savedDrafts?.length > 0) {
+            // Clear saved drafts
+            const updated = {
+              ...parsed,
+              state: {
+                ...parsed.state,
+                savedDrafts: []
+              }
+            };
+            localStorage.setItem('application-form-storage', JSON.stringify(updated));
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to clear drafts:', error);
+      }
+    }
+  }, []);
+  
   const form = useForm<ResidentialDetailsFormValues>({
     resolver: zodResolver(residentialDetailsSchema),
     defaultValues: {
@@ -89,9 +116,9 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div>
-          <h2 className="text-lg font-semibold mb-6">RESIDENTIAL INFORMATION</h2>
+          <h2 className="mb-6 text-lg font-semibold">RESIDENTIAL INFORMATION</h2>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
               name="address"
@@ -267,9 +294,9 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
 
           {/* Previous Addresses */}
           <div className="mt-6">
-            <h3 className="text-md font-semibold mb-4">Previous Addresses</h3>
+            <h3 className="mb-4 font-semibold text-md">Previous Addresses</h3>
             {fields?.map((field: any, index: number) => (
-              <div key={field.id} className="grid md:grid-cols-2 gap-4 mb-4">
+              <div key={field.id} className="grid gap-4 mb-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name={`prevAddresses.${index}.address`}
@@ -303,7 +330,7 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
                   onClick={() => remove(index)}
                   className="mt-2"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
+                  <Trash2 className="mr-2 w-4 h-4" />
                   Remove
                 </Button>
               </div>
@@ -314,7 +341,7 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
               onClick={() => append({ address: "", lengthOfResidence: "" })}
               className="mt-2"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="mr-2 w-4 h-4" />
               Add Previous Address
             </Button>
           </div>
