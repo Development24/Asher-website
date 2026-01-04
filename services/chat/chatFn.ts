@@ -13,7 +13,19 @@ export const useGetUserChats = (chatRoomId: string) => {
 export const useGetUserRooms = () => {
     return useQuery({
         queryKey: ['chats'],
-        queryFn: getUserRooms,
+        queryFn: async () => {
+            try {
+                return await getUserRooms();
+            } catch (error: any) {
+                // Silently handle 404s for chat rooms - it's expected when no conversations exist yet
+                if (error?.response?.status === 404) {
+                    // Return empty rooms structure instead of throwing error
+                    return { chatRooms: [], rooms: [] };
+                }
+                // Re-throw other errors
+                throw error;
+            }
+        },
         // refetchInterval: 10000,
         // refetchIntervalInBackground: true,
         retry: false,

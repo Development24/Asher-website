@@ -604,9 +604,9 @@ export default function ApplicationProgressPage() {
                     {propertySize && <span>{propertySize}</span>}
                   </div>
                   {property?.description && (
-                    <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600">
                       {property.description}
-                    </p>
+                  </p>
                   )}
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">

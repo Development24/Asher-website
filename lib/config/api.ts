@@ -133,6 +133,11 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
         userMessage = message || 'Forbidden: You do not have access to this resource.';
         break;
       case 404:
+        // Suppress errors for chat/room endpoints - it's normal to not have a room yet
+        if (originalRequest.url?.includes('/chats/room/') || originalRequest.url?.includes('/chats/rooms')) {
+          // Don't show error toast for chat room 404s - it's expected when no conversation exists yet
+          return Promise.reject(error);
+        }
         if (originalRequest.url?.includes('/property/')) {
           userMessage = 'Property listing not found. It may have been removed or is no longer available.';
         } else if (originalRequest.url?.includes('/application/')) {

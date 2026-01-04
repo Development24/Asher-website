@@ -36,7 +36,7 @@ const LandlordProfileModal = dynamic(() => import("@/app/components/modals/landl
 import { userStore } from "@/store/userStore";
 import { useRouter } from "next/navigation";
 import { ChatModal } from "@/app/components/chat/ChatModal";
-import { PreChatModal } from "@/app/components/chat/PreChatModal";
+// import { PreChatModal } from "@/app/components/chat/PreChatModal"; // Commented out - not needed: logged in users can chat directly, logged out users see auth modal
 import { useGetSingleApplication } from "@/services/application/applicationFn";
 import { format } from "date-fns";
 import { ShareModal } from "@/app/components/modals/share-modal";
@@ -54,7 +54,7 @@ export default function SuccessPage() {
   const [showLandlordProfile, setShowLandlordProfile] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
-  const [showPreChatModal, setShowPreChatModal] = useState(false);
+  // const [showPreChatModal, setShowPreChatModal] = useState(false); // Commented out - not needed
   const [showLeaseAgreementModal, setShowLeaseAgreementModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<
@@ -90,6 +90,13 @@ export default function SuccessPage() {
   };
   const handleContactClick = (type: "chat" | "email") => {
     if (!user) {
+      // Close any open modals before showing auth prompt
+      setShowLandlordProfile(false);
+      setShowChatModal(false);
+      setShowLeaseAgreementModal(false);
+      setShowPaymentModal(false);
+      setShowMoveInDateModal(false);
+      
       setShowAuthPrompt(true);
       return;
     }
@@ -97,18 +104,20 @@ export default function SuccessPage() {
     if (type === "email") {
       router.push(`/property/${propertyData?.id}/email`);
     } else {
-      setShowPreChatModal(true);
+      // Directly open chat modal when user is logged in (PreChatModal removed)
+      setShowChatModal(true);
     }
   };
 
-  const handlePreChatSubmit = (data: {
-    fullName: string;
-    email: string;
-    phone?: string;
-  }) => {
-    setShowPreChatModal(false);
-    setShowChatModal(true);
-  };
+  // Commented out - PreChatModal removed, chat opens directly when user is logged in
+  // const handlePreChatSubmit = (data: {
+  //   fullName: string;
+  //   email: string;
+  //   phone?: string;
+  // }) => {
+  //   setShowPreChatModal(false);
+  //   setShowChatModal(true);
+  // };
 
   const handleLeaseAgreementSubmit = () => {
     setShowLeaseAgreementModal(false);
@@ -830,11 +839,12 @@ export default function SuccessPage() {
         </section>
       </div>
 
-      <PreChatModal
+      {/* PreChatModal commented out - not needed: logged in users can chat directly, logged out users see auth modal */}
+      {/* <PreChatModal
         isOpen={showPreChatModal}
         onClose={() => setShowPreChatModal(false)}
         onSubmit={handlePreChatSubmit}
-      />
+      /> */}
 
       <ChatModal
         isOpen={showChatModal}

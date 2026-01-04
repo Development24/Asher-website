@@ -1,15 +1,23 @@
 export interface ImageObject {
     id: string;
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
     url: string;
     caption?: string;
     isPrimary?: boolean;
-    fileType: string; // e.g., "image/png", "application/pdf"
-    type: string; // e.g., "IMAGE", "DOCUMENT"
+    fileType?: string; // e.g., "image/png", "application/pdf"
+    type?: string; // e.g., "IMAGE", "DOCUMENT"
     imagePropertyId?: string;
     [key: string]: any; // Allow other potential properties
   }
+
+// Simplified image format (from normalized listings)
+export interface SimpleImage {
+    id: string;
+    url: string;
+    caption?: string;
+    isPrimary?: boolean;
+}
 
 export const placeholderImages = [
     "/Frame 157.svg",
@@ -18,36 +26,40 @@ export const placeholderImages = [
   ];
  export const imageExtensions = /\.(jpeg|jpg|gif|png|webp|svg)$/i; // Fallback
 
-export const filteredImageUrls = (images: ImageObject[] | null | undefined): string[] => {
+export const filteredImageUrls = (images: (ImageObject | SimpleImage)[] | null | undefined): string[] => {
     if (!images || !Array.isArray(images)) {
       return [];
     }
     
     return images
-      .filter((image: ImageObject) => {
+      .filter((image: ImageObject | SimpleImage) => {
         if (!image || typeof image !== 'object' || !image.url || typeof image.url !== 'string') {
           return false;
         }
-        // Prioritize checking the fileType property
-        if (image.fileType && typeof image.fileType === "string") {
-          return image.fileType.startsWith("image/");
-        }
-        // Fallback: Check type property if it indicates an image (less specific than fileType)
-        if (
-          image.type &&
-          typeof image.type === "string" &&
-          image.type.toUpperCase() === "IMAGE"
-        ) {
-          // If type is IMAGE, but fileType was missing, double check extension for safety
+        // For simplified images (from normalized listings), just check URL extension
+        if (!('fileType' in image) && !('type' in image)) {
           return imageExtensions.test(image.url.toLowerCase());
         }
-        // Final fallback to URL extension if no type information is definitive
+        // For full ImageObject, check fileType first
+        const fullImage = image as ImageObject;
+        if (fullImage.fileType && typeof fullImage.fileType === "string") {
+          return fullImage.fileType.startsWith("image/");
+        }
+        // Fallback: Check type property if it indicates an image
+        if (
+          fullImage.type &&
+          typeof fullImage.type === "string" &&
+          fullImage.type.toUpperCase() === "IMAGE"
+        ) {
+          return imageExtensions.test(image.url.toLowerCase());
+        }
+        // Final fallback to URL extension
         return imageExtensions.test(image.url.toLowerCase());
       })
-      .map((image: ImageObject) => image.url);
+      .map((image: ImageObject | SimpleImage) => image.url);
 }
 
-export const displayImages = (images: ImageObject[] | null | undefined): string[] => {
+export const displayImages = (images: (ImageObject | SimpleImage)[] | null | undefined): string[] => {
     if (!images) {
         return placeholderImages;
     }

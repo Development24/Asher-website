@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatModal } from "@/app/components/chat/ChatModal";
-import { PreChatModal } from "@/app/components/chat/PreChatModal";
+// import { PreChatModal } from "@/app/components/chat/PreChatModal"; // Commented out - not needed: logged in users can chat directly, logged out users see auth modal
 import dynamic from "next/dynamic";
 const LandlordProfileModal = dynamic(
   () =>
@@ -123,7 +123,7 @@ export default function SuccessPage() {
 
   const { data: propertiesData, isFetching: isFetchingProperties } =
     useGetProperties();
-  const similarProperties: Listing[] = propertiesData?.properties || [];
+  const similarProperties: (Listing | any)[] = propertiesData?.properties || [];
 
   // const { data, isFetching } = useGetPropertyById(id as string);
   const propertyData = application?.properties;
@@ -142,6 +142,13 @@ export default function SuccessPage() {
   };
   const handleContactClick = (type: "chat" | "email") => {
     if (!user) {
+      // Close any open modals before showing auth prompt
+      setShowLandlordProfile(false);
+      setShowChatModal(false);
+      setShowLeaseAgreementModal(false);
+      setShowPaymentModal(false);
+      setShowMoveInDateModal(false);
+      
       setShowAuthPrompt(true);
       return;
     }
@@ -149,18 +156,20 @@ export default function SuccessPage() {
     if (type === "email") {
       router.push(`/property/${propertyData?.id}/email`);
     } else {
-      setShowPreChatModal(true);
+      // Directly open chat modal when user is logged in (PreChatModal removed)
+      setShowChatModal(true);
     }
   };
 
-  const handlePreChatSubmit = (data: {
-    fullName: string;
-    email: string;
-    phone?: string;
-  }) => {
-    setShowPreChatModal(false);
-    setShowChatModal(true);
-  };
+  // Commented out - PreChatModal removed, chat opens directly when user is logged in
+  // const handlePreChatSubmit = (data: {
+  //   fullName: string;
+  //   email: string;
+  //   phone?: string;
+  // }) => {
+  //   setShowPreChatModal(false);
+  //   setShowChatModal(true);
+  // };
 
   const handleSignAgreement = async (signedPdf: File) => {
     await signAgreement({
@@ -918,54 +927,85 @@ export default function SuccessPage() {
               }}
             >
               {similarProperties
-                ?.filter((p) => p.id !== propertyData?.id)
-                ?.map((similarProperty) => (
-                  <div
-                    key={similarProperty.id}
-                    className="flex-none w-[calc(33.33%-16px)]"
-                  >
-                    <Card className="overflow-hidden shadow-sm">
-                      <div className="relative h-48">
-                        <Image
-                          src={
-                            displayImages(
-                              similarProperty?.property?.images
-                            )[0] || "/placeholder.svg"
-                          }
-                          alt={String(similarProperty?.property?.name)}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="mb-2 font-semibold">
-                          {similarProperty?.property?.name}
-                        </h3>
-                        <p className="mb-2 text-sm text-gray-600">
-                          {similarProperty?.property?.address},{" "}
-                          {similarProperty?.property?.city},{" "}
-                          {similarProperty?.property?.state?.name},{" "}
-                          {similarProperty?.property?.country}
-                        </p>
-                        <FormattedPrice
-                          amount={Number(similarProperty?.property?.price) || 0}
-                          currency={similarProperty?.property?.currency || 'USD'}
-                          className="font-semibold text-red-600"
-                        />
-                      </div>
-                    </Card>
-                  </div>
-                ))}
+                ?.filter((p) => {
+                  // Handle both normalized and legacy formats
+                  const propertyId = (p as Listing)?.property?.id || (p as any)?.id || (p as any)?.propertyId;
+                  return propertyId !== propertyData?.id;
+                })
+                ?.map((similarProperty) => {
+                  // Handle both normalized Listing format and legacy Property format
+                  const isNormalized = !!(similarProperty as Listing)?.listingEntity && !!(similarProperty as Listing)?.property;
+                  
+                  // Get images - prefer listingEntity images for rooms/units, fallback to property images
+                  const images = isNormalized
+                    ? ((similarProperty as Listing).listingEntity.images.length > 0
+                        ? (similarProperty as Listing).listingEntity.images
+                        : (similarProperty as Listing).property.images)
+                    : (similarProperty as any)?.property?.images || (similarProperty as any)?.images || [];
+                  
+                  // Get property name
+                  const propertyName = isNormalized
+                    ? (similarProperty as Listing).listingEntity.name
+                    : (similarProperty as any)?.property?.name || (similarProperty as any)?.name || 'Property';
+                  
+                  // Get property details
+                  const property = isNormalized
+                    ? (similarProperty as Listing).property
+                    : (similarProperty as any)?.property || similarProperty;
+                  
+                  // Get price
+                  const price = isNormalized
+                    ? (similarProperty as Listing).price
+                    : property?.price || property?.rentalFee || '0';
+                  
+                  // Get currency
+                  const currency = property?.currency || 'USD';
+                  
+                  return (
+                    <div
+                      key={isNormalized ? (similarProperty as Listing).property.id : (similarProperty as any)?.id || (similarProperty as any)?.propertyId}
+                      className="flex-none w-[calc(33.33%-16px)]"
+                    >
+                      <Card className="overflow-hidden shadow-sm">
+                        <div className="relative h-48">
+                          <Image
+                            src={displayImages(images)[0] || "/placeholder.svg"}
+                            alt={propertyName}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h3 className="mb-2 font-semibold">
+                            {propertyName}
+                          </h3>
+                          <p className="mb-2 text-sm text-gray-600">
+                            {property?.address},{" "}
+                            {property?.city},{" "}
+                            {property?.state?.name || property?.state},{" "}
+                            {property?.country}
+                          </p>
+                          <FormattedPrice
+                            amount={Number(price) || 0}
+                            currency={currency}
+                            className="font-semibold text-red-600"
+                          />
+                        </div>
+                      </Card>
+                    </div>
+                  );
+                })}
             </motion.div>
           </div>
         </section>
       </div>
 
-      <PreChatModal
+      {/* PreChatModal commented out - not needed: logged in users can chat directly, logged out users see auth modal */}
+      {/* <PreChatModal
         isOpen={showPreChatModal}
         onClose={() => setShowPreChatModal(false)}
         onSubmit={handlePreChatSubmit}
-      />
+      /> */}
 
       <ChatModal
         isOpen={showChatModal}
@@ -974,7 +1014,7 @@ export default function SuccessPage() {
           name: `${propertyData?.landlord?.user?.profile?.firstName} ${propertyData?.landlord?.user?.profile?.lastName}`,
           image: propertyData?.landlord?.image || "",
           role: "Landlord",
-          id: propertyData?.landlord?.userId
+          userId: propertyData?.landlord?.userId || propertyData?.landlord?.user?.id
         }}
         propertyId={Number(id)}
       />
@@ -1045,7 +1085,7 @@ export default function SuccessPage() {
           isOpen={showMoveInDateModal}
           onClose={() => setShowMoveInDateModal(false)}
           onSuccess={handleMoveInDateSuccess}
-          applicationId={idToUse}
+          applicationId={idToUse as string}
         />
       )}
     </div>

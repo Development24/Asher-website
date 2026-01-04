@@ -900,7 +900,7 @@ export default function PropertyViewingDetailPage() {
           ),
           image: propertyData?.landlord?.user?.profile?.profileUrl || "",
           role: "Landlord",
-          id: propertyData?.landlord?.id
+          userId: propertyData?.landlord?.userId || propertyData?.landlord?.user?.id
         }}
         propertyId={Number(propertyData?.id)}
       />

@@ -8,7 +8,7 @@ import LoginModal from "@/app/components/auth/LoginModal";
 import SignUpModal from "@/app/components/auth/SignUpModal";
 import VerificationModal from "@/app/components/auth/VerificationModal";
 import { ChatModal } from "@/app/components/chat/ChatModal";
-import { PreChatModal } from "@/app/components/chat/PreChatModal";
+// import { PreChatModal } from "@/app/components/chat/PreChatModal"; // Commented out - not needed: logged in users can chat directly, logged out users see auth modal
 import LandlordProfileModal from "@/app/components/modals/landlord-profile-modal";
 import SaveModal from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthRedirectStore } from "@/store/authRedirect";
@@ -57,6 +57,7 @@ const propertyImages = [
 export default function PropertyDetails() {
   const { id } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [similarIndex, setSimilarIndex] = useState(0);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
@@ -109,14 +110,39 @@ export default function PropertyDetails() {
         : listing?.specification?.residential || listing?.property)
     : (listingType === "ENTIRE_PROPERTY" ? listing?.property : listingEntity);
 
-  // Track property view when component mounts
-  // Note: Commented out until backend endpoint is available
-  // useEffect(() => {
-  //   if (id && propertyData) {
-  //     // Track property view for analytics
-  //     trackPropertyView(id as string);
-  //   }
-  // }, [id, propertyData]);
+  // Store search params from referrer or current URL for "Back to search" functionality
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if we came from a search page by checking referrer
+      const referrer = document.referrer;
+      if (referrer && (referrer.includes('/search') || referrer.includes('/dashboard/search'))) {
+        try {
+          const referrerUrl = new URL(referrer);
+          const searchParamsObj: any = {};
+          referrerUrl.searchParams.forEach((value, key) => {
+            searchParamsObj[key] = value;
+          });
+          // Store search params in sessionStorage for "Back to search"
+          if (Object.keys(searchParamsObj).length > 0) {
+            sessionStorage.setItem('lastSearchParams', JSON.stringify(searchParamsObj));
+          }
+        } catch (e) {
+          // Ignore URL parse errors
+        }
+      }
+      
+      // Also check current URL params (in case search params were passed to property page)
+      const currentParams: any = {};
+      searchParams.forEach((value, key) => {
+        if (key !== 'id') { // Exclude the property id param
+          currentParams[key] = value;
+        }
+      });
+      if (Object.keys(currentParams).length > 0) {
+        sessionStorage.setItem('lastSearchParams', JSON.stringify(currentParams));
+      }
+    }
+  }, [searchParams]);
 
   // Get images for gallery navigation
   const getImages = () => {
@@ -157,6 +183,13 @@ export default function PropertyDetails() {
 
   const handleContactClick = (type: "chat" | "email") => {
     if (!user) {
+      // Close any open modals before showing auth prompt
+      setShowLandlordProfile(false);
+      setShowEmailFormModal(false);
+      setShowChatModal(false);
+      setShowSaveModal(false);
+      setShowShareModal(false);
+      
       if (type === "email") {
         setRedirectUrl(`/property/${data?.property?.id}/email`);
       } else {
@@ -169,18 +202,83 @@ export default function PropertyDetails() {
     if (type === "email") {
       setShowEmailFormModal(true);
     } else {
-      setShowPreChatModal(true);
+      // Directly open chat modal when user is logged in (PreChatModal removed)
+      setShowChatModal(true);
     }
   };
 
-  const handlePreChatSubmit = (data: {
-    fullName: string;
-    email: string;
-    phone?: string;
-  }) => {
-    setShowPreChatModal(false);
-    setShowChatModal(true);
+  const handleClickBack = () => {
+    // Determine search path based on authentication
+    const searchPath = user ? "/dashboard/search" : "/search";
+    
+    // Try to get search params from multiple sources:
+    // 1. Current URL query params (if property page has them)
+    // 2. SessionStorage (stored when navigating from search)
+    const queryParams: string[] = [];
+    
+    // Check current URL params first
+    const currentState = searchParams.get("state");
+    const currentCountry = searchParams.get("country");
+    const currentCity = searchParams.get("city");
+    const currentType = searchParams.get("type");
+    const currentMinBedRoom = searchParams.get("minBedRoom");
+    const currentMaxBedRoom = searchParams.get("maxBedRoom");
+    const currentMinRentalFee = searchParams.get("minRentalFee");
+    const currentMaxRentalFee = searchParams.get("maxRentalFee");
+    const currentPage = searchParams.get("page");
+    
+    // If no params in current URL, try sessionStorage
+    let savedSearchParams: any = null;
+    if (!currentState && typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('lastSearchParams');
+        if (saved) {
+          savedSearchParams = JSON.parse(saved);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    
+    // Use current params if available, otherwise use saved params
+    const state = currentState || savedSearchParams?.state;
+    const country = currentCountry || savedSearchParams?.country;
+    const city = currentCity || savedSearchParams?.city;
+    const type = currentType || savedSearchParams?.type;
+    const minBedRoom = currentMinBedRoom || savedSearchParams?.minBedRoom;
+    const maxBedRoom = currentMaxBedRoom || savedSearchParams?.maxBedRoom;
+    const minRentalFee = currentMinRentalFee || savedSearchParams?.minRentalFee;
+    const maxRentalFee = currentMaxRentalFee || savedSearchParams?.maxRentalFee;
+    const page = currentPage || savedSearchParams?.page;
+    
+    // Build query string
+    if (state) queryParams.push(`state=${encodeURIComponent(state)}`);
+    if (country) queryParams.push(`country=${encodeURIComponent(country)}`);
+    if (city) queryParams.push(`city=${encodeURIComponent(city)}`);
+    if (type) queryParams.push(`type=${encodeURIComponent(type)}`);
+    if (minBedRoom) queryParams.push(`minBedRoom=${encodeURIComponent(minBedRoom)}`);
+    if (maxBedRoom) queryParams.push(`maxBedRoom=${encodeURIComponent(maxBedRoom)}`);
+    if (minRentalFee) queryParams.push(`minRentalFee=${encodeURIComponent(minRentalFee)}`);
+    if (maxRentalFee) queryParams.push(`maxRentalFee=${encodeURIComponent(maxRentalFee)}`);
+    if (page) queryParams.push(`page=${encodeURIComponent(page)}`);
+    
+    // Build URL with query params
+    const url = queryParams.length > 0 
+      ? `${searchPath}?${queryParams.join("&")}`
+      : searchPath;
+    
+    router.push(url);
   };
+
+  // Commented out - PreChatModal removed, chat opens directly when user is logged in
+  // const handlePreChatSubmit = (data: {
+  //   fullName: string;
+  //   email: string;
+  //   phone?: string;
+  // }) => {
+  //   setShowPreChatModal(false);
+  //   setShowChatModal(true);
+  // };
 
   const handleVerificationNeeded = (email: string) => {
     setVerificationEmail(email);
@@ -379,7 +477,7 @@ export default function PropertyDetails() {
       <Button
         variant="outline"
         className="mb-4"
-        onClick={() => router.push("/dashboard/search")}
+        onClick={handleClickBack}
       >
         ← Back to search
       </Button>
@@ -1049,11 +1147,12 @@ export default function PropertyDetails() {
         </div>
       </div>
 
-      <PreChatModal
+      {/* PreChatModal commented out - not needed: logged in users can chat directly, logged out users see auth modal */}
+      {/* <PreChatModal
         isOpen={showPreChatModal}
         onClose={() => setShowPreChatModal(false)}
         onSubmit={handlePreChatSubmit}
-      />
+      /> */}
 
       <ChatModal
         isOpen={showChatModal}
@@ -1074,9 +1173,16 @@ export default function PropertyDetails() {
             ? listing?.property?.landlord?.user?.profile?.profileUrl
             : propertyData?.landlord?.user?.profile?.profileUrl) || "",
           role: "Landlord",
-          id: isNormalized
-            ? listing?.property?.landlord?.id
-            : propertyData?.landlord?.id
+          userId: (() => {
+            const userId = isNormalized
+              ? (listing?.property?.landlord?.userId || listing?.property?.landlord?.user?.id)
+              : (propertyData?.landlord?.userId || propertyData?.landlord?.user?.id);
+            console.log('🔵 ChatModal - landlord.userId:', userId);
+            console.log('🔵 ChatModal - isNormalized:', isNormalized);
+            console.log('🔵 ChatModal - listing?.property?.landlord:', listing?.property?.landlord);
+            console.log('🔵 ChatModal - propertyData?.landlord:', propertyData?.landlord);
+            return userId;
+          })()
         }}
         propertyId={Number(id)}
       />

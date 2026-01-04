@@ -34,23 +34,23 @@ export function PreChatModal({ isOpen, onClose, onSubmit }: PreChatModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 z-50 bg-black/50"
           />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed inset-0 flex items-center justify-center z-50"
+            className="flex fixed inset-0 z-50 justify-center items-center"
           >
-            <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="p-6 w-full max-w-md bg-white rounded-lg">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Chat with landlord</h2>
                 <Button variant="ghost" size="icon" onClick={onClose}>
-                  <X className="h-4 w-4" />
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
 
-              <p className="text-gray-500 mb-6">
+              <p className="mb-6 text-gray-500">
                 Please ensure that the information below is correct before starting a chat
                 with the landlord.
               </p>

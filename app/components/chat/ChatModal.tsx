@@ -18,7 +18,7 @@ interface ChatModalProps {
     name: string
     image: string
     role: string
-    id?: string
+    userId?: string
   }
   propertyId: number
 }
@@ -32,9 +32,11 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
   const { data: rooms } = useGetUserRooms()
   const { mutate: sendMessage, isPending: isSending } = useCreateChat()
 
-  const chatRoom = (rooms as any)?.chatRooms?.find((room: any) => 
-    (room.user1Id === currentUserId && room.user2Id === landlord.id) ||
-    (room.user2Id === currentUserId && room.user1Id === landlord.id)
+  // Handle case where no rooms exist yet (normal state, not an error)
+  const chatRooms = (rooms as any)?.chatRooms || (rooms as any)?.rooms || [];
+  const chatRoom = chatRooms.find((room: any) => 
+    (room.user1Id === currentUserId && room.user2Id === landlord.userId) ||
+    (room.user2Id === currentUserId && room.user1Id === landlord.userId)
   )
 
   const messages = chatRoom?.messages.map((msg: any) => ({
@@ -58,12 +60,14 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
   }, [messages, isOpen])
 
   const handleSendMessage = () => {
-    if (!message.trim() || !landlord.id) return
+    console.log('🔵 handleSendMessage - message:', message)
+    console.log('🔵 handleSendMessage - landlord.userId:', landlord.userId)
+    if (!message.trim() || !landlord.userId) return
 
     sendMessage(
       {
         content: message,
-        receiverId: landlord.id,
+        receiverId: landlord.userId,
       },
       {
         onSuccess: () => {
@@ -79,6 +83,7 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    console.log('🔵 handleKeyPress - e:', e)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
@@ -96,8 +101,8 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
           style={{ height: 'calc(100vh - 2rem)' }}
         >
           {/* Header */}
-          <div className="p-4 border-b flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex gap-3 items-center">
               <Avatar>
                 <AvatarImage src={landlord.image} />
                 <AvatarFallback>{landlord.name[0]}</AvatarFallback>
@@ -108,31 +113,38 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
+              <X className="w-4 h-4" />
             </Button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg: any) => (
-              <ChatMessage
-                key={msg.id}
-                content={msg.content}
-                timestamp={msg.timestamp}
-                isOwn={msg.isOwn}
-              />
-            ))}
+          <div className="overflow-y-auto flex-1 p-4 space-y-4">
+            {messages.length > 0 ? (
+              messages.map((msg: any) => (
+                <ChatMessage
+                  key={msg.id}
+                  content={msg.content}
+                  timestamp={msg.timestamp}
+                  isOwn={msg.isOwn}
+                />
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
+                <p className="text-sm">No messages yet</p>
+                <p className="text-xs mt-1">Start the conversation by sending a message</p>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}
           <div className="p-4 border-t">
-            <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+            <div className="flex gap-2 items-center p-2 bg-gray-50 rounded-lg">
               <Button variant="ghost" size="icon" className="hover:bg-gray-100">
-                <Paperclip className="h-4 w-4" />
+                <Paperclip className="w-4 h-4" />
               </Button>
               <Button variant="ghost" size="icon" className="hover:bg-gray-100">
-                <ImageIcon className="h-4 w-4" />
+                <ImageIcon className="w-4 h-4" />
               </Button>
               <Input
                 value={message}
@@ -144,11 +156,11 @@ export function ChatModal({ isOpen, onClose, landlord, propertyId }: ChatModalPr
               />
               <Button 
                 onClick={handleSendMessage}
-                className="bg-red-600 hover:bg-red-700 rounded-full"
+                className="bg-red-600 rounded-full hover:bg-red-700"
                 size="icon"
                 disabled={isSending}
               >
-                <Send className="h-4 w-4" />
+                <Send className="w-4 h-4" />
               </Button>
             </div>
           </div>
