@@ -30,6 +30,54 @@ interface ExchangeRates {
 // In-memory cache for exchange rates
 let exchangeRateCache: ExchangeRates | null = null;
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+const CACHE_STORAGE_KEY = 'exchangeRateCache';
+
+// Promise cache to prevent concurrent API calls for the same currency
+// If multiple components request rates simultaneously, they'll share the same promise
+const pendingRequests: Map<string, Promise<ExchangeRates>> = new Map();
+
+/**
+ * Load cache from localStorage on module load
+ */
+function loadCacheFromStorage(): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const cached = localStorage.getItem(CACHE_STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      const now = Date.now();
+      // Check if cache is still valid
+      if (parsed.timestamp && (now - parsed.timestamp < CACHE_DURATION)) {
+        exchangeRateCache = parsed;
+      } else {
+        // Cache expired, remove it
+        localStorage.removeItem(CACHE_STORAGE_KEY);
+      }
+    }
+  } catch (e) {
+    // Ignore parse errors
+    localStorage.removeItem(CACHE_STORAGE_KEY);
+  }
+}
+
+/**
+ * Save cache to localStorage
+ */
+function saveCacheToStorage(rates: ExchangeRates): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(rates));
+  } catch (e) {
+    // Ignore storage errors (e.g., quota exceeded)
+  }
+}
+
+// Load cache from storage when module loads
+if (typeof window !== 'undefined') {
+  loadCacheFromStorage();
+}
 
 /**
  * Supported currencies
@@ -191,7 +239,8 @@ async function fetchExchangeRates(baseCurrency: string = 'USD'): Promise<Exchang
 }
 
 /**
- * Get exchange rates (with caching)
+ * Get exchange rates (with caching and concurrent request deduplication)
+ * Prevents multiple simultaneous API calls for the same currency
  */
 async function getExchangeRates(baseCurrency: string = 'USD'): Promise<ExchangeRates> {
   const now = Date.now();
@@ -205,11 +254,35 @@ async function getExchangeRates(baseCurrency: string = 'USD'): Promise<ExchangeR
     return exchangeRateCache;
   }
 
-  // Fetch new rates
-  const rates = await fetchExchangeRates(baseCurrency);
-  exchangeRateCache = rates;
+  // Check if there's already a pending request for this currency
+  const cacheKey = baseCurrency;
+  const pendingRequest = pendingRequests.get(cacheKey);
+  if (pendingRequest) {
+    // Return the existing promise instead of making a new request
+    return pendingRequest;
+  }
 
-  return rates;
+  // Create a new request promise
+  const requestPromise = fetchExchangeRates(baseCurrency)
+    .then((rates) => {
+      // Update in-memory cache
+      exchangeRateCache = rates;
+      // Persist to localStorage
+      saveCacheToStorage(rates);
+      // Remove from pending requests
+      pendingRequests.delete(cacheKey);
+      return rates;
+    })
+    .catch((error) => {
+      // Remove from pending requests on error
+      pendingRequests.delete(cacheKey);
+      throw error;
+    });
+
+  // Store the promise so concurrent calls can share it
+  pendingRequests.set(cacheKey, requestPromise);
+
+  return requestPromise;
 }
 
 /**
