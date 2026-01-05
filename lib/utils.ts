@@ -20,7 +20,12 @@ export const updateDate = (part: 'year' | 'month' | 'day', value: string, field:
   // Always update the field, even if not all parts are present
   const newDate = `${newParts.year}-${newParts.month}-${newParts.day}`
   field.onChange(newDate)
-  console.log("Date updated:", newDate)
+  
+  // If field has a trigger function (from our wrapped onChange), it will be called
+  // Otherwise, trigger validation after a short delay to allow all date parts to update
+  if (field.trigger) {
+    setTimeout(() => field.trigger(), 100);
+  }
 }
 
 /**

@@ -18,6 +18,7 @@ import { completedStep } from "../../components/ApplicationCard";
 // formatPrice removed - using FormattedPrice component instead
 import { format } from "date-fns";
 import { useReuseAbleStore } from "@/store/reuseAble";
+import { useApplicationForm } from "@/contexts/application-form-context";
 
 interface Milestone {
   title: string;
@@ -201,24 +202,46 @@ export default function ApplicationProgressPage() {
    */
   const listing = (propertyData as any)?.listing || null;
   const isNormalized = listing?.listingEntity && listing?.property;
+  const listingEntity = listing?.listingEntity || null;
+  const hierarchy = listing?.hierarchy || null;
   const property = isNormalized 
     ? listing.property 
     : propertyData?.properties || null;
+  // Keep reference to original property data for fallback (bedrooms/bathrooms might be there)
+  const originalProperty = propertyData?.properties || null;
   
   // ==================== Property Details Extraction ====================
   
   /**
-   * Extract property name with fallbacks
+   * Extract property/room/unit name with fallbacks
+   * For normalized listings: use listingEntity.name (room/unit name) with property context
+   * For raw data: use property name
    */
-  const propertyName = property?.name || property?.title || '';
+  const propertyName = isNormalized && listingEntity?.name
+    ? listingEntity.name
+    : property?.name || property?.title || '';
+  
+  // Property context name (for showing "Room Name in Property Name")
+  const propertyContextName = isNormalized && hierarchy?.level !== 'property' && listing?.property?.name
+    ? listing.property.name
+    : null;
   
   /**
    * Extract property image with comprehensive handling:
-   * - Handles both string arrays and object arrays (with url property)
+   * - For normalized listings: prioritize listingEntity images, fallback to property images
+   * - For raw data: use property images
    * - Falls back to placeholder.co with property name first letter
    * - Format: Black background (000000), white text (FFFFFF)
    */
-  const propertyImages = property?.images || property?.imageUrls || [];
+  let propertyImages: any[] = [];
+  if (isNormalized && listingEntity?.images?.length > 0) {
+    propertyImages = listingEntity.images;
+  } else if (isNormalized && listing?.property?.images?.length > 0) {
+    propertyImages = listing.property.images;
+  } else {
+    propertyImages = property?.images || property?.imageUrls || [];
+  }
+  
   let propertyImage = '';
   if (propertyImages.length > 0) {
     const firstImage = propertyImages[0];
@@ -237,17 +260,32 @@ export default function ApplicationProgressPage() {
   }
   
   /**
-   * Extract location details
+   * Extract location details (always from property context)
    */
-  const propertyCity = property?.city || '';
-  const propertyCountry = property?.country || '';
-  const propertyState = property?.state || '';
+  const propertyCity = isNormalized 
+    ? (listing?.property?.city || '')
+    : (property?.city || '');
+  const propertyCountry = isNormalized
+    ? (listing?.property?.country || '')
+    : (property?.country || '');
+  const propertyState = isNormalized
+    ? (listing?.property?.state?.name || listing?.property?.state || '')
+    : (property?.state?.name || property?.state || '');
   
   /**
    * Extract pricing information
+   * For normalized listings: use listing price (from listingEntity or listing)
+   * For raw data: use property price
    */
-  const propertyRentalFee = property?.rentalFee || property?.price || 0;
-  const propertyCurrency = property?.currency || 'USD';
+  const propertyRentalFee = isNormalized
+    ? (listing?.price || listingEntity?.entityPrice || listing?.property?.price || 0)
+    : (property?.rentalFee || property?.price || 0);
+  const propertyCurrency = isNormalized
+    ? (listing?.property?.currency || 'USD')
+    : (property?.currency || 'USD');
+  const propertyPriceFrequency = isNormalized
+    ? (listing?.priceFrequency || listingEntity?.entityPriceFrequency || listing?.property?.priceFrequency || null)
+    : (property?.priceFrequency || null);
   
   /**
    * Extract bedrooms count with comprehensive fallback strategy
@@ -309,16 +347,18 @@ export default function ApplicationProgressPage() {
     }
     
     // Check raw property direct fields (most common in API responses)
-    if (property?.noBathRoom != null) {
-      return property.noBathRoom;
+    // Use originalProperty for fallback when normalized
+    const propToCheck = isNormalized ? originalProperty : property;
+    if (propToCheck?.noBathRoom != null) {
+      return propToCheck.noBathRoom;
     }
-    if (property?.bathrooms != null) {
-      return property.bathrooms;
+    if (propToCheck?.bathrooms != null) {
+      return propToCheck.bathrooms;
     }
     
     // Check nested specification (can be array or object)
-    if (property?.specification) {
-      const spec = property.specification;
+    if (propToCheck?.specification) {
+      const spec = propToCheck.specification;
       const residential = Array.isArray(spec)
         ? spec.find((s: any) => s?.residential || s?.specificationType === 'RESIDENTIAL')?.residential
         : spec?.residential;
@@ -328,8 +368,8 @@ export default function ApplicationProgressPage() {
     }
     
     // Check direct residential object
-    if (property?.residential?.bathrooms != null) {
-      return property.residential.bathrooms;
+    if (propToCheck?.residential?.bathrooms != null) {
+      return propToCheck.residential.bathrooms;
     }
     
     // Default fallback
@@ -565,6 +605,11 @@ export default function ApplicationProgressPage() {
                   <div>
                     <h3 className="font-semibold text-lg">
                       {propertyName}
+                      {propertyContextName && (
+                        <span className="text-sm font-normal text-gray-500 block mt-1">
+                          in {propertyContextName}
+                        </span>
+                      )}
                     </h3>
                     <p className="text-sm text-gray-500 flex items-center mt-1">
                       <MapPin className="w-4 h-4 mr-1" />

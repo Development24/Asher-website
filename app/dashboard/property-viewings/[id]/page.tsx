@@ -149,7 +149,38 @@ export default function PropertyViewingDetailPage() {
   const similarProperties: Listing[] = propertiesData?.properties || [];
   const { data, isFetching, refetch } = useGetPropertyByInviteId(id as string);
   const dataInvite = (data as any)?.invite || data;
-  const propertyData = dataInvite?.properties;
+  
+  // Use normalized listing if available, otherwise fallback to properties
+  const listing = dataInvite?.listing || null;
+  const isNormalized = !!listing;
+  const listingEntity = listing?.listingEntity || null;
+  const hierarchy = listing?.hierarchy || null;
+  
+  // Determine which data to use: listing entity (room/unit) or property
+  const propertyData = isNormalized && listingEntity 
+    ? {
+        ...listing.property, // Parent property context
+        // Override with listing entity data for display
+        name: listingEntity.name,
+        price: listing.price || listingEntity.entityPrice || listing.property?.price,
+        images: listingEntity.images?.length > 0 ? listingEntity.images : listing.property?.images || [],
+        description: listingEntity.description || listing.property?.description,
+        // Keep property-level data for location, etc.
+        address: listing.property?.address,
+        city: listing.property?.city,
+        state: listing.property?.state,
+        country: listing.property?.country,
+        zipcode: listing.property?.zipcode,
+        latitude: listing.property?.latitude,
+        longitude: listing.property?.longitude,
+        currency: listing.property?.currency || 'USD',
+        landlord: listing.property?.landlord,
+        keyFeatures: listing.property?.keyFeatures || [],
+        bedrooms: listing.property?.bedrooms,
+        bathrooms: listing.property?.bathrooms,
+      }
+    : dataInvite?.properties || dataInvite?.property;
+  
   const viewingStatus = dataInvite?.response as ViewingStatus;
   const scheduledDate = dataInvite?.scheduleDate
     ? format(new Date(dataInvite?.scheduleDate as string), "dd MMMM, yyyy")

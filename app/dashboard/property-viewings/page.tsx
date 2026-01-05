@@ -123,10 +123,10 @@ export default function PropertyViewingsPage() {
     title: string;
     description: string;
   }) => (
-    <div className="text-center py-12">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-500 mb-4">{description}</p>
-      <Button className="bg-red-600 hover:bg-red-700 text-white">
+    <div className="py-12 text-center">
+      <h3 className="mb-2 text-lg font-semibold">{title}</h3>
+      <p className="mb-4 text-gray-500">{description}</p>
+      <Button className="text-white bg-red-600 hover:bg-red-700">
         Browse properties
       </Button>
     </div>
@@ -144,26 +144,26 @@ export default function PropertyViewingsPage() {
     isExpanded: boolean;
   }) => (
     <div 
-      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+      className="flex justify-between items-center p-4 bg-gray-50 rounded-lg transition-colors cursor-pointer hover:bg-gray-100"
       onClick={() => toggleSection(section)}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex gap-3 items-center">
         <h2 className="text-xl font-semibold">{title}</h2>
         <Badge variant="secondary">{count}</Badge>
       </div>
-      {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+      {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
     </div>
   );
 
   if (isFetchingInvites) {
     return (
       <div className="layout">
-        <div className="flex items-center gap-2 text-sm mb-6">
-          <Skeleton className="h-4 w-16" />
+        <div className="flex gap-2 items-center mb-6 text-sm">
+          <Skeleton className="w-16 h-4" />
           <span className="text-gray-400">/</span>
-          <Skeleton className="h-4 w-32" />
+          <Skeleton className="w-32 h-4" />
         </div>
-        <Skeleton className="h-10 w-64 mb-8" /> {/* Page title skeleton */}
+        <Skeleton className="mb-8 w-64 h-10" /> {/* Page title skeleton */}
         {/* Viewing invites section skeleton */}
         <SectionSkeleton />
         {/* Scheduled viewings section skeleton */}
@@ -178,18 +178,18 @@ export default function PropertyViewingsPage() {
   if (error) {
     return (
       <div className="layout">
-        <div className="flex items-center gap-2 text-sm mb-6">
+        <div className="flex gap-2 items-center mb-6 text-sm">
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
             Home
           </Link>
           <span className="text-gray-400">/</span>
           <span className="text-gray-900">Property viewings</span>
         </div>
-        <h1 className="text-3xl font-bold mb-8">Property viewings</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">API Error</h2>
-          <p className="text-red-700 mb-2">Failed to load property viewings data.</p>
-          <pre className="bg-red-100 p-3 rounded text-sm text-red-800 overflow-auto">
+        <h1 className="mb-8 text-3xl font-bold">Property viewings</h1>
+        <div className="p-6 bg-red-50 rounded-lg border border-red-200">
+          <h2 className="mb-2 text-lg font-semibold text-red-800">API Error</h2>
+          <p className="mb-2 text-red-700">Failed to load property viewings data.</p>
+          <pre className="overflow-auto p-3 text-sm text-red-800 bg-red-100 rounded">
             {JSON.stringify(error, null, 2)}
           </pre>
           <Button 
@@ -205,7 +205,7 @@ export default function PropertyViewingsPage() {
 
   return (
     <div className="layout">
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex gap-2 items-center text-sm">
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
           Home
         </Link>
@@ -222,11 +222,14 @@ export default function PropertyViewingsPage() {
           isExpanded={expandedSections.has('pending')}
         />
                  {expandedSections.has('pending') && (
-           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 md:gap-6">
              {pendingInvites?.map((invite: any) => {
-              // Use normalized listing if available, otherwise fallback to property
+              // Use normalized listing if available (from backend), otherwise fallback to property
               const listing = invite?.listing || null;
               const propertyData = invite?.property || invite?.properties || null;
+              
+              // Pass listing object if available, otherwise pass property data
+              const propertyToDisplay = listing || propertyData;
               
               return (
                 <motion.div
@@ -239,7 +242,7 @@ export default function PropertyViewingsPage() {
                     <PropertyCardSkeleton />
                   ) : (
                     <PropertyCard
-                      property={listing || propertyData}
+                      property={propertyToDisplay}
                       viewType="invite"
                       viewLink={`/dashboard/property-viewings/${invite?.inviteId || invite?.id}/?schedule_date=${invite?.scheduleDate}&invitationId=${invite?.inviteId || invite?.id}`}
                       isInvite
@@ -263,7 +266,7 @@ export default function PropertyViewingsPage() {
           isExpanded={expandedSections.has('scheduled')}
         />
         {expandedSections.has('scheduled') && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 md:gap-6">
             {acceptedInvites.map((invite: any) => {
               const listing = invite?.listing || null;
               const propertyData = invite?.property || invite?.properties || null;
@@ -296,7 +299,7 @@ export default function PropertyViewingsPage() {
           isExpanded={expandedSections.has('feedback')}
         />
                  {expandedSections.has('feedback') && (
-           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 md:gap-6">
              {feedbackInvites.map((invite: any) => {
               const listing = invite?.listing || null;
               const propertyData = invite?.property || invite?.properties || null;
@@ -353,7 +356,7 @@ export default function PropertyViewingsPage() {
           isExpanded={expandedSections.has('completed')}
         />
                  {expandedSections.has('completed') && (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
              {allCompletedInvites.map((invite: any) => {
               const listing = invite?.listing || null;
               const propertyData = invite?.property || invite?.properties || null;

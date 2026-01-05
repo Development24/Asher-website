@@ -249,40 +249,46 @@ export const useGetAllInvites = () => {
     return useQuery({
         queryKey: ["allInvites"],
         queryFn: async () => {
-            const data = await allInvites();
-            
-            // Enrich viewing invite data with normalized property/listing information
-            if (data) {
-                const { ViewingInviteNormalizer } = await import('@/lib/utils/ViewingInviteNormalizer');
+            try {
+                const data = await allInvites();
                 
-                // Collect all invites from all categories for normalization
-                const allInvitesList = [
-                    ...(data.pendingInvites || []),
-                    ...(data.acceptInvites || []),
-                    ...(data.otherInvites || []),
-                    ...(data.awaitingFeedbackInvites || []),
-                    ...(data.rejectedInvites || []),
-                    ...(data.rescheduledInvites || []),
-                    ...(data.approvedinvites || []),
-                ];
-                
-                // Normalize all invites to include listing and property details
-                const normalized = await ViewingInviteNormalizer.normalizeMany(allInvitesList);
-                
-                // Create lookup map using inviteId for quick access during merge
-                const normalizedMap = new Map(normalized.map(n => [n.inviteId, n]));
-                
-                return {
-                    pendingInvites: (data.pendingInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                    acceptInvites: (data.acceptInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                    otherInvites: (data.otherInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                    awaitingFeedbackInvites: (data.awaitingFeedbackInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                    rejectedInvites: (data.rejectedInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                    rescheduledInvites: (data.rescheduledInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                    approvedinvites: (data.approvedinvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
-                };
+                // Backend now returns normalized data with `listing` object
+                // Only normalize if backend didn't provide listing (for backward compatibility)
+                if (data) {
+                    const { ViewingInviteNormalizer } = await import('@/lib/utils/ViewingInviteNormalizer');
+                    
+                    // Collect all invites from all categories for normalization
+                    const allInvitesList = [
+                        ...(data.pendingInvites || []),
+                        ...(data.acceptInvites || []),
+                        ...(data.otherInvites || []),
+                        ...(data.awaitingFeedbackInvites || []),
+                        ...(data.rejectedInvites || []),
+                        ...(data.rescheduledInvites || []),
+                        ...(data.approvedinvites || []),
+                    ];
+                    
+                    // Normalize all invites (will use backend listing if available, otherwise fetch)
+                    const normalized = await ViewingInviteNormalizer.normalizeMany(allInvitesList);
+                    
+                    // Create lookup map using inviteId for quick access during merge
+                    const normalizedMap = new Map(normalized.map(n => [n.inviteId, n]));
+                    
+                    return {
+                        pendingInvites: (data.pendingInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                        acceptInvites: (data.acceptInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                        otherInvites: (data.otherInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                        awaitingFeedbackInvites: (data.awaitingFeedbackInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                        rejectedInvites: (data.rejectedInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                        rescheduledInvites: (data.rescheduledInvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                        approvedinvites: (data.approvedinvites || []).map((invite: any) => normalizedMap.get(invite.id) || invite),
+                    };
+                }
+                return data;
+            } catch (error) {
+                console.error('Error fetching invites:', error);
+                throw error;
             }
-            return data;
         },
         retry: false,
     })
@@ -304,7 +310,22 @@ export const useUpdateInvite = () => {
 export const useGetPropertyByInviteId = (id: string) => {
     return useQuery({
         queryKey: ["getPropertyByInviteId", id],
-        queryFn: () => getPropertyByInviteId(id),
+        queryFn: async () => {
+            const response = await getPropertyByInviteId(id);
+            
+            // Normalize the invite if it exists
+            if (response?.invite) {
+                const { ViewingInviteNormalizer } = await import('@/lib/utils/ViewingInviteNormalizer');
+                const normalizedInvite = await ViewingInviteNormalizer.normalize(response.invite);
+                
+                return {
+                    ...response,
+                    invite: normalizedInvite
+                };
+            }
+            
+            return response;
+        },
         retry: false,
     })
 }

@@ -68,6 +68,8 @@ export function EmploymentDetailsForm({
 
   const form = useForm<EmploymentDetailsFormValues>({
     resolver: zodResolver(employmentDetailsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       employmentStatus: applicationData?.employmentInfo?.employmentStatus || "Employed",
       address: applicationData?.employmentInfo?.address || "",
@@ -196,7 +198,18 @@ export function EmploymentDetailsForm({
                   <FormItem>
                     <FormLabel>Start Date</FormLabel>
 
-                    <DatePicker field={field} />
+                    <FormControl>
+                      <DatePicker 
+                        field={{
+                          ...field,
+                          trigger: () => form.trigger("startDate"),
+                          onChange: (value: any) => {
+                            field.onChange(value);
+                            setTimeout(() => form.trigger("startDate"), 100);
+                          }
+                        }} 
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />

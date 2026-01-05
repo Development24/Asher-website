@@ -50,6 +50,8 @@ export function GuarantorDetailsForm({
   const { mutate: guarantorApplication, isPending } = useGuarantorApplication();
   const form = useForm<GuarantorDetailsFormValues>({
     resolver: zodResolver(guarantorDetailsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       fullName: applicationData?.guarantorInformation?.fullName || "",
       phoneNumber: applicationData?.guarantorInformation?.phoneNumber || "",

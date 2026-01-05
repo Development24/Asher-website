@@ -31,6 +31,7 @@ import {
   usePathname
 } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
+import React from "react";
 import { toast } from "sonner";
 import {
   personalDetailsSchema,
@@ -63,6 +64,8 @@ export function PersonalDetailsForm({
   const { mutate: startApplication, isPending } = useStartApplication();
   const form = useForm<PersonalDetailsFormValues>({
     resolver: zodResolver(personalDetailsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       title: applicationData?.personalDetails?.title as
         | "Mr."
@@ -172,7 +175,7 @@ export function PersonalDetailsForm({
     }
   });
 
-  const { isValid } = form.formState;
+  const { isValid, errors } = form.formState;
 
   return (
     <Form {...form}>
@@ -190,7 +193,11 @@ export function PersonalDetailsForm({
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.trigger("title"); // Trigger validation immediately
+                      }}
+                      value={field.value}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -262,7 +269,18 @@ export function PersonalDetailsForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date of birth</FormLabel>
-                  <DatePicker field={field} />
+                  <FormControl>
+                    <DatePicker 
+                      field={{
+                        ...field,
+                        onChange: (value: any) => {
+                          field.onChange(value);
+                          // Trigger validation after date change
+                          setTimeout(() => form.trigger("dob"), 100);
+                        }
+                      }} 
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -292,7 +310,11 @@ export function PersonalDetailsForm({
                   <FormLabel>Identification Details</FormLabel>
                   <FormControl>
             <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.trigger("identificationType"); // Trigger validation immediately
+                      }}
+                      value={field.value}
                       defaultValue={field.value}
             >
               <SelectTrigger>
@@ -344,7 +366,19 @@ export function PersonalDetailsForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Identity Expiry Date</FormLabel>
-                  <DatePicker field={field} />
+                  <FormControl>
+                    <DatePicker 
+                      field={{
+                        ...field,
+                        trigger: () => form.trigger("expiryDate"),
+                        onChange: (value: any) => {
+                          field.onChange(value);
+                          // Trigger validation after date change
+                          setTimeout(() => form.trigger("expiryDate"), 100);
+                        }
+                      }} 
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -395,7 +429,11 @@ export function PersonalDetailsForm({
                   <FormLabel>Marital information</FormLabel>
                   <FormControl>
               <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.trigger("maritalStatus"); // Trigger validation immediately
+                      }}
+                      value={field.value}
                       defaultValue={field.value}
               >
                 <SelectTrigger>
@@ -555,7 +593,11 @@ export function PersonalDetailsForm({
                   <FormLabel>Invited</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.trigger("invited"); // Trigger validation immediately
+                      }}
+                      value={field.value}
                       defaultValue={field.value}
                     >
                       <SelectTrigger>

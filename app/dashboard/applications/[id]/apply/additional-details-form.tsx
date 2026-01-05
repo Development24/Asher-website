@@ -50,6 +50,8 @@ export function AdditionalDetailsForm({
   const queryClient = useQueryClient();
   const form = useForm<AdditionalDetailsFormValues>({
     resolver: zodResolver(additionalDetailsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       pets: applicationData?.applicationQuestions?.[0]?.havePet || "",
       smoker: applicationData?.applicationQuestions?.[0]?.youSmoke || "",
@@ -108,7 +110,11 @@ export function AdditionalDetailsForm({
                 <FormItem>
                   <FormLabel>Do you have any pets?</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.trigger(field.name);
+                    }}
+                    value={field.value}
                     defaultValue={field.value}
                   >
                     <FormControl>

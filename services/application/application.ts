@@ -43,7 +43,7 @@ export interface UpdateInviteResponse {
 }
 
 export interface GetPropertyByInviteIdResponse {
-  property: any;
+  invite: any; // Normalized invite with listing object from backend
   message?: string;
 }
 

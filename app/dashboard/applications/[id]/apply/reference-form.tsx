@@ -46,6 +46,8 @@ export function ReferenceForm({
 
   const form = useForm<ReferenceDetailsFormValues>({
     resolver: zodResolver(referenceDetailsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       professionalReferenceName:
         applicationData?.referee?.professionalReferenceName || "",

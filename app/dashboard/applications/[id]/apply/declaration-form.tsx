@@ -52,6 +52,8 @@ export function DeclarationForm({
 
   const form = useForm<DeclarationFormValues>({
     resolver: zodResolver(declarationSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       declaration: !!applicationData?.declaration?.[0]?.declaration || false,
       signature:
@@ -161,7 +163,18 @@ export function DeclarationForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date</FormLabel>
-                  <DatePicker field={field} />
+                  <FormControl>
+                    <DatePicker 
+                      field={{
+                        ...field,
+                        trigger: () => form.trigger("date"),
+                        onChange: (value: any) => {
+                          field.onChange(value);
+                          setTimeout(() => form.trigger("date"), 100);
+                        }
+                      }} 
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

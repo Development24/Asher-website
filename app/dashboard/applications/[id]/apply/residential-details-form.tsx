@@ -69,6 +69,8 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
   
   const form = useForm<ResidentialDetailsFormValues>({
     resolver: zodResolver(residentialDetailsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       address: applicationData?.residentialInfo?.address || "",
       addressStatus: applicationData?.residentialInfo?.addressStatus || "",
@@ -139,7 +141,14 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Address Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.trigger("addressStatus");
+                    }}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
@@ -218,7 +227,14 @@ export function ResidentialDetailsForm({ onNext, onPrevious, params, application
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Length of Residence</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.trigger("lengthOfResidence");
+                    }}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select length" />

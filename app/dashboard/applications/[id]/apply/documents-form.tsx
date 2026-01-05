@@ -55,6 +55,8 @@ export function DocumentsForm({
   const router = useRouter();
   const form = useForm<DocumentsFormValues>({
     resolver: zodResolver(documentsSchema),
+    mode: "onChange", // Validate on change to show errors immediately
+    reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
       idDocument: applicationData?.documents?.[0]?.documentUrl
         ? new File([], applicationData?.documents?.[0]?.documentUrl, {
