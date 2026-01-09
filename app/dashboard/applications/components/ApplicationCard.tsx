@@ -198,9 +198,24 @@ const ApplicationCard = ({
   const city = isNormalized
     ? listing.property?.city
     : propertyData?.city || '';
-  const stateName = isNormalized
-    ? listing.property?.state?.name
-    : propertyData?.state?.name || '';
+  // Handle state - can be object {id, name} or string
+  const stateName = (() => {
+    if (isNormalized) {
+      const state = listing.property?.state;
+      if (state) {
+        return typeof state === 'object' && state !== null 
+          ? (state.name || state.id || '')
+          : (typeof state === 'string' ? state : '');
+      }
+    }
+    const state = propertyData?.state;
+    if (state) {
+      return typeof state === 'object' && state !== null
+        ? (state.name || state.id || '')
+        : (typeof state === 'string' ? state : '');
+    }
+    return '';
+  })();
   const country = isNormalized
     ? listing.property?.country
     : propertyData?.country || '';

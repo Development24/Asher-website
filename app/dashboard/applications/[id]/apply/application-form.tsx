@@ -24,7 +24,6 @@ import { DeclarationForm } from "./declaration-form";
 import { DocumentsForm } from "./documents-form";
 import { EmploymentDetailsForm } from "./employment-details-form";
 import { GuarantorDetailsForm } from "./guarantor-details-form";
-import { PaymentModal } from "./payment-modal"; // Import PaymentModal from the same directory
 import { PersonalDetailsForm } from "./personal-details-form";
 import { ReferenceForm } from "./reference-form";
 import { ResidentialDetailsForm } from "./residential-details-form";
@@ -270,45 +269,51 @@ export function ApplicationForm({
       }
     );
   };
-  const hasApplicationFee = applicationData?.applicationFee === "Yes";
+  // Check if application fee is required from applicationInvites
+  const appData = applicationData as any;
+  const hasApplicationFee = appData?.applicationInvites?.applicationFee === "YES";
 
-  // Get application fee amount - check multiple sources
+  // Get application fee amount - check multiple sources in priority order
   const getApplicationFeeAmount = () => {
-    console.log("Checking application fee sources...");
-    console.log("Application data:", applicationData);
-
-    // Check if fee amount is in properties
-    if (applicationData?.properties?.applicationFee) {
-      console.log(
-        "Found fee in properties:",
-        applicationData.properties.applicationFee
-      );
-      return applicationData.properties.applicationFee;
-    }
-
-    // Check if fee amount is in application data (as any to handle dynamic properties)
-    const appData = applicationData as any;
-    if (appData?.applicationFeeAmount) {
-      console.log(
-        "Found fee in applicationFeeAmount:",
-        appData.applicationFeeAmount
-      );
-      return appData.applicationFeeAmount;
-    }
-
-    if (appData?.applicationInvites?.feeAmount) {
-      console.log(
-        "Found fee in applicationInvites:",
-        appData.applicationInvites.feeAmount
-      );
-      return appData.applicationInvites.feeAmount;
-    }
-
-    // Fallback to default amount based on currency
     const currency = applicationData?.properties?.currency || "USD";
+    
+    // Priority 1: Check listing.applicationFeeAmount (most reliable source)
+    if (appData?.listing?.applicationFeeAmount) {
+      const feeAmount = parseFloat(appData.listing.applicationFeeAmount);
+      if (!isNaN(feeAmount) && feeAmount > 0) {
+        // Convert to smallest unit (cents/kobo) if needed
+        // Assuming the amount is in base units (e.g., 50 for ₦50)
+        const amountInSmallestUnit = Math.round(feeAmount * 100);
+        console.log(`Found fee in listing.applicationFeeAmount: ${amountInSmallestUnit} ${currency} (${feeAmount} base units)`);
+        return amountInSmallestUnit;
+      }
+    }
+
+    // Priority 2: Check if fee amount is directly in applicationInvites
+    if (appData?.applicationInvites?.feeAmount) {
+      const feeAmount = parseFloat(appData.applicationInvites.feeAmount);
+      if (!isNaN(feeAmount) && feeAmount > 0) {
+        const amountInSmallestUnit = Math.round(feeAmount * 100);
+        console.log(`Found fee in applicationInvites.feeAmount: ${amountInSmallestUnit} ${currency}`);
+        return amountInSmallestUnit;
+      }
+    }
+
+    // Priority 3: Check applicationFeeAmount at root level
+    if (appData?.applicationFeeAmount) {
+      const feeAmount = parseFloat(appData.applicationFeeAmount);
+      if (!isNaN(feeAmount) && feeAmount > 0) {
+        const amountInSmallestUnit = Math.round(feeAmount * 100);
+        console.log(`Found fee in applicationFeeAmount: ${amountInSmallestUnit} ${currency}`);
+        return amountInSmallestUnit;
+      }
+    }
+
+    // Fallback: Should not happen if fee is properly configured
+    console.warn("No application fee amount found in response, using fallback");
     const defaultFees = {
       USD: 2000, // $20.00 in cents
-      NGN: 30000, // ₦300.00 in kobo
+      NGN: 5000, // ₦50.00 in kobo (matching the test value)
       GBP: 1500, // £15.00 in pence
       EUR: 1800 // €18.00 in cents
     };

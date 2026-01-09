@@ -63,8 +63,7 @@ export function ChecklistForm({
       applicationData?.documents?.[1]?.documentUrl ||
       applicationData?.documents?.[2]?.documentUrl,
     identification: () =>
-      applicationData?.guarantorInformation?.identificationType &&
-      applicationData?.guarantorInformation?.identificationNo,
+      applicationData?.documents?.map((document) => document.documentName === "idDocument")?.length > 0,
     references: () =>
       applicationData?.referee?.professionalReferenceName &&
       applicationData?.referee?.personalReferenceName,
@@ -93,15 +92,15 @@ export function ChecklistForm({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg font-semibold mb-2">APPLICATION PROGRESS</h2>
-        <div className="h-2 w-full bg-gray-200 rounded-full mb-6">
+        <h2 className="mb-2 text-lg font-semibold">APPLICATION PROGRESS</h2>
+        <div className="mb-6 w-full h-2 bg-gray-200 rounded-full">
           <div
             className="h-2 bg-green-500 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {checklistItems.map((item, index) => (
             <div key={index} className="flex items-center space-x-3">
               <div

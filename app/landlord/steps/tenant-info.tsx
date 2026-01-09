@@ -13,12 +13,15 @@ const TenantInfo = ({
   handleChange,
   applicationInfo
 }: TenantInfoProps) => {
-  const tenantName = `${applicationInfo?.personalDetails?.firstName} ${applicationInfo?.personalDetails?.lastName}`;
+  // Extract tenant name safely, handling missing parts
+  const firstName = applicationInfo?.personalDetails?.firstName || "";
+  const lastName = applicationInfo?.personalDetails?.lastName || "";
+  const tenantName = [firstName, lastName].filter(Boolean).join(" ") || "Unknown Tenant";
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="tenant-name" className="text-gray-700 font-medium">
+        <Label htmlFor="tenant-name" className="font-medium text-gray-700">
           Full name
         </Label>
         <Input
@@ -31,11 +34,11 @@ const TenantInfo = ({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label
             htmlFor="current-address"
-            className="text-gray-700 font-medium"
+            className="font-medium text-gray-700"
           >
             Current address
           </Label>
@@ -48,7 +51,7 @@ const TenantInfo = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="monthly-rent" className="text-gray-700 font-medium">
+          <Label htmlFor="monthly-rent" className="font-medium text-gray-700">
             Monthly Rent Paid (£)
           </Label>
           <Input
@@ -62,12 +65,12 @@ const TenantInfo = ({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Rental period</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Label className="font-medium text-gray-700">Rental period</Label>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <Label
               htmlFor="rental-start-date"
-              className="text-xs text-gray-500 mb-1 block"
+              className="block mb-1 text-xs text-gray-500"
             >
               Start date
             </Label>
@@ -82,7 +85,7 @@ const TenantInfo = ({
           <div>
             <Label
               htmlFor="rental-end-date"
-              className="text-xs text-gray-500 mb-1 block"
+              className="block mb-1 text-xs text-gray-500"
             >
               End date
             </Label>
@@ -100,7 +103,7 @@ const TenantInfo = ({
       <div className="space-y-2">
         <Label
           htmlFor="reason-for-leaving"
-          className="text-gray-700 font-medium"
+          className="font-medium text-gray-700"
         >
           Reason for leaving
         </Label>

@@ -30,7 +30,10 @@ import {
 import DatePicker from "@/app/components/DatePicker";
 import { useEmployerApplication } from "@/services/application/applicationFn";
 import { ApplicationData } from "@/types/applicationInterface";
-import { getCachedUserCurrency, getUserCurrencyCached } from "@/lib/locationCurrency";
+import {
+  getCachedUserCurrency,
+  getUserCurrencyCached
+} from "@/lib/locationCurrency";
 interface EmploymentDetailsFormProps {
   onNext: () => void;
   onPrevious: () => void;
@@ -50,19 +53,21 @@ export function EmploymentDetailsForm({
 }: EmploymentDetailsFormProps) {
   const { formData, updateFormData } = useApplicationFormStore();
   const { mutate: employerApplication, isPending } = useEmployerApplication();
-  
+
   // Get user's preference currency (preferences override everything)
-  const [userCurrency, setUserCurrency] = useState<string>('USD');
-  
+  const [userCurrency, setUserCurrency] = useState<string>("USD");
+
   useEffect(() => {
     // Get cached currency first (faster), then fetch if needed
     const cached = getCachedUserCurrency();
     if (cached) {
       setUserCurrency(cached);
     } else {
-      getUserCurrencyCached().then(setUserCurrency).catch(() => {
-        setUserCurrency('USD'); // Fallback
-      });
+      getUserCurrencyCached()
+        .then(setUserCurrency)
+        .catch(() => {
+          setUserCurrency("USD"); // Fallback
+        });
     }
   }, []);
 
@@ -71,7 +76,8 @@ export function EmploymentDetailsForm({
     mode: "onChange", // Validate on change to show errors immediately
     reValidateMode: "onChange", // Re-validate on change
     defaultValues: {
-      employmentStatus: applicationData?.employmentInfo?.employmentStatus || "Employed",
+      employmentStatus:
+        applicationData?.employmentInfo?.employmentStatus || "Employed",
       address: applicationData?.employmentInfo?.address || "",
       city: applicationData?.employmentInfo?.city || "",
       state: applicationData?.employmentInfo?.state || "",
@@ -80,19 +86,36 @@ export function EmploymentDetailsForm({
         ? applicationData?.employmentInfo?.startDate.split("T")[0]
         : "",
       zipCode: applicationData?.employmentInfo?.zipCode || "",
-      monthlyOrAnualIncome: applicationData?.employmentInfo?.monthlyOrAnualIncome || "",
+      monthlyOrAnualIncome:
+        applicationData?.employmentInfo?.monthlyOrAnualIncome || "",
       taxCredit: applicationData?.employmentInfo?.taxCredit || "",
       childBenefit: applicationData?.employmentInfo?.childBenefit || "",
       childMaintenance: applicationData?.employmentInfo?.childMaintenance || "",
-      disabilityBenefit: applicationData?.employmentInfo?.disabilityBenefit || "",
+      disabilityBenefit:
+        applicationData?.employmentInfo?.disabilityBenefit || "",
       housingBenefit: applicationData?.employmentInfo?.housingBenefit || "",
       pension: applicationData?.employmentInfo?.pension || "",
       employerCompany: applicationData?.employmentInfo?.employerCompany || "",
       employerEmail: applicationData?.employmentInfo?.employerEmail || "",
       employerPhone: applicationData?.employmentInfo?.employerPhone || "",
-      positionTitle: applicationData?.employmentInfo?.positionTitle || ""
+      positionTitle: applicationData?.employmentInfo?.positionTitle || "",
+      businessName:
+        (applicationData?.employmentInfo as any)?.businessName || "",
+      businessType:
+        (applicationData?.employmentInfo as any)?.businessType || "",
+      businessEmail:
+        (applicationData?.employmentInfo as any)?.businessEmail || "",
+      businessPhone:
+        (applicationData?.employmentInfo as any)?.businessPhone || ""
     }
   });
+
+  // Watch employment status to conditionally show/hide fields
+  const employmentStatus = form.watch("employmentStatus");
+  const isEmployed = employmentStatus === "Employed";
+  const isSelfEmployed = employmentStatus === "Self-employed";
+  const needsEmployerInfo = isEmployed;
+  const needsBusinessInfo = isSelfEmployed;
 
   function handleSubmit() {
     const values = form.getValues();
@@ -128,10 +151,10 @@ export function EmploymentDetailsForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-      <div>
-        <h2 className="text-lg font-semibold mb-4">EMPLOYMENT INFORMATION</h2>
+        <div>
+          <h2 className="mb-4 text-lg font-semibold">EMPLOYMENT INFORMATION</h2>
 
-        <div className="space-y-4">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="employmentStatus"
@@ -139,7 +162,39 @@ export function EmploymentDetailsForm({
                 <FormItem>
                   <FormLabel>Current employment status</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.trigger("employmentStatus");
+                      // Clear employer fields when switching away from "Employed"
+                      if (value !== "Employed") {
+                        form.setValue("employerCompany", "");
+                        form.setValue("employerEmail", "");
+                        form.setValue("employerPhone", "");
+                        form.setValue("positionTitle", "");
+                        // Trigger validation to clear errors
+                        form.trigger([
+                          "employerCompany",
+                          "employerEmail",
+                          "employerPhone",
+                          "positionTitle"
+                        ]);
+                      }
+                      // Clear business fields when switching away from "Self-employed"
+                      if (value !== "Self-employed") {
+                        form.setValue("businessName", "");
+                        form.setValue("businessType", "");
+                        form.setValue("businessEmail", "");
+                        form.setValue("businessPhone", "");
+                        // Trigger validation to clear errors
+                        form.trigger([
+                          "businessName",
+                          "businessType",
+                          "businessEmail",
+                          "businessPhone"
+                        ]);
+                      }
+                    }}
+                    value={field.value}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -162,353 +217,482 @@ export function EmploymentDetailsForm({
               )}
             />
 
-            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 sm:gap-4">
-              <FormField
-                control={form.control}
-                name="employerCompany"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employer Company</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter employer company" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+            {/* Employer/Business Info Section - Only show for Employed or Self-employed */}
+            {(needsEmployerInfo || needsBusinessInfo) && (
+              <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 sm:gap-4">
+                {needsEmployerInfo && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="employerCompany"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Employer Company</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter employer company"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="positionTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Position Title</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter position title"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 )}
-              />
 
-              <FormField
-                control={form.control}
-                name="positionTitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter position title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {needsBusinessInfo && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="businessName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Business Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter business name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="businessType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Type of Business</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g., Consulting, Retail, Services"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 )}
-              />
+              </div>
+            )}
 
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Date</FormLabel>
 
+                  <FormControl>
+                    <DatePicker
+                      field={{
+                        ...field,
+                        trigger: () => form.trigger("startDate"),
+                        onChange: (value: any) => {
+                          field.onChange(value);
+                          setTimeout(() => form.trigger("startDate"), 100);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="monthlyOrAnualIncome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Monthly/Annual Income</FormLabel>
+                  <div className="flex gap-2">
                     <FormControl>
-                      <DatePicker 
-                        field={{
-                          ...field,
-                          trigger: () => form.trigger("startDate"),
-                          onChange: (value: any) => {
-                            field.onChange(value);
-                            setTimeout(() => form.trigger("startDate"), 100);
-                          }
-                        }} 
+                      <Input
+                        placeholder="Enter income"
+                        {...field}
+                        className="flex-1"
                       />
                     </FormControl>
-                  </FormItem>
-                )}
-              />
+                    <FormControl>
+                      <Input
+                        value={userCurrency}
+                        disabled
+                        className="w-20 bg-gray-100 cursor-not-allowed"
+                        readOnly
+                      />
+                    </FormControl>
+                  </div>
+                  <FormDescription className="text-xs text-gray-500">
+                    Currency is set based on your preferences
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
+          {/* Employer/Business Contact Info Section - Only show for Employed or Self-employed */}
+          {(needsEmployerInfo || needsBusinessInfo) && (
+            <div className="grid gap-6 md:grid-cols-2">
+              {needsEmployerInfo && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="employerEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Employer Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter employer email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="employerPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Employer Phone</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter employer phone"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {needsBusinessInfo && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="businessEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter business email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="businessPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Phone</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter business phone"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+            </div>
+          )}
+          {/* Employer Address Section */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Employer Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>City</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter city" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter state" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter country" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="zipCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Zip Code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter zip code" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Additional Income Section */}
+          <div className="mt-8 space-y-6">
+            <h3 className="text-sm font-medium text-gray-500">
+              ADDITIONAL INCOME INFORMATION
+            </h3>
+
+            <div className="grid gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
-                name="monthlyOrAnualIncome"
+                name="taxCredit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Monthly/Annual Income</FormLabel>
+                    <FormLabel>Tax Credit</FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
-                        <Input placeholder="Enter income" {...field} className="flex-1" />
+                        <Input
+                          placeholder="Enter amount"
+                          {...field}
+                          className="flex-1"
+                        />
                       </FormControl>
                       <FormControl>
-                        <Input 
-                          value={userCurrency} 
-                          disabled 
+                        <Input
+                          value={userCurrency}
+                          disabled
                           className="w-20 bg-gray-100 cursor-not-allowed"
                           readOnly
                         />
                       </FormControl>
                     </div>
-                    <FormDescription className="text-xs text-gray-500">
-                      Currency is set based on your preferences
-                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="childBenefit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Child Benefit</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount"
+                          {...field}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <Input
+                          value={userCurrency}
+                          disabled
+                          className="w-20 bg-gray-100 cursor-not-allowed"
+                          readOnly
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="childMaintenance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Child Maintenance</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount"
+                          {...field}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <Input
+                          value={userCurrency}
+                          disabled
+                          className="w-20 bg-gray-100 cursor-not-allowed"
+                          readOnly
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="disabilityBenefit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Disability Benefit</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount"
+                          {...field}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <Input
+                          value={userCurrency}
+                          disabled
+                          className="w-20 bg-gray-100 cursor-not-allowed"
+                          readOnly
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="housingBenefit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Housing Benefit</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount"
+                          {...field}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <Input
+                          value={userCurrency}
+                          disabled
+                          className="w-20 bg-gray-100 cursor-not-allowed"
+                          readOnly
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pension"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pension</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount"
+                          {...field}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <Input
+                          value={userCurrency}
+                          disabled
+                          className="w-20 bg-gray-100 cursor-not-allowed"
+                          readOnly
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
-            {/* Employer Info Section */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="employerEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employer Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter employer email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="employerPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employer Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter employer phone" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            {/* Employer Address Section */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employer Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter city" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter state" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter country" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="zipCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Zip Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter zip code" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Additional Income Section */}
-            <div className="space-y-6 mt-8">
-              <h3 className="text-sm font-medium text-gray-500">
-                ADDITIONAL INCOME INFORMATION
-              </h3>
-
-              <div className="grid md:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="taxCredit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tax Credit</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input placeholder="Enter amount" {...field} className="flex-1" />
-                        </FormControl>
-                        <FormControl>
-                          <Input 
-                            value={userCurrency} 
-                            disabled 
-                            className="w-20 bg-gray-100 cursor-not-allowed"
-                            readOnly
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="childBenefit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Child Benefit</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input placeholder="Enter amount" {...field} className="flex-1" />
-                        </FormControl>
-                        <FormControl>
-                          <Input 
-                            value={userCurrency} 
-                            disabled 
-                            className="w-20 bg-gray-100 cursor-not-allowed"
-                            readOnly
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="childMaintenance"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Child Maintenance</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input placeholder="Enter amount" {...field} className="flex-1" />
-                        </FormControl>
-                        <FormControl>
-                          <Input 
-                            value={userCurrency} 
-                            disabled 
-                            className="w-20 bg-gray-100 cursor-not-allowed"
-                            readOnly
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="disabilityBenefit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Disability Benefit</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input placeholder="Enter amount" {...field} className="flex-1" />
-                        </FormControl>
-                        <FormControl>
-                          <Input 
-                            value={userCurrency} 
-                            disabled 
-                            className="w-20 bg-gray-100 cursor-not-allowed"
-                            readOnly
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="housingBenefit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Housing Benefit</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input placeholder="Enter amount" {...field} className="flex-1" />
-                        </FormControl>
-                        <FormControl>
-                          <Input 
-                            value={userCurrency} 
-                            disabled 
-                            className="w-20 bg-gray-100 cursor-not-allowed"
-                            readOnly
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="pension"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pension</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input placeholder="Enter amount" {...field} className="flex-1" />
-                        </FormControl>
-                        <FormControl>
-                          <Input 
-                            value={userCurrency} 
-                            disabled 
-                            className="w-20 bg-gray-100 cursor-not-allowed"
-                            readOnly
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-            />
           </div>
-            </div>
         </div>
-      </div>
 
-      <div className="flex justify-between pt-6">
+        <div className="flex justify-between pt-6">
           <Button
             type="button"
             variant="outline"
             onClick={onPrevious}
             disabled={isPending}
           >
-          Previous
-        </Button>
+            Previous
+          </Button>
           <LoadingButton
             type="submit"
             disabled={!form.formState.isValid}
@@ -517,8 +701,8 @@ export function EmploymentDetailsForm({
           >
             Continue
           </LoadingButton>
-      </div>
-    </form>
+        </div>
+      </form>
     </Form>
   );
 }

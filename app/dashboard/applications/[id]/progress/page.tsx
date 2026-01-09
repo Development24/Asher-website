@@ -268,9 +268,24 @@ export default function ApplicationProgressPage() {
   const propertyCountry = isNormalized
     ? (listing?.property?.country || '')
     : (property?.country || '');
-  const propertyState = isNormalized
-    ? (listing?.property?.state?.name || listing?.property?.state || '')
-    : (property?.state?.name || property?.state || '');
+  // Handle state - can be object {id, name} or string
+  const propertyState = (() => {
+    if (isNormalized) {
+      const state = listing?.property?.state;
+      if (state) {
+        return typeof state === 'object' && state !== null 
+          ? (state.name || state.id || '')
+          : (typeof state === 'string' ? state : '');
+      }
+    }
+    const state = property?.state;
+    if (state) {
+      return typeof state === 'object' && state !== null
+        ? (state.name || state.id || '')
+        : (typeof state === 'string' ? state : '');
+    }
+    return '';
+  })();
   
   /**
    * Extract pricing information

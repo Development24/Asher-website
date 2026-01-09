@@ -6,7 +6,6 @@ import { useReuseAbleStore } from "@/store/reuseAble";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ApplicationForm } from "./application-form";
-import { PaymentModal } from "./payment-modal";
 
 const ApplicationPage = () => {
   const { id } = useParams();
@@ -38,7 +37,7 @@ const ApplicationPage = () => {
           <Skeleton className="w-full h-[100px]" />
           <Skeleton className="w-full h-[400px]" />
           <Skeleton className="w-3/4 h-[50px]" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Skeleton className="w-full h-[200px]" />
             <Skeleton className="w-full h-[200px]" />
           </div>
@@ -62,11 +61,7 @@ const ApplicationPage = () => {
         </div>
       </div>
 
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        propertyId={id as string}
-      />
+      {/* PaymentModal removed - using DepositComponent in ApplicationForm instead */}
     </div>
   );
 };

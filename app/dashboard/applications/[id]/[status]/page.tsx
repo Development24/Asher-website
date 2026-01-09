@@ -127,7 +127,85 @@ export default function SuccessPage() {
 
   // const { data, isFetching } = useGetPropertyById(id as string);
   const propertyData = application?.properties;
+  
+  // Extract normalized listing if available
+  const listing = (application as any)?.listing || null;
+  const isNormalized = listing?.listingEntity && listing?.property;
+  const listingEntity = listing?.listingEntity || null;
+  const hierarchy = listing?.hierarchy || null;
+  
+  // Use normalized data when available, fallback to raw property data
+  const displayProperty = isNormalized ? listing.property : propertyData;
+  const displayName = isNormalized && listingEntity?.name
+    ? listingEntity.name
+    : propertyData?.name || propertyData?.title || '';
+  const propertyContextName = isNormalized && hierarchy?.level !== 'property' && listing?.property?.name
+    ? listing.property.name
+    : null;
+  
+  // Get images - prioritize listingEntity images, fallback to property images
+  // Keep as objects - displayImages function expects objects with url property
+  const displayImagesList = (() => {
+    if (isNormalized && listingEntity?.images?.length > 0) {
+      return listingEntity.images; // Keep as objects, displayImages will extract URLs
+    } else if (isNormalized && listing?.property?.images?.length > 0) {
+      return listing.property.images; // Keep as objects, displayImages will extract URLs
+    }
+    return propertyData?.images || [];
+  })();
+  
+  // Get price - prioritize listing price
+  const displayPrice = isNormalized 
+    ? (listing?.price || listingEntity?.entityPrice || listing?.property?.price || propertyData?.price)
+    : (propertyData?.price || propertyData?.rentalFee);
+  
+  // Get currency
+  const displayCurrency = isNormalized
+    ? (listing?.property?.currency || propertyData?.currency || 'USD')
+    : (propertyData?.currency || 'USD');
+  
+  // Get location details
+  const displayAddress = isNormalized
+    ? (listing?.property?.address || propertyData?.address || '')
+    : (propertyData?.address || '');
+  const displayCity = isNormalized 
+    ? (listing?.property?.city || propertyData?.city || '')
+    : (propertyData?.city || '');
+  // Handle state - can be object {id, name} or string
+  const displayState = (() => {
+    if (isNormalized) {
+      const state = listing?.property?.state;
+      if (state) {
+        return typeof state === 'object' && state !== null 
+          ? (state.name || state.id || '')
+          : (typeof state === 'string' ? state : '');
+      }
+    }
+    const state = propertyData?.state;
+    if (state) {
+      return typeof state === 'object' && state !== null
+        ? (state.name || state.id || '')
+        : (typeof state === 'string' ? state : '');
+    }
+    return '';
+  })();
+  const displayCountry = isNormalized
+    ? (listing?.property?.country || propertyData?.country || '')
+    : (propertyData?.country || '');
+  
+  // Build full location string with address
+  const fullLocation = [
+    displayAddress,
+    displayCity,
+    displayState,
+    displayCountry
+  ].filter(Boolean).join(', ');
+  
   const isLoading = isFetching || isFetchingProperties;
+  
+  // Get filtered image URLs for display and navigation
+  const imageUrls = displayImages(displayImagesList);
+  const imageCount = imageUrls.length;
 
   const nextSlide = () => {
     if (scrollIndex < similarProperties.length - 3) {
@@ -154,7 +232,7 @@ export default function SuccessPage() {
     }
 
     if (type === "email") {
-      router.push(`/property/${propertyData?.id}/email`);
+      router.push(`/property/${displayProperty?.id || propertyData?.id}/email`);
     } else {
       // Directly open chat modal when user is logged in (PreChatModal removed)
       setShowChatModal(true);
@@ -442,10 +520,10 @@ export default function SuccessPage() {
           <div className="overflow-hidden relative rounded-lg md:col-span-2">
             <Image
               src={
-                displayImages(propertyData?.images)[currentImageIndex] ||
+                displayImages(displayImagesList)[currentImageIndex] ||
                 "/placeholder.svg"
               }
-              alt={propertyData?.name}
+              alt={displayName}
               width={800}
               height={600}
               className="w-full h-[500px] object-cover"
@@ -454,8 +532,8 @@ export default function SuccessPage() {
               onClick={() =>
                 setCurrentImageIndex(
                   (prev) =>
-                    (prev - 1 + propertyData?.images.length) %
-                    propertyData?.images.length
+                    (prev - 1 + imageCount) %
+                    imageCount
                 )
               }
               className="absolute left-4 top-1/2 p-2 text-white rounded-full -translate-y-1/2 bg-black/50 hover:bg-black/70"
@@ -465,7 +543,7 @@ export default function SuccessPage() {
             <button
               onClick={() =>
                 setCurrentImageIndex(
-                  (prev) => (prev + 1) % propertyData?.images.length
+                  (prev) => (prev + 1) % imageCount
                 )
               }
               className="absolute right-4 top-1/2 p-2 text-white rounded-full -translate-y-1/2 bg-black/50 hover:bg-black/70"
@@ -474,15 +552,15 @@ export default function SuccessPage() {
             </button>
           </div>
           <div className="grid grid-rows-2 gap-4">
-            {displayImages(propertyData?.images)
+            {imageUrls
               .slice(1, 3)
-              .map((image: any, index: number) => (
+              .map((imageUrl: string, index: number) => (
                 <div
                   key={index}
                   className="overflow-hidden relative rounded-lg"
                 >
                   <Image
-                    src={image || "/placeholder.svg"}
+                    src={imageUrl || "/placeholder.svg"}
                     alt={`Property image ${index + 2}`}
                     width={400}
                     height={300}
@@ -499,11 +577,16 @@ export default function SuccessPage() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h1 className="mb-2 text-2xl font-bold">
-                  {propertyData?.title}
+                  {displayName}
+                  {propertyContextName && (
+                    <span className="block mt-1 text-base font-normal text-gray-500">
+                      in {propertyContextName}
+                    </span>
+                  )}
                 </h1>
                 <div className="flex items-center text-gray-600">
                   <MapPin className="mr-1 w-4 h-4" />
-                  {`${propertyData?.city}, ${propertyData?.state?.name} ${propertyData?.country}, `}
+                  {fullLocation || 'Location not available'}
                 </div>
               </div>
               <div className="flex gap-4 items-center">
@@ -518,11 +601,13 @@ export default function SuccessPage() {
 
             <div className="mb-6 text-2xl font-bold">
               <FormattedPrice
-                amount={propertyData?.price}
-                currency={propertyData?.currency || 'USD'}
+                amount={displayPrice}
+                currency={displayCurrency}
               />{" "}
               <span className="text-base font-normal text-gray-600">
-                per month
+                {isNormalized && listing?.priceFrequency 
+                  ? `per ${listing.priceFrequency.toLowerCase()}`
+                  : 'per month'}
               </span>
             </div>
 
@@ -530,7 +615,11 @@ export default function SuccessPage() {
               <section className="">
                 <h2 className="mb-4 text-xl font-semibold">Property Details</h2>
                 <p className="leading-relaxed text-gray-600">
-                  {propertyData?.description}
+                  {isNormalized && listingEntity?.description
+                    ? listingEntity.description
+                    : (isNormalized && listing?.property?.description
+                      ? listing.property.description
+                      : propertyData?.description || '')}
                 </p>
               </section>
 
@@ -540,15 +629,43 @@ export default function SuccessPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
-                      <span>Bedrooms: {propertyData?.noBedRoom}</span>
+                      <span>Bedrooms: {(() => {
+                        // Check normalized listing first
+                        if (isNormalized) {
+                          const spec = listing?.specification?.residential;
+                          if (spec?.bedrooms !== null && spec?.bedrooms !== undefined) {
+                            return spec.bedrooms;
+                          }
+                          if (listing?.property?.bedrooms !== null && listing?.property?.bedrooms !== undefined) {
+                            return listing.property.bedrooms;
+                          }
+                        }
+                        // Fallback to property data
+                        return propertyData?.noBedRoom ?? propertyData?.bedrooms ?? 'N/A';
+                      })()}</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
-                      <span>Bathrooms: {propertyData?.noBathRoom}</span>
+                      <span>Bathrooms: {(() => {
+                        // Check normalized listing first
+                        if (isNormalized) {
+                          const spec = listing?.specification?.residential;
+                          if (spec?.bathrooms !== null && spec?.bathrooms !== undefined) {
+                            return spec.bathrooms;
+                          }
+                          if (listing?.property?.bathrooms !== null && listing?.property?.bathrooms !== undefined) {
+                            return listing.property.bathrooms;
+                          }
+                        }
+                        // Fallback to property data
+                        return propertyData?.noBathRoom ?? propertyData?.bathrooms ?? 'N/A';
+                      })()}</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
-                      <span>Area: {propertyData?.size}</span>
+                      <span>Area: {isNormalized && listingEntity?.roomSize
+                        ? `${listingEntity.roomSize} ${listing?.property?.areaUnit || 'SQM'}`
+                        : (propertyData?.size || propertyData?.propertySize || 'N/A')}</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <Check className="w-5 h-5 text-primary" />
@@ -810,17 +927,20 @@ export default function SuccessPage() {
                     className={cn(
                       "w-12 h-12 rounded-full relative",
                       "ring-2",
-                      propertyData?.landlord?.isOnline
+                      (displayProperty?.landlord?.isOnline || propertyData?.landlord?.isOnline)
                         ? "ring-red-500"
                         : "ring-gray-300"
                     )}
                   >
                     <Image
                       src={
+                        displayProperty?.landlord?.user?.profile?.profileUrl ||
+                        displayProperty?.landlord?.user?.profile?.image ||
+                        propertyData?.landlord?.user?.profile?.profileUrl ||
                         propertyData?.landlord?.user?.profile?.image ||
                         "/placeholder.svg"
                       }
-                      alt={propertyData?.landlord?.user?.profile?.firstName}
+                      alt={displayProperty?.landlord?.user?.profile?.firstName || propertyData?.landlord?.user?.profile?.firstName || 'Landlord'}
                       fill
                       className="object-cover rounded-full"
                     />
@@ -831,8 +951,8 @@ export default function SuccessPage() {
                 </div>
                 <div>
                   <div className="font-semibold">
-                    {propertyData?.landlord?.user?.profile?.firstName}{" "}
-                    {propertyData?.landlord?.user?.profile?.lastName}
+                    {displayProperty?.landlord?.user?.profile?.firstName || propertyData?.landlord?.user?.profile?.firstName}{" "}
+                    {displayProperty?.landlord?.user?.profile?.lastName || propertyData?.landlord?.user?.profile?.lastName}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     Landlord
@@ -861,27 +981,18 @@ export default function SuccessPage() {
                 Email landlord
               </Button>
               
-              {/* Test Stripe Payment Button */}
-              <Button
-                variant="outline"
-                className="mt-4 w-full text-green-600 border-green-500 hover:bg-green-50"
-                onClick={handleCreatePayment}
-                disabled={isCreatingPayment}
-              >
-                {isCreatingPayment ? "Creating Payment..." : "Test Stripe Payment"}
-              </Button>
 
               <LandlordProfileModal
                 isOpen={showLandlordProfile}
                 onClose={() => setShowLandlordProfile(false)}
                 landlord={{
-                  id: propertyData?.landlord?.id,
+                  id: displayProperty?.landlord?.id || propertyData?.landlord?.id,
                   name: formatName(
-                    propertyData?.landlord?.user?.profile?.firstName,
-                    propertyData?.landlord?.user?.profile?.lastName,
-                    propertyData?.landlord?.user?.profile?.fullname
+                    displayProperty?.landlord?.user?.profile?.firstName || propertyData?.landlord?.user?.profile?.firstName,
+                    displayProperty?.landlord?.user?.profile?.lastName || propertyData?.landlord?.user?.profile?.lastName,
+                    displayProperty?.landlord?.user?.profile?.fullname || propertyData?.landlord?.user?.profile?.fullname
                   ),
-                  image: propertyData?.landlord?.user?.profile?.profileUrl
+                  image: displayProperty?.landlord?.user?.profile?.profileUrl || propertyData?.landlord?.user?.profile?.profileUrl
                 }}
                 onChatClick={() => handleContactClick("chat")}
                 onEmailClick={() => handleContactClick("email")}
@@ -929,14 +1040,26 @@ export default function SuccessPage() {
               {similarProperties
                 ?.filter((p) => {
                   // Handle both normalized and legacy formats
-                  const propertyId = (p as Listing)?.property?.id || (p as any)?.id || (p as any)?.propertyId;
-                  return propertyId !== propertyData?.id;
+                  const isPNormalized = !!(p as Listing)?.listingEntity && !!(p as Listing)?.property;
+                  const propertyId = isPNormalized 
+                    ? (p as Listing)?.property?.id 
+                    : (p as any)?.id || (p as any)?.propertyId;
+                  
+                  // Compare against current property ID (from displayProperty or propertyData)
+                  const currentPropertyId = displayProperty?.id || propertyData?.id;
+                  return propertyId !== currentPropertyId;
                 })
-                ?.map((similarProperty) => {
+                ?.map((similarProperty, index) => {
                   // Handle both normalized Listing format and legacy Property format
                   const isNormalized = !!(similarProperty as Listing)?.listingEntity && !!(similarProperty as Listing)?.property;
                   
+                  // Get unique key - use listingId for normalized listings, property ID for legacy
+                  const uniqueKey = isNormalized 
+                    ? (similarProperty as Listing)?.listingId || `${(similarProperty as Listing).property.id}-${(similarProperty as Listing).listingEntity.id}-${index}`
+                    : (similarProperty as any)?.id || (similarProperty as any)?.propertyId || `property-${index}`;
+                  
                   // Get images - prefer listingEntity images for rooms/units, fallback to property images
+                  // Keep as objects - displayImages function expects objects with url property
                   const images = isNormalized
                     ? ((similarProperty as Listing).listingEntity.images.length > 0
                         ? (similarProperty as Listing).listingEntity.images
@@ -963,7 +1086,7 @@ export default function SuccessPage() {
                   
                   return (
                     <div
-                      key={isNormalized ? (similarProperty as Listing).property.id : (similarProperty as any)?.id || (similarProperty as any)?.propertyId}
+                      key={uniqueKey}
                       className="flex-none w-[calc(33.33%-16px)]"
                     >
                       <Card className="overflow-hidden shadow-sm">
@@ -982,7 +1105,13 @@ export default function SuccessPage() {
                           <p className="mb-2 text-sm text-gray-600">
                             {property?.address},{" "}
                             {property?.city},{" "}
-                            {property?.state?.name || property?.state},{" "}
+                            {(() => {
+                              const state = property?.state;
+                              if (!state) return '';
+                              return typeof state === 'object' && state !== null
+                                ? (state.name || state.id || '')
+                                : (typeof state === 'string' ? state : '');
+                            })()},{" "}
                             {property?.country}
                           </p>
                           <FormattedPrice
@@ -1011,10 +1140,10 @@ export default function SuccessPage() {
         isOpen={showChatModal}
         onClose={() => setShowChatModal(false)}
         landlord={{
-          name: `${propertyData?.landlord?.user?.profile?.firstName} ${propertyData?.landlord?.user?.profile?.lastName}`,
-          image: propertyData?.landlord?.image || "",
+          name: `${displayProperty?.landlord?.user?.profile?.firstName || propertyData?.landlord?.user?.profile?.firstName} ${displayProperty?.landlord?.user?.profile?.lastName || propertyData?.landlord?.user?.profile?.lastName}`,
+          image: displayProperty?.landlord?.user?.profile?.profileUrl || displayProperty?.landlord?.image || propertyData?.landlord?.user?.profile?.profileUrl || propertyData?.landlord?.image || "",
           role: "Landlord",
-          userId: propertyData?.landlord?.userId || propertyData?.landlord?.user?.id
+          userId: displayProperty?.landlord?.userId || displayProperty?.landlord?.user?.id || propertyData?.landlord?.userId || propertyData?.landlord?.user?.id
         }}
         propertyId={Number(id)}
       />
@@ -1049,16 +1178,16 @@ export default function SuccessPage() {
       <SaveModal
         isOpen={showSaveModal}
         onClose={() => setShowSaveModal(false)}
-        propertyTitle={propertyData?.name}
+        propertyTitle={displayName}
       />
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
-        propertyTitle={propertyData?.name}
+        propertyTitle={displayName}
         propertyUrl={
           typeof window !== "undefined"
-            ? `${window.location.origin}/property/${propertyData?.id}`
-            : `/property/${propertyData?.id}`
+            ? `${window.location.origin}/property/${displayProperty?.id || propertyData?.id}`
+            : `/property/${displayProperty?.id || propertyData?.id}`
         }
       />
       {paymentStatus === "success" && (

@@ -10,9 +10,11 @@ interface EmploymentStepProps {
   handleFormChange: (field: string, value: any) => void;
   employmentType: string;
   setEmploymentType: (type: string) => void;
+  error?: string;
+  setError?: (error: string) => void;
 }
 
-export function EmploymentStep({ formData, handleFormChange, employmentType, setEmploymentType }: EmploymentStepProps) {
+export function EmploymentStep({ formData, handleFormChange, employmentType, setEmploymentType, error, setError }: EmploymentStepProps) {
   // Get income proof label based on employment type
   const getIncomeProofLabel = () => {
     switch (employmentType) {
@@ -49,14 +51,21 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
 
   return (
     <div className="space-y-8">
-    <div className="bg-gray-50 p-6 rounded-lg">
-      <Label className="text-gray-800 font-semibold mb-4 block">
-        Employment Status
+    <div className={`bg-gray-50 p-6 rounded-lg ${error ? 'border-2 border-red-500' : ''}`}>
+      <Label className={`text-gray-800 font-semibold mb-4 block ${error ? 'text-red-600' : ''}`}>
+        Employment Status {error && <span className="text-red-600">*</span>}
       </Label>
       <RadioGroup
         value={formData.employmentType}
-        onValueChange={(value) => handleFormChange("employmentType", value)}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        onValueChange={(value) => {
+          setEmploymentType(value);
+          handleFormChange("employmentType", value);
+          // Clear error when employment type is selected
+          if (setError) {
+            setError("");
+          }
+        }}
+        className="grid grid-cols-1 gap-4 md:grid-cols-3"
       >
         {[
           { value: "EMPLOYED", label: "Employed" },
@@ -69,13 +78,17 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             key={option.value}
             htmlFor={`employment-${option.value}`}
             className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer transition-all ${
-              employmentType === option.value
+              formData.employmentType === option.value || employmentType === option.value
                 ? "border-[#dc0a3c] bg-red-50"
                 : "border-gray-200 hover:border-gray-300"
             }`}
             onClick={() => {
               setEmploymentType(option.value);
               handleFormChange("employmentType", option.value);
+              // Clear error when employment type is selected
+              if (setError) {
+                setError("");
+              }
             }}
           >
             <RadioGroupItem
@@ -87,26 +100,31 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           </Label>
         ))}
       </RadioGroup>
+      {error && (
+        <p className="mt-2 text-sm font-medium text-red-600">
+          {error}
+        </p>
+      )}
     </div>
 
     <AnimatePresence mode="wait">
-      {employmentType === "EMPLOYED" && (
+      {(formData.employmentType === "EMPLOYED" || employmentType === "EMPLOYED") && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="space-y-6 bg-white p-6 rounded-lg border"
+          className="p-6 space-y-6 bg-white rounded-lg border"
         >
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">
+          <h3 className="mb-4 text-lg font-semibold text-gray-800">
             Employment Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="employer-name"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Employer name
               </Label>
@@ -122,7 +140,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="job-title"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Job title
               </Label>
@@ -137,11 +155,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="employment-start-date"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Employment start date
               </Label>
@@ -161,7 +179,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="annual-income"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Annual income
               </Label>
@@ -180,7 +198,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="employer-address"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               Employer address
             </Label>
@@ -194,11 +212,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="employer-phone"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Employer phone
               </Label>
@@ -214,7 +232,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="employer-email"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Employer email
               </Label>
@@ -232,23 +250,23 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "SELF_EMPLOYED" && (
+      {(formData.employmentType === "SELF_EMPLOYED" || employmentType === "SELF_EMPLOYED") && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="space-y-6 bg-white p-6 rounded-lg border"
+          className="p-6 space-y-6 bg-white rounded-lg border"
         >
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">
+          <h3 className="mb-4 text-lg font-semibold text-gray-800">
             Self-Employment Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="business-name"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Business name
               </Label>
@@ -264,7 +282,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="business-nature"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Nature of business
               </Label>
@@ -279,11 +297,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="business-years"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Years in business
               </Label>
@@ -300,7 +318,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="annual-income-self"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Annual income
               </Label>
@@ -322,7 +340,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="business-address"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               Business address
             </Label>
@@ -336,11 +354,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="accountant-name"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Accountant name
               </Label>
@@ -356,7 +374,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="accountant-contact"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Accountant contact
               </Label>
@@ -377,7 +395,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="utr-number"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               UTR Number
             </Label>
@@ -393,23 +411,23 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "FREELANCE" && (
+      {(formData.employmentType === "FREELANCE" || employmentType === "FREELANCE") && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="space-y-6 bg-white p-6 rounded-lg border"
+          className="p-6 space-y-6 bg-white rounded-lg border"
         >
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">
+          <h3 className="mb-4 text-lg font-semibold text-gray-800">
             Freelance Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="freelance-type"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Type of work
               </Label>
@@ -425,7 +443,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="freelance-years"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Years freelancing
               </Label>
@@ -441,11 +459,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="monthly-income"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Average monthly income
               </Label>
@@ -462,7 +480,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="portfolio-website"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Portfolio/Website
               </Label>
@@ -484,7 +502,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="major-clients"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               Major clients (comma separated)
             </Label>
@@ -501,7 +519,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="utr-number-freelance"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               UTR Number
             </Label>
@@ -520,23 +538,23 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "DIRECTOR" && (
+      {(formData.employmentType === "DIRECTOR" || employmentType === "DIRECTOR") && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="space-y-6 bg-white p-6 rounded-lg border"
+          className="p-6 space-y-6 bg-white rounded-lg border"
         >
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">
+          <h3 className="mb-4 text-lg font-semibold text-gray-800">
             Director Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="company-name"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Company name
               </Label>
@@ -552,7 +570,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="company-number"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Company registration number
               </Label>
@@ -567,11 +585,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="position"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Position in company
               </Label>
@@ -587,7 +605,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="ownership-percentage"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Ownership percentage
               </Label>
@@ -607,11 +625,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="director-income"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Annual income
               </Label>
@@ -628,7 +646,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="company-founded"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Year company founded
               </Label>
@@ -647,7 +665,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="company-address"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               Company address
             </Label>
@@ -663,23 +681,23 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
         </motion.div>
       )}
 
-      {employmentType === "SOLE_PROPRIETOR" && (
+      {(formData.employmentType === "SOLE_PROPRIETOR" || employmentType === "SOLE_PROPRIETOR") && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="space-y-6 bg-white p-6 rounded-lg border"
+          className="p-6 space-y-6 bg-white rounded-lg border"
         >
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">
+          <h3 className="mb-4 text-lg font-semibold text-gray-800">
             Sole Proprietor Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="business-name-sole"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Business name
               </Label>
@@ -698,7 +716,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="business-nature-sole"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Nature of business
               </Label>
@@ -716,11 +734,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="business-years-sole"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Years in business
               </Label>
@@ -740,7 +758,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="annual-income-sole"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Annual income
               </Label>
@@ -762,7 +780,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
           <div className="space-y-2">
             <Label
               htmlFor="business-address-sole"
-              className="text-gray-700 font-medium"
+              className="font-medium text-gray-700"
             >
               Business address
             </Label>
@@ -779,11 +797,11 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label
                 htmlFor="business-registration"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 Business registration number
               </Label>
@@ -802,7 +820,7 @@ export function EmploymentStep({ formData, handleFormChange, employmentType, set
             <div className="space-y-2">
               <Label
                 htmlFor="utr-number-sole"
-                className="text-gray-700 font-medium"
+                className="font-medium text-gray-700"
               >
                 UTR Number
               </Label>

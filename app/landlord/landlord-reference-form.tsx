@@ -29,14 +29,49 @@ export default function LandlordReferenceForm({
     isPending: isCreatingLandlordReference
   } = useCreateLandlordReference();
   const applicationId = applicationData?.id;
+  
+  // Helper function to extract state name (handles both object and string)
+  const getStateName = (state: any): string => {
+    if (!state) return "";
+    if (typeof state === "string") return state;
+    if (typeof state === "object" && state?.name) return state.name;
+    if (typeof state === "object" && state?.id) return state.id;
+    return "";
+  };
+
+  // Build address from properties or residentialInfo
+  const buildAddress = () => {
+    // Try properties first (current property)
+    const propAddress = applicationData?.properties?.address;
+    const propCity = applicationData?.properties?.city;
+    const propState = getStateName(applicationData?.properties?.state);
+    const propCountry = applicationData?.properties?.country;
+    
+    // Try residentialInfo as fallback (previous address)
+    const resAddress = applicationData?.residentialInfo?.address;
+    const resCity = applicationData?.residentialInfo?.city;
+    const resState = getStateName(applicationData?.residentialInfo?.state);
+    const resCountry = applicationData?.residentialInfo?.country;
+    
+    // Build address parts, filtering out empty values
+    const addressParts = [
+      propAddress || resAddress,
+      propCity || resCity,
+      propState || resState,
+      propCountry || resCountry
+    ].filter(Boolean);
+    
+    return addressParts.join(", ") || "";
+  };
+
   const [formData, setFormData] = useState({
     // Tenant Information
     tenantName: "",
-    currentAddress: `${applicationData?.properties?.address}, ${applicationData?.properties?.city}, ${applicationData?.properties?.state?.name || ""}, ${applicationData?.properties?.country}`,
+    currentAddress: buildAddress(),
     monthlyRent: "",
     rentalStartDate: "",
     rentalEndDate: "",
-    reasonForLeaving: applicationData?.residentialInfo?.reasonForLeaving,
+    reasonForLeaving: applicationData?.residentialInfo?.reasonForLeaving || "",
 
     // Landlord Information
     landlordName: "",
@@ -63,7 +98,7 @@ export default function LandlordReferenceForm({
     // Signature
     signerName: "",
     signature: "",
-    date: ""
+    date: new Date().toISOString().split("T")[0] // Auto-fill with today's date
   });
 
   const handleChange = (field: string, value: any) => {
@@ -88,16 +123,57 @@ export default function LandlordReferenceForm({
   };
 
   const handleSubmit = () => {
+    // Helper function to extract state name (handles both object and string)
+    const getStateName = (state: any): string => {
+      if (!state) return "";
+      if (typeof state === "string") return state;
+      if (typeof state === "object" && state?.name) return state.name;
+      if (typeof state === "object" && state?.id) return state.id;
+      return "";
+    };
+
+    // Build tenant name
+    const firstName = applicationData?.personalDetails?.firstName || "";
+    const lastName = applicationData?.personalDetails?.lastName || "";
+    const tenantFullName = [firstName, lastName].filter(Boolean).join(" ") || "Unknown Tenant";
+
+    // Build address
+    const buildAddressForSubmit = () => {
+      const propAddress = applicationData?.properties?.address;
+      const propCity = applicationData?.properties?.city;
+      const propState = getStateName(applicationData?.properties?.state);
+      const propCountry = applicationData?.properties?.country;
+      
+      const resAddress = applicationData?.residentialInfo?.address;
+      const resCity = applicationData?.residentialInfo?.city;
+      const resState = getStateName(applicationData?.residentialInfo?.state);
+      const resCountry = applicationData?.residentialInfo?.country;
+      
+      const addressParts = [
+        propAddress || resAddress,
+        propCity || resCity,
+        propState || resState,
+        propCountry || resCountry
+      ].filter(Boolean);
+      
+      return addressParts.join(", ") || formData.currentAddress;
+    };
+
     // Group data into required categories
     const tenancyHistory = {
-      tenantName: `${applicationData?.personalDetails?.firstName} ${applicationData?.personalDetails?.lastName}`,
-      currentAddress: applicationData?.properties?.address
-        ? `${applicationData?.properties?.address}, ${applicationData?.properties?.city}, ${applicationData?.properties?.state?.name || ""}, ${applicationData?.properties?.country}`
-        : formData.currentAddress,
-      rentAmount: formData.monthlyRent,
-      rentStartDate: formData.rentalStartDate,
-      rentEndDate: formData.rentalEndDate,
-      reasonForLeaving: formData.reasonForLeaving
+      tenantName: tenantFullName,
+      currentAddress: buildAddressForSubmit(),
+      rentAmount: formData.monthlyRent || "0", // Ensure rentAmount is not empty
+      // Convert empty strings to undefined for optional date fields (Joi expects undefined, not empty string)
+      rentStartDate: formData.rentalStartDate && formData.rentalStartDate.trim() !== "" 
+        ? formData.rentalStartDate 
+        : undefined,
+      rentEndDate: formData.rentalEndDate && formData.rentalEndDate.trim() !== "" 
+        ? formData.rentalEndDate 
+        : undefined,
+      reasonForLeaving: formData.reasonForLeaving && formData.reasonForLeaving.trim() !== "" 
+        ? formData.reasonForLeaving 
+        : undefined
     };
 
     const externalLandlord = {
@@ -110,27 +186,30 @@ export default function LandlordReferenceForm({
       rentOnTime: formData.rentOnTime,
       rentArrears: formData.rentArrears,
       propertyCondition: formData.propertyCondition,
-      propertyConditionDetails: formData.propertyConditionDetails,
+      propertyConditionDetails: formData.propertyConditionDetails || undefined,
       endCondition: formData.endCondition,
       rentAgain: formData.rentAgain
     };
 
-    // Filter out empty values from each category
-    const cleanObject = (obj: Record<string, any>) => {
+    // Filter out empty values from each category, but keep required fields
+    const cleanObject = (obj: Record<string, any>, requiredFields: string[] = []) => {
       return Object.entries(obj)
-        .filter(([_, value]) => value !== "" && value !== null)
+        .filter(([key, value]) => {
+          if (requiredFields.includes(key)) return true;
+          // Filter out empty strings and null, but keep false/0
+          return value !== "" && value !== null && value !== undefined;
+        })
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
     };
 
     const payload = {
-      // applicationId: applicationId as string,
       status: "COMPLETED",
-      tenancyHistory: cleanObject(tenancyHistory),
-      externalLandlord: cleanObject(externalLandlord),
+      tenancyHistory: cleanObject(tenancyHistory, ["tenantName", "currentAddress", "rentAmount"]),
+      externalLandlord: cleanObject(externalLandlord, ["name", "contactNumber", "emailAddress"]),
       conduct: cleanObject(conduct),
-      additionalComments: formData.additionalComments,
-      signerName: formData.signerName,
-      signature: formData.signature
+      additionalComments: formData.additionalComments || undefined,
+      signerName: formData.signerName || undefined,
+      signature: formData.signature || undefined
     };
 
     createLandlordReference(
@@ -140,8 +219,19 @@ export default function LandlordReferenceForm({
           toast.success("Landlord reference created successfully");
           router.replace("/");
         },
-        onError: () => {
-          toast.error("Failed to create landlord reference");
+        onError: (error: any) => {
+          // Show the actual error message from the API
+          const errorMessage = error?.response?.data?.message || 
+                              error?.response?.data?.error || 
+                              error?.message || 
+                              "Failed to create landlord reference";
+          const errorDetails = error?.response?.data?.details;
+          
+          if (errorDetails && Array.isArray(errorDetails)) {
+            toast.error(`${errorMessage}: ${errorDetails.join(", ")}`);
+          } else {
+            toast.error(errorMessage);
+          }
         }
       }
     );
@@ -155,17 +245,17 @@ export default function LandlordReferenceForm({
   ];
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="overflow-hidden mx-auto max-w-4xl bg-white rounded-xl shadow-lg">
       <div className="p-6 bg-gray-50 border-b">
         <div className="flex items-center mb-6">
           <button
             onClick={() => {}}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeft className="mr-1 w-4 h-4" />
             <span className="text-sm font-medium">Back</span>
           </button>
-          <h1 className="text-xl font-bold text-center flex-1 mr-8">
+          <h1 className="flex-1 mr-8 text-xl font-bold text-center">
             Landlord Reference Form
           </h1>
         </div>
@@ -189,7 +279,7 @@ export default function LandlordReferenceForm({
         </div>
 
         {/* Step Indicators */}
-        <div className="flex justify-between mt-4 overflow-x-auto pb-2">
+        <div className="flex overflow-x-auto justify-between pb-2 mt-4">
           {steps.map((step) => (
             <div
               key={step.id}
@@ -281,7 +371,7 @@ export default function LandlordReferenceForm({
             </motion.div>
           </AnimatePresence>
         )}
-        <div className="flex justify-between mt-12 gap-4">
+        <div className="flex gap-4 justify-between mt-12">
           <Button
             onClick={goToPreviousStep}
             disabled={currentStep === 1 || isCreatingLandlordReference}

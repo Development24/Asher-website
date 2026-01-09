@@ -52,6 +52,7 @@ export default function GuarantorForm({
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
   const [employmentType, setEmploymentType] = useState("");
+  const [employmentTypeError, setEmploymentTypeError] = useState("");
   const [documents, setDocuments] = useState<DocumentsState>({
     id: { file: null, url: null, type: null, size: null },
     addressProof: { file: null, url: null, type: null, size: null },
@@ -142,6 +143,16 @@ export default function GuarantorForm({
   });
 
   const goToNextStep = () => {
+    // Validate employment type on step 3 (Employment Details)
+    if (currentStep === 3) {
+      if (!formData.employmentType || !employmentType) {
+        setEmploymentTypeError("Please select an employment status");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      setEmploymentTypeError(""); // Clear error if validation passes
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -496,10 +507,84 @@ export default function GuarantorForm({
       [] // Start with an empty array instead of an object
     );
 
+    // Transform employment data to match backend schema requirements
+    const transformEmploymentData = (data: Record<string, any>) => {
+      const transformed: Record<string, any> = {};
+      
+      // Fields that should be numbers (convert string to number)
+      const numberFields = [
+        'yearsInBusiness', 'annualIncome', 'annualIncomeSelf',
+        'yearsFreelancing', 'freelanceMonthlyIncome', 'freelanceUtrNumber',
+        'ownershipPercentage', 'directorIncome', 'companyFounded',
+        'businessYearsSole', 'annualIncomeSole'
+      ];
+      
+      // Fields that should be dates (convert string to Date)
+      const dateFields = ['employmentStartDate'];
+      
+      // Fields to exclude (not in backend schema)
+      const excludeFields = ['monthlyIncome', 'portfolioWebsite', 'majorClients'];
+      
+      Object.entries(data).forEach(([key, value]) => {
+        // Skip excluded fields
+        if (excludeFields.includes(key)) {
+          return;
+        }
+        
+        // Skip null/undefined, but allow empty strings for optional fields
+        if (value === null || value === undefined) {
+          return;
+        }
+        
+        // Convert number fields
+        if (numberFields.includes(key)) {
+          if (value === "" || value === null || value === undefined) {
+            return; // Skip empty number fields
+          }
+          const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+          if (!isNaN(numValue) && isFinite(numValue)) {
+            // For integer fields, use parseInt
+            const integerFields = ['yearsInBusiness', 'annualIncomeSelf', 'yearsFreelancing', 
+              'ownershipPercentage', 'directorIncome', 'companyFounded', 'businessYearsSole'];
+            transformed[key] = integerFields.includes(key) ? parseInt(String(numValue), 10) : numValue;
+          }
+        }
+        // Convert date fields
+        else if (dateFields.includes(key)) {
+          if (value === "" || value === null || value === undefined) {
+            return; // Skip empty date fields
+          }
+          if (typeof value === 'string' && value.trim() !== '') {
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              transformed[key] = dateValue;
+            }
+          } else if (value instanceof Date) {
+            transformed[key] = value;
+          }
+        }
+        // Keep other fields as-is (strings, booleans, etc.)
+        // But skip empty strings for non-required fields
+        else {
+          // Always include employmentType even if empty (it's required)
+          if (key === 'employmentType') {
+            transformed[key] = value;
+          } else if (value !== "") {
+            transformed[key] = value;
+          }
+        }
+      });
+      
+      return transformed;
+    };
+
     // Create guarantorEmployment object with only non-empty employment fields
-    const guarantorEmployment = Object.entries(formData)
+    const rawGuarantorEmployment = Object.entries(formData)
       .filter(([key, value]) => value !== "" && employmentFields.includes(key))
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    
+    // Transform the employment data to match backend schema
+    const guarantorEmployment = transformEmploymentData(rawGuarantorEmployment);
     const {
       dateOfBirthDay,
       dateOfBirthMonth,
@@ -533,17 +618,17 @@ export default function GuarantorForm({
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="overflow-hidden mx-auto max-w-4xl bg-white rounded-xl shadow-lg">
       <div className="p-6 bg-gray-50 border-b">
         <div className="flex items-center mb-6">
           <button
             onClick={() => {}}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeft className="mr-1 w-4 h-4" />
             <span className="text-sm font-medium">Back</span>
           </button>
-          <h1 className="text-xl font-bold text-center flex-1 mr-8">
+          <h1 className="flex-1 mr-8 text-xl font-bold text-center">
             Guarantor Agreement Form
           </h1>
         </div>
@@ -567,7 +652,7 @@ export default function GuarantorForm({
         </div>
 
         {/* Step Indicators */}
-        <div className="flex justify-between mt-4 overflow-x-auto pb-2">
+        <div className="flex overflow-x-auto justify-between pb-2 mt-4">
           {steps.map((step) => (
             <div
               key={step.id}
@@ -648,6 +733,8 @@ export default function GuarantorForm({
                   handleFormChange={handleFormChange}
                   employmentType={employmentType}
                   setEmploymentType={setEmploymentType}
+                  error={employmentTypeError}
+                  setError={setEmploymentTypeError}
                 />
               )}
 
@@ -690,7 +777,7 @@ export default function GuarantorForm({
           </AnimatePresence>
         )}
 
-        <div className="flex justify-between mt-12 gap-4">
+        <div className="flex gap-4 justify-between mt-12">
           <Button
             onClick={goToPreviousStep}
             disabled={currentStep === 1 || isCreatingGuarantorReference}
