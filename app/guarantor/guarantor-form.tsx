@@ -429,17 +429,22 @@ export default function GuarantorForm({
   // Define employment-related fields
   const employmentFields = [
     "employmentType",
+    "employmentStatus", // Also accept employmentStatus from payload
     "employmentStartDate",
+    "startDate", // Also accept startDate from payload
     "monthlyIncome",
     "portfolioWebsite",
     "majorClients",
     "jobTitle",
+    "positionTitle", // Also accept positionTitle from payload
     "businessAddress",
     "businessName",
     "businessNature",
+    "businessType", // Also accept businessType from payload
     "yearsInBusiness",
     "annualIncome",
     "annualIncomeSelf",
+    "monthlyOrAnualIncome", // Also accept monthlyOrAnualIncome from payload
     "businessAddressSole",
     "businessNameSole",
     "businessNatureSole",
@@ -460,6 +465,7 @@ export default function GuarantorForm({
     "companyFounded",
     "companyAddress",
     "employerName",
+    "employerCompany", // Also accept employerCompany from payload
     "employerAddress",
     "employerPhone",
     "employerEmail"
@@ -511,6 +517,30 @@ export default function GuarantorForm({
     const transformEmploymentData = (data: Record<string, any>) => {
       const transformed: Record<string, any> = {};
       
+      // Map frontend employment status to backend enum values
+      const employmentStatusMap: Record<string, string> = {
+        'Employed': 'EMPLOYED',
+        'Self-employed': 'SELF_EMPLOYED',
+        'Freelance': 'FREELANCE',
+        'Director': 'DIRECTOR',
+        'Sole Proprietor': 'SOLE_PROPRIETOR',
+        'EMPLOYED': 'EMPLOYED',
+        'SELF_EMPLOYED': 'SELF_EMPLOYED',
+        'FREELANCE': 'FREELANCE',
+        'DIRECTOR': 'DIRECTOR',
+        'SOLE_PROPRIETOR': 'SOLE_PROPRIETOR',
+      };
+      
+      // Map frontend field names to backend field names
+      const fieldNameMap: Record<string, string> = {
+        'employerCompany': 'employerName',
+        'positionTitle': 'jobTitle',
+        'businessType': 'businessNature',
+        'monthlyOrAnualIncome': 'annualIncome', // Will be handled separately based on employment type
+        'startDate': 'employmentStartDate',
+        'employmentStatus': 'employmentType',
+      };
+      
       // Fields that should be numbers (convert string to number)
       const numberFields = [
         'yearsInBusiness', 'annualIncome', 'annualIncomeSelf',
@@ -520,10 +550,30 @@ export default function GuarantorForm({
       ];
       
       // Fields that should be dates (convert string to Date)
-      const dateFields = ['employmentStartDate'];
+      const dateFields = ['employmentStartDate', 'startDate'];
       
       // Fields to exclude (not in backend schema)
-      const excludeFields = ['monthlyIncome', 'portfolioWebsite', 'majorClients'];
+      const excludeFields = ['monthlyIncome', 'portfolioWebsite', 'majorClients', 
+        'businessEmail', 'businessPhone', 'taxCredit', 'childBenefit', 
+        'childMaintenance', 'disabilityBenefit', 'housingBenefit', 'pension'];
+      
+      // Get employment type and map it
+      let employmentType = data.employmentType || data.employmentStatus || '';
+      if (employmentType) {
+        employmentType = employmentStatusMap[employmentType] || employmentType.toUpperCase();
+      }
+      
+      // If employment type is not supported, don't send employment data
+      const supportedTypes = ['EMPLOYED', 'SELF_EMPLOYED', 'FREELANCE', 'DIRECTOR', 'SOLE_PROPRIETOR'];
+      if (employmentType && !supportedTypes.includes(employmentType)) {
+        // For Unemployed, Retired, Student - don't send employment data (it's optional)
+        return {};
+      }
+      
+      // Always include employmentType if it's valid
+      if (employmentType && supportedTypes.includes(employmentType)) {
+        transformed.employmentType = employmentType;
+      }
       
       Object.entries(data).forEach(([key, value]) => {
         // Skip excluded fields
@@ -531,47 +581,55 @@ export default function GuarantorForm({
           return;
         }
         
-        // Skip null/undefined, but allow empty strings for optional fields
-        if (value === null || value === undefined) {
+        // Skip null/undefined/empty strings
+        if (value === null || value === undefined || value === "") {
+          return;
+        }
+        
+        // Map field names
+        const backendKey = fieldNameMap[key] || key;
+        
+        // Handle special field mappings
+        if (key === 'monthlyOrAnualIncome') {
+          // Map to annualIncome or annualIncomeSelf based on employment type
+          if (employmentType === 'SELF_EMPLOYED') {
+            const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+            if (!isNaN(numValue) && isFinite(numValue)) {
+              transformed.annualIncomeSelf = parseInt(String(numValue), 10);
+            }
+          } else {
+            const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+            if (!isNaN(numValue) && isFinite(numValue)) {
+              transformed.annualIncome = numValue;
+            }
+          }
           return;
         }
         
         // Convert number fields
-        if (numberFields.includes(key)) {
-          if (value === "" || value === null || value === undefined) {
-            return; // Skip empty number fields
-          }
+        if (numberFields.includes(backendKey)) {
           const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
           if (!isNaN(numValue) && isFinite(numValue)) {
             // For integer fields, use parseInt
             const integerFields = ['yearsInBusiness', 'annualIncomeSelf', 'yearsFreelancing', 
               'ownershipPercentage', 'directorIncome', 'companyFounded', 'businessYearsSole'];
-            transformed[key] = integerFields.includes(key) ? parseInt(String(numValue), 10) : numValue;
+            transformed[backendKey] = integerFields.includes(backendKey) ? parseInt(String(numValue), 10) : numValue;
           }
         }
         // Convert date fields
-        else if (dateFields.includes(key)) {
-          if (value === "" || value === null || value === undefined) {
-            return; // Skip empty date fields
-          }
+        else if (dateFields.includes(key) || dateFields.includes(backendKey)) {
           if (typeof value === 'string' && value.trim() !== '') {
             const dateValue = new Date(value);
             if (!isNaN(dateValue.getTime())) {
-              transformed[key] = dateValue;
+              transformed[backendKey] = dateValue;
             }
           } else if (value instanceof Date) {
-            transformed[key] = value;
+            transformed[backendKey] = value;
           }
         }
-        // Keep other fields as-is (strings, booleans, etc.)
-        // But skip empty strings for non-required fields
+        // Keep other fields as strings
         else {
-          // Always include employmentType even if empty (it's required)
-          if (key === 'employmentType') {
-            transformed[key] = value;
-          } else if (value !== "") {
-            transformed[key] = value;
-          }
+          transformed[backendKey] = value;
         }
       });
       
@@ -583,8 +641,32 @@ export default function GuarantorForm({
       .filter(([key, value]) => value !== "" && employmentFields.includes(key))
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
     
+    // Also check if applicationData has employment info to merge (for pre-filled data from application)
+    if (applicationData?.guarantorInformation?.employmentInfo || applicationData?.employmentInfo) {
+      const employmentInfo = applicationData?.guarantorInformation?.employmentInfo || applicationData?.employmentInfo;
+      Object.entries(employmentInfo).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          // Map frontend field names to form field names
+          const fieldMap: Record<string, string> = {
+            'employerCompany': 'employerName',
+            'positionTitle': 'jobTitle',
+            'businessType': 'businessNature',
+            'employmentStatus': 'employmentType',
+            'startDate': 'employmentStartDate',
+            'monthlyOrAnualIncome': 'annualIncome',
+          };
+          const mappedKey = fieldMap[key] || key;
+          // Only add if not already in formData and if it's an employment field
+          if (!rawGuarantorEmployment[mappedKey as keyof typeof rawGuarantorEmployment] && employmentFields.includes(mappedKey)) {
+            (rawGuarantorEmployment as any)[mappedKey as keyof typeof rawGuarantorEmployment] = value;
+          }
+        }
+      });
+    }
+    
     // Transform the employment data to match backend schema
     const guarantorEmployment = transformEmploymentData(rawGuarantorEmployment);
+    
     const {
       dateOfBirthDay,
       dateOfBirthMonth,
@@ -592,13 +674,14 @@ export default function GuarantorForm({
       additionalDocs,
       ...rest
     } = filteredFormData as any;
+    
+    // Only include guarantorEmployment if it has employmentType (required field)
+    // For Unemployed, Retired, Student - employment is optional, so omit it
     const payload = {
       ...rest,
-      guarantorEmployment,
+      ...(guarantorEmployment && guarantorEmployment.employmentType ? { guarantorEmployment } : {}),
       documents: cleanDocumentData,
-      // tenancyStartDate: new Date(applicationData?.createdAt).toISOString(),
       dateOfBirth: dateOfBirth.toISOString()
-      // applicationId: applicationId as string
     };
 
     createGuarantorReference({

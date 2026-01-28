@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
 import { Listing } from "@/services/property/types";
-import { getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation, inferCurrencyFromProperty } from "@/lib/utils";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { useState } from "react";
@@ -201,7 +201,7 @@ export function PropertyCard({
             amount={isNormalized
               ? (property?.price ? Number(property.price) : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0))
               : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0)}
-            currency={propertyData?.currency || 'USD'}
+            currency={inferCurrencyFromProperty(propertyData)}
             className="text-primary-500 font-semibold ml-2 whitespace-nowrap"
           />
         </div>

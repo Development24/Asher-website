@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation } from "@/lib/utils";
+import { cn, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation, inferCurrencyFromProperty } from "@/lib/utils";
 import { useCurrencyFormat } from "@/hooks/useCurrencyFormat";
 import { Listing } from "@/services/property/types";
 import { useLikeProperty } from "@/services/property/propertyFn";
@@ -80,9 +80,7 @@ const SimilarPropertyCard = memo(function SimilarPropertyCard({
       ? property.price
       : (property?.property?.price || property?.property?.rentalFee || property?.property?.marketValue || property?.property?.rentalPrice || 0);
     
-    const priceCurrency = isNormalized
-      ? (property.property?.currency || (property.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD'))
-      : (property?.property?.currency || 'USD');
+    const priceCurrency = inferCurrencyFromProperty(property?.property);
     
     // Get location from property context
     const propertyLocation = isNormalized

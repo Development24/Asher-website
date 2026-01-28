@@ -24,8 +24,13 @@ export const useCreateGuarantorReference = () => {
             toast.success("Guarantor reference created successfully")
             router.replace(`/`)
         },
-        onError: () => {
-            toast.error("Failed to create guarantor reference")
+        onError: (error: any) => {
+            const errorMessage = error?.response?.data?.error || 
+                                error?.response?.data?.details?.join(', ') ||
+                                error?.response?.data?.message ||
+                                "Failed to create guarantor reference";
+            toast.error(errorMessage);
+            console.error("Guarantor reference error:", error?.response?.data);
         }
     })
 }

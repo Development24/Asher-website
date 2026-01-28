@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 // Currency formatting - now uses location-based detection
 import { formatPriceSync, formatPrice as formatPriceAsync } from './currencyFormatters';
+import { getCurrencyForCountry } from './locationCurrency';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -105,11 +106,66 @@ const extractPriceValue = (property: any): number | null => {
 
 // Helper function to extract currency from property
 const extractCurrency = (property: any): string => {
-  return property?.currency 
-    || property?.property?.currency
-    || property?.listingEntity?.currency
-    || (property?.property?.landlord?.user?.profile?.fullname ? 'NGN' : 'USD')
-    || 'USD';
+  return (
+    property?.currency ||
+    property?.property?.currency ||
+    inferCurrencyFromCountry(property?.country || property?.property?.country) ||
+    'USD'
+  );
+};
+
+/**
+ * Infer currency from a country value that might be:
+ * - ISO country code (e.g. "NG", "GB", "US")
+ * - Country name (e.g. "Nigeria", "United Kingdom", "United States")
+ */
+export const inferCurrencyFromCountry = (country?: string | null): string | undefined => {
+  if (!country) return undefined;
+  const raw = String(country).trim();
+  if (!raw) return undefined;
+
+  // If it's already an ISO-2 code
+  if (raw.length === 2) {
+    return getCurrencyForCountry(raw);
+  }
+
+  // Common country names we use in our APIs/UI
+  const normalized = raw.toLowerCase();
+  const nameToCode: Record<string, string> = {
+    'nigeria': 'NG',
+    'united kingdom': 'GB',
+    'uk': 'GB',
+    'great britain': 'GB',
+    'england': 'GB',
+    'scotland': 'GB',
+    'wales': 'GB',
+    'united states': 'US',
+    'united states of america': 'US',
+    'usa': 'US',
+    'canada': 'CA',
+    'australia': 'AU',
+    'new zealand': 'NZ',
+    'ireland': 'IE',
+    'ghana': 'GH',
+    'kenya': 'KE',
+    'south africa': 'ZA',
+  };
+
+  const code = nameToCode[normalized];
+  return code ? getCurrencyForCountry(code) : undefined;
+};
+
+/**
+ * Infer the currency code for any property-like object.
+ * Prefer explicit `currency`, then fallback to country-based inference.
+ */
+export const inferCurrencyFromProperty = (property: any): string => {
+  return (
+    property?.currency ||
+    property?.property?.currency ||
+    inferCurrencyFromCountry(property?.country || property?.property?.country) ||
+    'USD'
+  );
 };
 
 // Helper function to get property price with fallbacks

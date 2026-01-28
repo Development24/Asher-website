@@ -10,6 +10,7 @@ import Image from "next/image";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import { useCreateFeedback } from "@/services/property/propertyFn";
 import { toast } from "sonner";
+import { inferCurrencyFromProperty } from "@/lib/utils";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -112,7 +113,7 @@ const FeedbackModal = ({
   const propertyPriceValue = typeof data?.rentalFee === "number" && !isNaN(data.rentalFee)
       ? data.rentalFee
       : null;
-  const propertyPriceCurrency = data?.currency || 'USD';
+  const propertyPriceCurrency = inferCurrencyFromProperty(data);
   const bedrooms = data?.noBedRoom ?? "—";
   const bathrooms = data?.noBathRoom ?? "—";
   const propertySize = data?.propertysize ? `${data.propertysize} sqft` : null;

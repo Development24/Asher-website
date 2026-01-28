@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, formatName } from "@/lib/utils";
+import { cn, formatName, inferCurrencyFromProperty } from "@/lib/utils";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import {
   useGetSingleApplication,
@@ -161,8 +161,8 @@ export default function SuccessPage() {
   
   // Get currency
   const displayCurrency = isNormalized
-    ? (listing?.property?.currency || propertyData?.currency || 'USD')
-    : (propertyData?.currency || 'USD');
+    ? inferCurrencyFromProperty(listing?.property || propertyData)
+    : inferCurrencyFromProperty(propertyData);
   
   // Get location details
   const displayAddress = isNormalized

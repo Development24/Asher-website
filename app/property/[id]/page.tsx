@@ -14,7 +14,7 @@ import SaveModal from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { formatName } from "@/lib/utils";
+import { formatName, inferCurrencyFromProperty } from "@/lib/utils";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import {
   useGetProperties,
@@ -645,7 +645,9 @@ export default function PropertyDetails() {
                       ? propertyData?.price
                       : propertyInfo?.price)
               )}
-              currency={propertyData?.currency || "USD"}
+              // IMPORTANT: the amount must be converted from the property's currency.
+              // Normalized listings sometimes omit `currency`, so we infer from country as fallback.
+              currency={inferCurrencyFromProperty(propertyData)}
             />{" "}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
               {(isNormalized 
@@ -774,7 +776,7 @@ export default function PropertyDetails() {
                       return deposit && deposit !== "0" && deposit !== "0.00" ? (
                         <FormattedPrice
                           amount={Number(deposit)}
-                          currency={propertyData?.currency || "USD"}
+                          currency={inferCurrencyFromProperty(propertyData)}
                         />
                       ) : (
                         "Ask agent"
@@ -800,7 +802,7 @@ export default function PropertyDetails() {
                       return initialDeposit && initialDeposit !== "0" && initialDeposit !== "0.00" ? (
                         <FormattedPrice
                           amount={Number(initialDeposit)}
-                          currency={propertyData?.currency || "USD"}
+                          currency={inferCurrencyFromProperty(propertyData)}
                         />
                       ) : (
                         "Ask agent"

@@ -10,6 +10,7 @@ import { FormattedPrice } from "@/components/FormattedPrice";
 import { useReuseAbleStore } from "@/store/reuseAble";
 import { ApplicationStatus } from "../page";
 import { displayImages } from "@/app/property/[id]/utils";
+import { inferCurrencyFromProperty } from "@/lib/utils";
 
 const getStatusBadgeColor = (status: ApplicationStatus) => {
   switch (status) {
@@ -192,9 +193,7 @@ const ApplicationCard = ({
   const price = isNormalized
     ? listing.price
     : (propertyData?.price || propertyData?.rentalFee || '0');
-  const currency = isNormalized
-    ? listing.property?.currency || 'USD'
-    : propertyData?.currency || 'USD';
+  const currency = inferCurrencyFromProperty(isNormalized ? listing?.property : propertyData);
   const city = isNormalized
     ? listing.property?.city
     : propertyData?.city || '';

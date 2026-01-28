@@ -28,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import { Listing } from "@/services/property/types";
 import { useGetProperties } from "@/services/property/propertyFn";
+import { inferCurrencyFromProperty } from "@/lib/utils";
 import { useGetPropertyById } from "@/services/property/propertyFn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -346,7 +347,7 @@ export default function SuccessPage() {
             <div className="text-2xl font-bold mb-6">
               <FormattedPrice
                 amount={propertyData?.rentalFee}
-                currency={propertyData?.currency || 'USD'}
+                currency={inferCurrencyFromProperty(propertyData)}
               />{" "}
               <span className="text-base font-normal text-gray-600">
                 per month
@@ -827,7 +828,7 @@ export default function SuccessPage() {
                         </p>
                         <FormattedPrice
                           amount={Number(similarProperty?.property?.rentalFee) || 0}
-                          currency={similarProperty?.property?.currency || 'USD'}
+                          currency={inferCurrencyFromProperty(similarProperty?.property)}
                           className="text-red-600 font-semibold"
                         />
                       </div>

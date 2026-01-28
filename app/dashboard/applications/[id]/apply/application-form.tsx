@@ -33,6 +33,7 @@ import { useCreatePayment } from "@/services/finance/financeFn";
 import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { loadStripe } from "@stripe/stripe-js";
 import { LoadingStates } from "@/components/ui/loading-states";
+import { inferCurrencyFromProperty } from "@/lib/utils";
 
 // PERSONAL_KIN
 //   REFEREE
@@ -499,7 +500,7 @@ export function ApplicationForm({
           onClose={() => setShowPaymentModal(false)}
           clientSecret={clientSecret}
           amount={getApplicationFeeAmount()}
-          currency={applicationData?.properties?.currency || "USD"}
+          currency={inferCurrencyFromProperty(applicationData?.properties)}
           onPaymentSuccess={() => {
             // Handle successful payment
             console.log("Payment successful, completing application...");

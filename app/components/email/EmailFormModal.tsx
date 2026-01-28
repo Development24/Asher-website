@@ -10,6 +10,7 @@ import { EmailSuccessModal } from "./EmailSuccessModal";
 import { useCreateEnquiry } from "@/services/property/propertyFn";
 import { Property } from "@/services/property/types";
 import { FormattedPrice } from "@/components/FormattedPrice";
+import { inferCurrencyFromProperty } from "@/lib/utils";
 import { userStore } from "@/store/userStore";
 import { useEnquiryStore } from "@/store/enquiryStore";
 import { EnquiryStatusIndicator } from "@/components/EnquiryStatusIndicator";
@@ -61,7 +62,7 @@ export function EmailFormModal({ isOpen, onClose, propertyDetails }: EmailFormMo
     : (propertyDetails?.price ? Number(propertyDetails.price) : (property?.price ? Number(property.price) : (property?.rentalFee ? Number(property.rentalFee) : 0)));
   
   // Get currency
-  const listingCurrency = property?.currency || propertyDetails?.currency || 'USD';
+  const listingCurrency = inferCurrencyFromProperty(propertyDetails || property);
   
   // Get bedrooms/bathrooms: from listingEntity for rooms, from property/specification for properties
   const bedrooms = isNormalized && isRoomOrUnit

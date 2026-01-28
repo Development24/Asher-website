@@ -19,6 +19,7 @@ import { completedStep } from "../../components/ApplicationCard";
 import { format } from "date-fns";
 import { useReuseAbleStore } from "@/store/reuseAble";
 import { useApplicationForm } from "@/contexts/application-form-context";
+import { inferCurrencyFromProperty } from "@/lib/utils";
 
 interface Milestone {
   title: string;
@@ -295,9 +296,7 @@ export default function ApplicationProgressPage() {
   const propertyRentalFee = isNormalized
     ? (listing?.price || listingEntity?.entityPrice || listing?.property?.price || 0)
     : (property?.rentalFee || property?.price || 0);
-  const propertyCurrency = isNormalized
-    ? (listing?.property?.currency || 'USD')
-    : (property?.currency || 'USD');
+  const propertyCurrency = inferCurrencyFromProperty(isNormalized ? listing?.property : property);
   const propertyPriceFrequency = isNormalized
     ? (listing?.priceFrequency || listingEntity?.entityPriceFrequency || listing?.property?.priceFrequency || null)
     : (property?.priceFrequency || null);
