@@ -197,13 +197,23 @@ export function PropertyCard({
               </p>
             )}
           </div>
-          <FormattedPrice
-            amount={isNormalized
-              ? (property?.price ? Number(property.price) : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0))
-              : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0)}
-            currency={inferCurrencyFromProperty(propertyData)}
-            className="text-primary-500 font-semibold ml-2 whitespace-nowrap"
-          />
+          {(() => {
+            const priceValue = isNormalized
+              ? extractPriceValue({ ...property, property: propertyData })
+              : extractPriceValue(propertyData);
+            
+            if (priceValue === null) {
+              return <span className="text-primary-500 font-semibold ml-2 whitespace-nowrap">Price on request</span>;
+            }
+            
+            return (
+              <FormattedPrice
+                amount={priceValue}
+                currency={inferCurrencyFromProperty(propertyData)}
+                className="text-primary-500 font-semibold ml-2 whitespace-nowrap"
+              />
+            );
+          })()}
         </div>
         <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
           {getPropertyLocation(propertyData)}

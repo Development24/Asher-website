@@ -214,10 +214,10 @@ export function FeaturedProperties() {
               ? listingEntity?.name || propertyData?.name
               : propertyData?.name;
             
-            // Get price value and currency for conversion
+            // Get price value and currency for conversion - use extractPriceValue to avoid showing "0"
             const propertyPriceValue = isNormalized
-              ? (property.price ? Number(property.price) : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0))
-              : (propertyData?.price || propertyData?.rentalFee || propertyData?.marketValue || propertyData?.rentalPrice || 0);
+              ? extractPriceValue({ ...property, property: propertyData })
+              : extractPriceValue(propertyData);
             
             const propertyPriceCurrency = inferCurrencyFromProperty(propertyData);
             
@@ -305,11 +305,17 @@ export function FeaturedProperties() {
                           </p>
                         )}
                       </div>
-                      <FormattedPrice 
-                        amount={propertyPriceValue} 
-                        currency={propertyPriceCurrency}
-                        className="ml-2 font-semibold whitespace-nowrap text-primary-500"
-                      />
+                      {propertyPriceValue !== null ? (
+                        <FormattedPrice 
+                          amount={propertyPriceValue} 
+                          currency={propertyPriceCurrency}
+                          className="ml-2 font-semibold whitespace-nowrap text-primary-500"
+                        />
+                      ) : (
+                        <span className="ml-2 font-semibold whitespace-nowrap text-primary-500">
+                          Price on request
+                        </span>
+                      )}
                     </div>
                     <p className="mb-2 text-sm text-neutral-600">
                       {getPropertyLocation(propertyData) || 'Location not available'}

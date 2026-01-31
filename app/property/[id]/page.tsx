@@ -14,7 +14,7 @@ import SaveModal from "@/app/components/modals/save-modal";
 import { ShareModal } from "@/app/components/modals/share-modal";
 import SimilarPropertyCard from "@/app/components/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { formatName, inferCurrencyFromProperty } from "@/lib/utils";
+import { formatName, inferCurrencyFromProperty, extractPriceFromListing } from "@/lib/utils";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import {
   useGetProperties,
@@ -637,18 +637,30 @@ export default function PropertyDetails() {
           </div>
 
           <div className="mb-6 text-3xl font-bold">
-            <FormattedPrice
-              amount={Number(
+            {(() => {
+              const priceValue = extractPriceFromListing(
+                listing,
+                listingType || '',
+                propertyData,
+                propertyInfo,
                 isNormalized
-                  ? listing?.price
-                  : (listingType === "ENTIRE_PROPERTY"
-                      ? propertyData?.price
-                      : propertyInfo?.price)
-              )}
-              // IMPORTANT: the amount must be converted from the property's currency.
-              // Normalized listings sometimes omit `currency`, so we infer from country as fallback.
-              currency={inferCurrencyFromProperty(propertyData)}
-            />{" "}
+              );
+              
+              if (priceValue === null) {
+                return <span>Price on request</span>;
+              }
+              
+              return (
+                <>
+                  <FormattedPrice
+                    amount={priceValue}
+                    // IMPORTANT: the amount must be converted from the property's currency.
+                    // Normalized listings sometimes omit `currency`, so we infer from country as fallback.
+                    currency={inferCurrencyFromProperty(propertyData)}
+                  />{" "}
+                </>
+              );
+            })()}
             <span className="text-base font-normal text-gray-600 dark:text-gray-400">
               {(isNormalized 
                 ? listing?.priceFrequency 

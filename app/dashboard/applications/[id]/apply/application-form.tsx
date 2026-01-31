@@ -28,7 +28,7 @@ import { PersonalDetailsForm } from "./personal-details-form";
 import { ReferenceForm } from "./reference-form";
 import { ResidentialDetailsForm } from "./residential-details-form";
 import { ApplicationData } from "@/types/applicationInterface";
-import { useCompleteApplication } from "@/services/application/applicationFn";
+import { useChecklistApplication, useCompleteApplication } from "@/services/application/applicationFn";
 import { useCreatePayment } from "@/services/finance/financeFn";
 import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { loadStripe } from "@stripe/stripe-js";
@@ -243,11 +243,14 @@ export function ApplicationForm({
   const router = useRouter();
   const [lastStep, setLastStep] = useState("");
   const { mutate: completeApplication, isPending } = useCompleteApplication();
+  const { mutate: checklistApplication, isPending: isChecklistPending } = useChecklistApplication();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
   const { mutate: createPayment, isPending: isCreatePaymentPending } =
     useCreatePayment();
   const handleAmountSubmit = (amount: number, currency: string) => {
+    setPaymentAmount(amount);
     createPayment(
       {
         amount,
@@ -274,18 +277,15 @@ export function ApplicationForm({
   const appData = applicationData as any;
   const hasApplicationFee = appData?.applicationInvites?.applicationFee === "YES";
 
-  // Get application fee amount - check multiple sources in priority order
-  const getApplicationFeeAmount = () => {
-    const currency = applicationData?.properties?.currency || "USD";
-    
+  // Get application fee amount from API only - no dummy fallback.
+  // Returns null when no fee is configured (so we don't post dummy amounts to Stripe).
+  const getApplicationFeeAmount = (): number | null => {
     // Priority 1: Check listing.applicationFeeAmount (most reliable source)
     if (appData?.listing?.applicationFeeAmount) {
       const feeAmount = parseFloat(appData.listing.applicationFeeAmount);
       if (!isNaN(feeAmount) && feeAmount > 0) {
-        // Convert to smallest unit (cents/kobo) if needed
-        // Assuming the amount is in base units (e.g., 50 for ₦50)
+        // Amount may be in base units (e.g. 50 for ₦50) - convert to smallest unit (cents/kobo)
         const amountInSmallestUnit = Math.round(feeAmount * 100);
-        console.log(`Found fee in listing.applicationFeeAmount: ${amountInSmallestUnit} ${currency} (${feeAmount} base units)`);
         return amountInSmallestUnit;
       }
     }
@@ -295,7 +295,6 @@ export function ApplicationForm({
       const feeAmount = parseFloat(appData.applicationInvites.feeAmount);
       if (!isNaN(feeAmount) && feeAmount > 0) {
         const amountInSmallestUnit = Math.round(feeAmount * 100);
-        console.log(`Found fee in applicationInvites.feeAmount: ${amountInSmallestUnit} ${currency}`);
         return amountInSmallestUnit;
       }
     }
@@ -305,24 +304,12 @@ export function ApplicationForm({
       const feeAmount = parseFloat(appData.applicationFeeAmount);
       if (!isNaN(feeAmount) && feeAmount > 0) {
         const amountInSmallestUnit = Math.round(feeAmount * 100);
-        console.log(`Found fee in applicationFeeAmount: ${amountInSmallestUnit} ${currency}`);
         return amountInSmallestUnit;
       }
     }
 
-    // Fallback: Should not happen if fee is properly configured
-    console.warn("No application fee amount found in response, using fallback");
-    const defaultFees = {
-      USD: 2000, // $20.00 in cents
-      NGN: 5000, // ₦50.00 in kobo (matching the test value)
-      GBP: 1500, // £15.00 in pence
-      EUR: 1800 // €18.00 in cents
-    };
-
-    const fallbackAmount =
-      defaultFees[currency as keyof typeof defaultFees] || 2000;
-    console.log(`Using fallback fee: ${fallbackAmount} ${currency}`);
-    return fallbackAmount;
+    // No configured fee - do not use a dummy amount
+    return null;
   };
 
   // Track which steps have been submitted
@@ -347,18 +334,42 @@ export function ApplicationForm({
   const handleStepComplete = () => {
     const currentStepInfo = steps.find((step) => step.id === currentStep);
     const isComplete = currentStepInfo?.nextStep === null;
+    const isOnLastStep = arrayLastStep.id === currentStep;
 
     // Add current step to submitted steps if not already there
     if (!submittedSteps.includes(currentStep)) {
       setSubmittedSteps((prev) => [...prev, currentStep]);
     }
 
-    // Show payment modal if current step is the last step
-    if (arrayLastStep.id === currentStep && hasApplicationFee) {
-      const applicationFee = getApplicationFeeAmount();
-      const currency = applicationData?.properties?.currency || "USD";
-      console.log(`Processing application fee: ${applicationFee} ${currency}`);
-      handleAmountSubmit(applicationFee, currency);
+    // Last step (Checklist): call checklist endpoint first so backend records CHECKLIST, then complete or open payment
+    if (isOnLastStep) {
+      if (!applicationId) {
+        console.error("Cannot complete: applicationId is missing");
+        return;
+      }
+      checklistApplication(
+        { applicationId, data: {} },
+        {
+          onSuccess: () => {
+            const applicationFee = getApplicationFeeAmount();
+            const currency = applicationData?.properties?.currency || "USD";
+            if (hasApplicationFee && applicationFee != null && applicationFee > 0) {
+              handleAmountSubmit(applicationFee, currency);
+            } else {
+              completeApplication(String(applicationId), {
+                onSuccess: (data: any) => {
+                  router.replace(
+                    `/dashboard/applications/${data?.id}/${data?.status?.toLowerCase()}`
+                  );
+                }
+              });
+            }
+          },
+          onError: (error: any) => {
+            console.error("Checklist submission failed:", error);
+          }
+        }
+      );
       return;
     }
 
@@ -372,13 +383,15 @@ export function ApplicationForm({
     }
 
     if (nextStepInfo === undefined && isComplete) {
-      completeApplication(String(applicationId), {
-        onSuccess: (data: any) => {
-          router.replace(
-            `/dashboard/applications/${data?.id}/${data?.status?.toLowerCase()}`
-          );
-        }
-      });
+      if (applicationId) {
+        completeApplication(String(applicationId), {
+          onSuccess: (data: any) => {
+            router.replace(
+              `/dashboard/applications/${data?.id}/${data?.status?.toLowerCase()}`
+            );
+          }
+        });
+      }
     }
   };
 
@@ -478,7 +491,7 @@ export function ApplicationForm({
               params={{ id: propertyId.toString() }}
               applicationId={applicationId}
               onNext={handleStepComplete}
-              loading={isPending}
+              loading={isPending || isChecklistPending}
               onPrevious={handlePreviousStep}
               continueButtonClass="bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950 text-white"
               showContinueButton={
@@ -499,7 +512,7 @@ export function ApplicationForm({
           opened={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           clientSecret={clientSecret}
-          amount={getApplicationFeeAmount()}
+          amount={paymentAmount}
           currency={inferCurrencyFromProperty(applicationData?.properties)}
           onPaymentSuccess={() => {
             // Handle successful payment

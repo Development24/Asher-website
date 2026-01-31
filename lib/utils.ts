@@ -74,8 +74,11 @@ export const formatName = (firstName?: string | null, lastName?: string | null, 
   return `${first} ${last}`.trim();
 };
 
-// Helper function to extract price value from property (checks all possible fields)
-const extractPriceValue = (property: any): number | null => {
+/**
+ * Extract price value from property (checks all possible fields)
+ * Returns null if no valid price found (treats 0 as "no price")
+ */
+export const extractPriceValue = (property: any): number | null => {
   if (!property) return null;
   
   // Check all possible price fields in order of preference
@@ -85,6 +88,7 @@ const extractPriceValue = (property: any): number | null => {
     property?.rentalPrice,
     property?.marketValue,
     property?.listingEntity?.price,
+    property?.listingEntity?.entityPrice,
     property?.property?.price,
     property?.property?.rentalFee,
     property?.property?.rentalPrice,
@@ -92,12 +96,52 @@ const extractPriceValue = (property: any): number | null => {
   ];
   
   for (const price of priceFields) {
-    // Accept 0 as a valid price value
-    if (price !== null && price !== undefined && price !== '') {
+    // Skip null, undefined, empty strings, and the string "0"
+    if (price !== null && price !== undefined && price !== '' && price !== '0') {
       const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-      if (!isNaN(numPrice)) {
-        return numPrice; // Return even if 0
+      if (!isNaN(numPrice) && numPrice > 0) {
+        return numPrice; // Only return if > 0
       }
+    }
+  }
+  
+  return null;
+};
+
+/**
+ * Safely extract price from normalized listing or legacy property structure
+ * Handles both normalized listings (with listing.price) and legacy properties
+ */
+export const extractPriceFromListing = (
+  listing: any,
+  listingType: string,
+  propertyData: any,
+  propertyInfo: any,
+  isNormalized: boolean
+): number | null => {
+  if (isNormalized) {
+    // For normalized listings, check listing.price first
+    if (listing?.price && listing.price !== '0' && listing.price !== 0) {
+      const numPrice = typeof listing.price === 'string' ? parseFloat(listing.price) : listing.price;
+      if (!isNaN(numPrice) && numPrice > 0) {
+        return numPrice;
+      }
+    }
+    // Fallback to listingEntity price for units/rooms
+    if (listingType !== 'ENTIRE_PROPERTY' && listing?.listingEntity?.entityPrice) {
+      const numPrice = typeof listing.listingEntity.entityPrice === 'string' 
+        ? parseFloat(listing.listingEntity.entityPrice) 
+        : listing.listingEntity.entityPrice;
+      if (!isNaN(numPrice) && numPrice > 0) {
+        return numPrice;
+      }
+    }
+  } else {
+    // For legacy structure
+    if (listingType === 'ENTIRE_PROPERTY') {
+      return extractPriceValue(propertyData);
+    } else {
+      return extractPriceValue(propertyInfo || propertyData);
     }
   }
   
