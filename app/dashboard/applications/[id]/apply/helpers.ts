@@ -8,7 +8,6 @@
 // const { mutate: refereesApplication } = useRefereesApplication();
 // const { mutate: guarantorApplication } = useGuarantorApplication();
 // const { mutate: documentsApplication } = useDocumentsApplication();
-// const { mutate: checklistApplication } = useChecklistApplication();
 // const { mutate: declarationApplication } = useDeclarationApplication();
 
 // const handleFinalStep = async () => {
@@ -26,7 +25,6 @@
 //     refereesApplication(payload),
 //     guarantorApplication(payload),
 //     documentsApplication(payload),
-//     checklistApplication(payload),
 //     declarationApplication(payload)
 //   ]);
 

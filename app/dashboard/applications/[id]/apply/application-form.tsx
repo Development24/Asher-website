@@ -28,7 +28,7 @@ import { PersonalDetailsForm } from "./personal-details-form";
 import { ReferenceForm } from "./reference-form";
 import { ResidentialDetailsForm } from "./residential-details-form";
 import { ApplicationData } from "@/types/applicationInterface";
-import { useChecklistApplication, useCompleteApplication } from "@/services/application/applicationFn";
+import { useCompleteApplication } from "@/services/application/applicationFn";
 import { useCreatePayment } from "@/services/finance/financeFn";
 import DepositComponent from "../../components/stripe-comp/DepositComponent";
 import { loadStripe } from "@stripe/stripe-js";
@@ -243,7 +243,6 @@ export function ApplicationForm({
   const router = useRouter();
   const [lastStep, setLastStep] = useState("");
   const { mutate: completeApplication, isPending } = useCompleteApplication();
-  const { mutate: checklistApplication, isPending: isChecklistPending } = useChecklistApplication();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
@@ -341,35 +340,25 @@ export function ApplicationForm({
       setSubmittedSteps((prev) => [...prev, currentStep]);
     }
 
-    // Last step (Checklist): call checklist endpoint first so backend records CHECKLIST, then complete or open payment
+    // Last step (Checklist): complete or open payment (no checklist endpoint on backend)
     if (isOnLastStep) {
       if (!applicationId) {
         console.error("Cannot complete: applicationId is missing");
         return;
       }
-      checklistApplication(
-        { applicationId, data: {} },
-        {
-          onSuccess: () => {
-            const applicationFee = getApplicationFeeAmount();
-            const currency = applicationData?.properties?.currency || "USD";
-            if (hasApplicationFee && applicationFee != null && applicationFee > 0) {
-              handleAmountSubmit(applicationFee, currency);
-            } else {
-              completeApplication(String(applicationId), {
-                onSuccess: (data: any) => {
-                  router.replace(
-                    `/dashboard/applications/${data?.id}/${data?.status?.toLowerCase()}`
-                  );
-                }
-              });
-            }
-          },
-          onError: (error: any) => {
-            console.error("Checklist submission failed:", error);
+      const applicationFee = getApplicationFeeAmount();
+      const currency = applicationData?.properties?.currency || "USD";
+      if (hasApplicationFee && applicationFee != null && applicationFee > 0) {
+        handleAmountSubmit(applicationFee, currency);
+      } else {
+        completeApplication(String(applicationId), {
+          onSuccess: (data: any) => {
+            router.replace(
+              `/dashboard/applications/${data?.id}/${data?.status?.toLowerCase()}`
+            );
           }
-        }
-      );
+        });
+      }
       return;
     }
 
@@ -491,7 +480,7 @@ export function ApplicationForm({
               params={{ id: propertyId.toString() }}
               applicationId={applicationId}
               onNext={handleStepComplete}
-              loading={isPending || isChecklistPending}
+              loading={isPending}
               onPrevious={handlePreviousStep}
               continueButtonClass="bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950 text-white"
               showContinueButton={

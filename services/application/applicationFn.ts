@@ -8,7 +8,6 @@ import {
     refereesApplication,
     guarantorApplication,
     documentsApplication,
-    checklistApplication,
     declarationApplication,
     milestonesApplication,
     singleApplication,
@@ -117,18 +116,6 @@ export const useDocumentsApplication = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: { applicationId: string, data: any }) => documentsApplication(payload.applicationId, payload.data),
-        onSuccess: () => {
-            keysToInvalidate.forEach(key => {
-                queryClient.invalidateQueries({ queryKey: [key] });
-            });
-        }
-    })
-}
-
-export const useChecklistApplication = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (payload: { applicationId: string, data: any }) => checklistApplication(payload.applicationId, payload.data),
         onSuccess: () => {
             keysToInvalidate.forEach(key => {
                 queryClient.invalidateQueries({ queryKey: [key] });

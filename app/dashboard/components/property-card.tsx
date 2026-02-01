@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
 import { Listing } from "@/services/property/types";
-import { getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation, inferCurrencyFromProperty } from "@/lib/utils";
+import { getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation, inferCurrencyFromProperty, extractPriceValue } from "@/lib/utils";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import { useLikeProperty } from "@/services/property/propertyFn";
 import { useState } from "react";

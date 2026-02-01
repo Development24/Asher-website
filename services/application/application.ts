@@ -81,7 +81,6 @@ const applicationURL = {
     referees: "/referees/:applicationId",
     documents: "/document/:applicationId",
     guarantor: "/guarantor/:applicationId",
-    checklist: "/checklist/:applicationId",
     declaration: "/declaration/:applicationId",
     applications: "/all/",
     milestones: "/milestones/:propertyId/:applicationId",
@@ -134,11 +133,6 @@ export const guarantorApplication = async (applicationId: string, payload: any):
 
 export const documentsApplication = async (applicationId: string, payload: any): Promise<ApplicationResponse> => {
     const response = await apiFormData.post(URL + applicationURL.documents.replace(":applicationId", applicationId), payload)
-    return response.data
-}
-
-export const checklistApplication = async (applicationId: string, payload: any): Promise<ApplicationResponse> => {
-    const response = await api.post(URL + applicationURL.checklist.replace(":applicationId", applicationId), payload)
     return response.data
 }
 
