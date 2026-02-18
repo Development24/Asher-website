@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart, Bed, Bath } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProperties } from "@/app/contexts/saved-properties-context";
-import { cn, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation, inferCurrencyFromProperty } from "@/lib/utils";
+import { cn, getPropertyPrice, getBedroomCount, getBathroomCount, getPropertyLocation, inferCurrencyFromProperty, extractPriceValue } from "@/lib/utils";
 import { FormattedPrice } from "@/components/FormattedPrice";
 import Link from "next/link";
 import type React from "react";
