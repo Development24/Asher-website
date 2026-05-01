@@ -49,7 +49,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-12 pt-8 border-t text-center text-gray-600">
-          © 2024, Asher. All Rights Reserved.
+          © {new Date().getFullYear()}, Asher. All Rights Reserved.
         </div>
       </div>
     </footer>

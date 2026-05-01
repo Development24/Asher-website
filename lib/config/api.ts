@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import { userStore } from '@/store/userStore';
 import { refreshToken } from '@/services/auth/auth';
-import { redirect } from 'next/navigation';
 import { toast } from 'sonner';
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
@@ -118,7 +117,7 @@ async function handleApiError(error: AxiosError<ApiError>, instance: AxiosInstan
             if (typeof window !== 'undefined') {
               localStorage.setItem('redirect_url', window.location.pathname);
             }
-            redirect('/login')
+            window.location.replace('/login')
             return Promise.reject(refreshError)
           } finally {
             isRefreshing = false
