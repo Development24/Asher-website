@@ -28,10 +28,11 @@ const LogoutModal = ({
   const handleLogout = async () => {
     try {
       await logout.mutateAsync();
-      setOpen(false);
-      router.push("/login"); // or wherever you want to redirect after logout
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      setOpen(false);
+      router.push("/login");
     }
   };
 
